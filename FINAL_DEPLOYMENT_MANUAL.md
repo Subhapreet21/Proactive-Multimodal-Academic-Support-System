@@ -24,7 +24,7 @@ It unifies everything: Cloud Hosting, Database Maintenance (Cron Job), and Mobil
     *   `GEMINI_API_KEY`: *(Key ending in ...Ma38)*
     *   `GEMINI_API_KEY_2`: *(Your backup key)*
     *   `SUPABASE_URL`: *(From your local .env)*
-    *   `SUPABASE_ANON_KEY`: *(From your local .env)*
+    *   `SUPABASE_SERVICE_ROLE_KEY`: *(From your local .env)*
 6.  **Deploy**: Click Create.
     *   Wait for the green checkmark.
     *   **Copy your URL**: `https://your-app-name.onrender.com`.
