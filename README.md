@@ -1,0 +1,132 @@
+# Proactive Multimodal Academic Support System (Campus Assistant)
+
+**Campus Assistant** is an AI-powered university companion app designed to streamline academic life. It combines a **Flutter Mobile App** for students/faculty with a **Node.js/Supabase Backend** to provide intelligent scheduling, real-time notices, and a context-aware AI assistant.
+
+---
+
+## 🚀 Key Features
+
+### 1. 📱 Mobile-First Experience (Flutter)
+*   **Cross-Platform**: Built with **Flutter** for Android & iOS.
+*   **Glassmorphism UI**: Modern, premium aesthetic with dark mode and smooth animations.
+*   **Offline First**: Optimized for uncertain network conditions.
+
+### 2. 🤖 AI Faculty Assistant (RAG-Powered)
+*   **University Handbook Chat**: Ask questions like *"What is the passing criteria?"* or *"How do I apply for leave?"*.
+    *   Powered by **Google Gemini** and **Supabase Vector Search** (RAG).
+*   **Timetable Intelligence**: Ask *"When is my next Operating Systems class?"* to query the database using natural language.
+*   **Multimodal**: Supports **Voice Input** and **Image Analysis**.
+
+### 3. 🛡️ Role-Based Access Control (RBAC)
+*   **Students**: View-only access to their specific Class Schedule (`Dept-Year-Section`).
+*   **Faculty**: Edit access to their Department's Timetable and Notices.
+*   **Admins**: Full control over all system data.
+*   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In.
+
+### 4. 📅 Smart Scheduling & Tasks
+*   **Shared Dynamic Timetable**: Updates instantly for the entire class when a faculty member changes a slot.
+*   **Personal Reminders**: Private To-Do list with completion tracking.
+*   **Event Board**: Centralized notice board for campus news.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    subgraph Mobile App [Flutter Frontend]
+        UI[Glassmorphic UI]
+        Auth[Supabase Auth]
+        Offline[Offline Storage]
+    end
+
+    subgraph Backend [Node.js Server]
+        API[Express API]
+        RAG[RAG Engine]
+        Cron[Health Check / Keep-Alive]
+    end
+
+    subgraph Cloud Services
+        Supabase[(Supabase DB & Vector Store)]
+        Gemini[Google Gemini AI]
+    end
+
+    %% Connections
+    UI -->|HTTP Requests| API
+    UI -->|Auth Tokens| Auth
+    Auth -->|Verify| Supabase
+
+    API -->|Read/Write Data| Supabase
+    API -->|Vector Search| Supabase
+    API -->|Generate Content| Gemini
+
+    RAG -->|Fetch Context| Supabase
+    RAG -->|Prompt + Context| Gemini
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Tech |
+| :--- | :--- |
+| **Mobile App** | Flutter, Dart, Riverpod/Provider, GoRouter |
+| **Backend** | Node.js, Express, TypeScript |
+| **Database** | Supabase (PostgreSQL), pgvector |
+| **AI Model** | Google Gemini Pro |
+| **Hosting** | Render (Backend) |
+
+---
+
+## 📂 Project Structure
+
+```bash
+/
+├── flutter_app/          # Mobile Application Code
+│   ├── lib/
+│   │   ├── screens/      # UI Pages (Dashboard, Chat, Timetable)
+│   │   ├── services/     # API Integration
+│   │   └── widgets/      # Reusable Components
+│   └── assets/           # Images & Icons
+│
+├── backend/              # Node.js Server Code
+│   ├── src/
+│   │   ├── controllers/  # Business Logic
+│   │   ├── routes/       # API Endpoints
+│   │   └── services/     # AI & DB Services
+│   └── package.json
+│
+└── MASTER_DEPLOYMENT_GUIDE.md  # Deployment Instructions
+```
+
+---
+
+## ⚡ Getting Started
+
+### 1. Prerequisites
+*   Flutter SDK (3.x+)
+*   Node.js (v18+)
+*   Supabase Project
+
+### 2. Setup Backend
+```bash
+cd backend
+npm install
+# Create .env file with API Keys
+npm run dev
+```
+
+### 3. Setup Mobile App
+```bash
+cd flutter_app
+# Create .env file with API_URL=http://localhost:5002
+flutter pub get
+flutter run
+```
+
+---
+
+## 🔒 Security & Privacy
+*   **RLS Policies**: Row-Level Security ensures students cannot edit data.
+*   **Env Variables**: API Keys are never hardcoded.
+*   **Safe Auth**: JWT-based session management.
