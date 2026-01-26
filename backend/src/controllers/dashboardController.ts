@@ -51,8 +51,8 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
                 }
                 return query.eq('department', profile.department);
             } else {
-                // Admin sees classes THEY created/teach
-                return query.eq('user_id', userId);
+                // Admin sees ALL classes (God Mode)
+                return query;
             }
         };
 

@@ -9,8 +9,7 @@ class AppPermissions {
   String? get role => authProvider.userRole;
 
   // Timetable Permissions
-  bool get canManageTimetable =>
-      role == AppConstants.roleFaculty || role == AppConstants.roleAdmin;
+  bool get canManageTimetable => role == AppConstants.roleAdmin;
 
   // Only Admin can filter freely. Faculty is restricted to their dept. Student is restricted to their class.
   // Admin can filter freely. Faculty can filter (restricted dept). Student is restricted to their class.

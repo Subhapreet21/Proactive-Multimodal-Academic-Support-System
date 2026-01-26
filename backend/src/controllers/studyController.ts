@@ -2,15 +2,13 @@
 import { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 
-import { generateText } from '../services/aiService';
+import { generateText, getEmbedding } from '../services/aiService';
 
 // Initialize Supabase Client
 const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-
 
 export const generateStudyPlan = async (req: Request, res: Response) => {
     try {
@@ -24,9 +22,13 @@ export const generateStudyPlan = async (req: Request, res: Response) => {
         const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
         const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
 
-        console.log(`🧠 Generating study plan for ${userId} on ${startOfDay}`);
+        // Get Day Name for Timetable (e.g., 'Monday')
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayName = days[today.getDay()];
 
-        // 1. Fetch Student Profile (to get Year/Section)
+        console.log(`🧠 Generating study plan for ${userId} on ${dayName} (${startOfDay})`);
+
+        // 1. Fetch Student Profile
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('department, year, section')
@@ -38,26 +40,19 @@ export const generateStudyPlan = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Profile not found' });
         }
 
-        // 2. Fetch Timetable (to find FREE slots)
-        // We look for slots that are NOT 'Free' to know busy times, effectively finding free times.
-        const { data: timetable, error: ttError } = await supabase
+        // 2. Fetch Timetable for the Specific Day
+        const { data: timetableData, error: ttError } = await supabase
             .from('timetables')
-            .select('start_time, end_time, subject')
+            .select('start_time, end_time, course_name, location')
             .eq('department', profile.department)
             .eq('year', profile.year)
             .eq('section', profile.section)
-        // Assuming timetable is static for weekdays, need day of week
-        // Logic improvement: Schema usually has 'day_of_week'. Assuming user gave valid date.
-        // For now, simpler: Get all classes, assuming the app filters by day in frontend or we filter here.
-        // Let's assume the query gets ALL classes and we need to filter by day locally if schema has 'day'.
-        // Actually, let's look at schema assumption. If simple, just fetch all.
-        // Better: Just fetch busy slots.
+            .eq('day_of_week', dayName)
+            .order('start_time', { ascending: true });
 
-        // IMPORTANT: If your timetable schema doesn't support date-based querying directly, 
-        // you might need to map 'Monday' to the date.
-        // For this implementation, we will assume the FE sends the 'day_of_week' or we derive it.
-        // Let's assume we fetch all and let AI figure it out or we simplify to "After college hours".
-        // Let's simplify: "College is 9-4". 
+        const timetableStr = timetableData && timetableData.length > 0
+            ? timetableData.map((t: any) => `${t.start_time} - ${t.end_time}: ${t.course_name}`).join('\n')
+            : "No classes scheduled today. Entire day is theoretically free.";
 
         // 3. Fetch Pending Tasks
         const { data: tasks, error: tasksError } = await supabase
@@ -68,49 +63,77 @@ export const generateStudyPlan = async (req: Request, res: Response) => {
             .lte('due_at', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()) // Next 7 days
             .order('due_at', { ascending: true });
 
-        // 4. Fetch Events
+        // 4. Knowledge Base Context (Optimize: Search based on task titles)
+        let kbContext = "No specific study resources found.";
+        if (tasks && tasks.length > 0) {
+            try {
+                // effective query: combine top 3 task titles
+                const queryText = tasks.slice(0, 3).map((t: any) => t.title).join(' ');
+                const embedding = await getEmbedding(queryText);
+
+                const { data: kbData } = await supabase.rpc('match_kb_articles', {
+                    query_embedding: embedding,
+                    match_threshold: 0.3,
+                    match_count: 3
+                });
+
+                if (kbData && kbData.length > 0) {
+                    kbContext = kbData.map((d: any) => `- ${d.title}: ${d.content.substring(0, 150)}...`).join('\n');
+                }
+            } catch (e) {
+                console.warn("KB Search failed:", e);
+            }
+        }
+
+        // 5. Fetch Events
         const { data: events, error: eventsError } = await supabase
             .from('events_notices')
             .select('title, date, category')
             .gte('date', startOfDay)
             .lte('date', endOfDay);
 
-        // 5. Construct Prompt
+        // 6. Construct Prompt
         const prompt = `
         Act as an expert academic study planner.
-        Create a personalized study schedule for today (${new Date().toLocaleDateString()}) for a Computer Science student.
+        Create a personalized study schedule for ${dayName}, ${today.toLocaleDateString()} for a ${profile.department} student.
 
         **Context:**
         - **Energy Level:** ${energyLevel || 'Medium'} (Adjust intensity accordingly).
-        - **College Hours:** 9:00 AM - 4:00 PM (Busy).
-        - **Pending Tasks:** ${JSON.stringify(tasks)}
-        - **Events Today:** ${JSON.stringify(events)}
+        - **Fixed Schedule (Classes):** 
+        ${timetableStr}
+        
+        - **Pending Tasks (Prioritize these):** ${JSON.stringify(tasks)}
+        
+        - **Relevant Study Resources (from Knowledge Base):**
+        ${kbContext}
+
+        - **Campus Events Today:** ${JSON.stringify(events)}
         
         **Goal:**
-        - Identify free time slots (post-4 PM and any gaps).
+        - Identify free time slots around the fixed class schedule.
         - Allocate time for pending tasks based on urgency.
         - Include short breaks (Pomodoro style).
-        - Suggest specific revision topics based on the tasks (e.g., if task is "Cloud Assignment", add "Review Cloud Concepts").
+        - Suggest specific revision topics based on the tasks and KB resources.
+        - If the day is full of classes, focus on evening study blocks.
 
         **Output Format (Strict JSON):**
         {
           "schedule": [
             {
-              "time": "18:00 - 19:00",
-              "activity": "Task Title",
-              "focus_tip": "Specific tip for this task",
-              "type": "task" | "break" | "revision"
+              "time": "HH:MM - HH:MM",
+              "activity": "Actionable Title",
+              "focus_tip": "Specific tip or resource reference",
+              "type": "task" | "break" | "revision" | "class"
             }
           ],
-          "message": "A motivational summary message."
+          "message": "A short, encouraging summary tailored to the workload."
         }
         `;
 
-        // 6. Call Gemini
+        // 7. Call Gemini
         const text = await generateText(prompt);
 
-        // 7. Parse & Return
-        // Gemini might return markdown ```json ... ```, need to clean it.
+        // 8. Parse & Return
         const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
         const plan = JSON.parse(jsonStr);
 

@@ -1,0 +1,7 @@
+day_of_week,start_time,end_time,course_code,course_name,location,department,year,section
+Monday,09:00:00,10:00:00,CS301,Agile Software Development,CSE-301,CSE,3,A
+Tuesday,10:00:00,11:00:00,CS302,AI & Machine Learning,CSE-AI Lab,CSE,3,A
+Wednesday,11:10:00,12:10:00,CS303,Compiler Design,CSE-301,CSE,3,A
+Thursday,13:00:00,14:00:00,CS304,Internet of Things,CSE-IoT Lab,CSE,3,A
+Friday,14:00:00,15:00:00,CS305,Salesforce Development,CSE-301,CSE,3,A
+Saturday,09:00:00,10:00:00,HRM301,Human Resource Management,CSE-Seminar Hall,CSE,3,A

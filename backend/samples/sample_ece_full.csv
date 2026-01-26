@@ -1,0 +1,31 @@
+day_of_week,start_time,end_time,course_code,course_name,location,department,year,section
+Monday,09:00:00,10:00:00,ECE201,Analog Circuits,ECE-201,ECE,2,A
+Monday,10:00:00,11:00:00,MAT201,Mathematics-3,ECE-201,ECE,2,A
+Monday,11:10:00,12:10:00,ECE204,Electromagnetic Fields,ECE-201,ECE,2,A
+Monday,13:00:00,14:00:00,ECE202,Digital Logic Design,ECE-201,ECE,2,A
+Monday,14:00:00,15:00:00,CS201,Data Structures,ECE-2-LAB-4,ECE,2,A
+Tuesday,09:00:00,10:00:00,ECE205,Network Analysis,ECE-201,ECE,2,A
+Tuesday,10:00:00,11:00:00,ECE203,Signals and Systems,ECE-201,ECE,2,A
+Tuesday,11:10:00,12:10:00,ECE206,Linear Integrated Circuits,ECE-201,ECE,2,A
+Tuesday,13:00:00,14:00:00,ECE201,Analog Circuits,ECE-201,ECE,2,A
+Tuesday,14:00:00,15:00:00,MAT201,Mathematics-3,ECE-2-LAB-4,ECE,2,A
+Wednesday,09:00:00,10:00:00,ECE204,Electromagnetic Fields,ECE-201,ECE,2,A
+Wednesday,10:00:00,11:00:00,ECE202,Digital Logic Design,ECE-201,ECE,2,A
+Wednesday,11:10:00,12:10:00,CS201,Data Structures,ECE-201,ECE,2,A
+Wednesday,13:00:00,14:00:00,ECE205,Network Analysis,ECE-201,ECE,2,A
+Wednesday,14:00:00,15:00:00,ECE203,Signals and Systems,ECE-2-LAB-4,ECE,2,A
+Thursday,09:00:00,10:00:00,ECE206,Linear Integrated Circuits,ECE-201,ECE,2,A
+Thursday,10:00:00,11:00:00,ECE201,Analog Circuits,ECE-201,ECE,2,A
+Thursday,11:10:00,12:10:00,MAT201,Mathematics-3,ECE-201,ECE,2,A
+Thursday,13:00:00,14:00:00,ECE204,Electromagnetic Fields,ECE-201,ECE,2,A
+Thursday,14:00:00,15:00:00,ECE202,Digital Logic Design,ECE-2-LAB-4,ECE,2,A
+Friday,09:00:00,10:00:00,CS201,Data Structures,ECE-201,ECE,2,A
+Friday,10:00:00,11:00:00,ECE205,Network Analysis,ECE-201,ECE,2,A
+Friday,11:10:00,12:10:00,ECE203,Signals and Systems,ECE-201,ECE,2,A
+Friday,13:00:00,14:00:00,ECE206,Linear Integrated Circuits,ECE-201,ECE,2,A
+Friday,14:00:00,15:00:00,ECE201,Analog Circuits,ECE-2-LAB-4,ECE,2,A
+Saturday,09:00:00,10:00:00,MAT201,Mathematics-3,ECE-201,ECE,2,A
+Saturday,10:00:00,11:00:00,ECE204,Electromagnetic Fields,ECE-201,ECE,2,A
+Saturday,11:10:00,12:10:00,ECE202,Digital Logic Design,ECE-201,ECE,2,A
+Saturday,13:00:00,14:00:00,CS201,Data Structures,ECE-201,ECE,2,A
+Saturday,14:00:00,15:00:00,ECE205,Network Analysis,ECE-2-LAB-4,ECE,2,A

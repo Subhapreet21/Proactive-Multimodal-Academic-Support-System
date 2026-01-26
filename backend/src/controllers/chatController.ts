@@ -23,18 +23,72 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
         // A. Get Profile first to know Dept/Year/Section for Timetable
         const { data: profile } = await supabase
             .from('profiles')
-            .select('department, year, section')
+            .select('role, department, year, section')
             .eq('id', userId)
             .single();
 
+        // Helper to get current day name
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const todayIndex = new Date().getDay();
+        const currentDay = days[todayIndex];
+
+        // --- Smart Day Detection ---
+        let targetDay = currentDay;
+        const lowerMsg = message.toLowerCase();
+
+        if (lowerMsg.includes('tomorrow')) {
+            targetDay = days[(todayIndex + 1) % 7];
+        } else if (lowerMsg.includes('yesterday')) {
+            targetDay = days[(todayIndex - 1 + 7) % 7];
+        } else {
+            // Check for explicit day names
+            for (const day of days) {
+                if (lowerMsg.includes(day.toLowerCase())) {
+                    targetDay = day;
+                    break;
+                }
+            }
+        }
+
+        console.log(`[Chat] Smart Day Detection: User asked about '${message}' -> Target Day: ${targetDay}`);
+
+        let timetableQuery = supabase.from('timetables').select('*');
+
+        if (profile) {
+            if (profile.role === 'student') {
+                if (profile.department && profile.year && profile.section) {
+                    timetableQuery = timetableQuery
+                        .eq('department', profile.department)
+                        .eq('year', profile.year)
+                        .eq('section', profile.section)
+                        // Also filter Students by day to be precise, though strictly not required for load, it helps context focus
+                        .eq('day_of_week', targetDay);
+                } else {
+                    // Incomplete student profile
+                    timetableQuery = timetableQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+                }
+            } else if (profile.role === 'faculty') {
+                if (profile.department) {
+                    // Faculty: Filter by Department AND Target Day
+                    timetableQuery = timetableQuery
+                        .eq('department', profile.department)
+                        .eq('day_of_week', targetDay)
+                        .limit(50);
+                } else {
+                    timetableQuery = timetableQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+                }
+            } else {
+                // Admin: Fetch all for target day, limit 50
+                timetableQuery = timetableQuery
+                    .eq('day_of_week', targetDay)
+                    .limit(50);
+            }
+        } else {
+            timetableQuery = timetableQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+        }
+
         const [timetableRes, remindersRes, eventsRes] = await Promise.all([
-            // Fix: Query timetable by academic details, not user_id
-            profile ? supabase.from('timetables')
-                .select('*')
-                .eq('department', profile.department)
-                .eq('year', profile.year)
-                .eq('section', profile.section)
-                : { data: [] } as any,
+            timetableQuery,
             supabase.from('reminders').select('*').eq('user_id', userId).eq('is_completed', false),
             supabase.from('events_notices').select('*').order('created_at', { ascending: false }).limit(5)
         ]);
@@ -55,24 +109,34 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
         });
 
         // 5. Construct System Prompt
+        const userRole = profile?.role ? profile.role.toUpperCase() : 'USER';
+        const userDept = profile?.department || 'General';
+
         const systemContext = `
-You are the Campus Assistant AI. You have access to the user's personal schedule and campus data.
-Answer the user's question. Use the following context and conversation history if relevant.
-If the answer is NOT found in the context, use your general knowledge to answer helpfuly (e.g. general academic advice, definitions, chit-chat).
+You are the Campus Assistant AI. You are talking to a ${userRole} from the ${userDept} department.
+You have access to the user's personal schedule and campus data. 
+The user's query implies interest in: ${targetDay} (Calculated from "${message}").
+Current Real-Time: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })} (${currentDay}).
+
+Answer the user's question based on their role:
+- If STUDENT: Focus on upcoming classes, assignments, and study advice. Be encouraging.
+- If FACULTY: Focus on their teaching schedule, department responsibilities, and administrative tasks. Be professional.
+- If ADMIN: Focus on system status, overall schedules, and campus alerts. Be concise and operational.
+
+Use the following context and conversation history if relevant.
+If the answer is NOT found in the context, use your general knowledge to answer helpfuly.
 
 --- CONVERSATION HISTORY (Last 10 messages) ---
 ${conversationHistory.map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n')}
 
 --- USER CONTEXT ---
-TIMETABLE:
-${timetables.length ? timetables.map((t: any) => `- ${t.day_of_week}: ${t.course_name} at ${t.start_time}`).join('\n') : "No classes scheduled."}
+TIMETABLE (Showing Data For: ${targetDay}):
+${timetables.length ? timetables.map((t: any) => `- ${t.course_name} (${t.course_code}) at ${t.start_time} [Loc: ${t.location}]`).join('\n') : `No classes scheduled for ${targetDay}.`}
 
 PENDING REMINDERS:
 ${reminders.length ? reminders.map((r: any) => `- ${r.title} (Due: ${r.due_at})`).join('\n') : "No pending reminders."}
 
 --- CAMPUS CONTEXT ---
-CURRENT TIME: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })} (Use this to determine "next" class)
-
 RECENT NOTICES:
 ${events.length ? events.map((e: any) => `- ${e.title}: ${e.description}`).join('\n') : "No recent notices."}
 
@@ -105,24 +169,24 @@ export const handleImageChat = async (req: Request, res: Response): Promise<void
         const { prompt, conversationId: reqConvId } = req.body;
         let conversationId = reqConvId || 'ephemeral-session';
 
-        if (!req.files || Object.keys(req.files).length === 0) {
+        if (!req.file) {
             res.status(400).json({ error: 'No files were uploaded.' });
             return;
         }
 
-        const imageFile = req.files.image as any;
+        const imageFile = req.file;
         console.log('📸 Received Image for Chat:', {
-            name: imageFile.name,
+            name: imageFile.originalname,
             size: imageFile.size,
             mimetype: imageFile.mimetype
         });
 
-        const imageBuffer = imageFile.data;
+        const imageBuffer = imageFile.buffer;
         let mimeType = imageFile.mimetype;
 
         // Fix for "application/octet-stream" from generic uploaders
-        if (mimeType === 'application/octet-stream' && imageFile.name) {
-            const ext = imageFile.name.split('.').pop()?.toLowerCase();
+        if (mimeType === 'application/octet-stream' && imageFile.originalname) {
+            const ext = imageFile.originalname.split('.').pop()?.toLowerCase();
             if (ext) {
                 const mimeMap: { [key: string]: string } = {
                     'jpg': 'image/jpeg',

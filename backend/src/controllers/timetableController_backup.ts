@@ -29,90 +29,55 @@ export const getTimetable = async (req: Request, res: Response): Promise<void> =
             section: profile.section
         });
 
-        // 2. Fetch ALL entries using pagination (Supabase has a 1000-row limit per request)
-        let allData: any[] = [];
-        let page = 0;
-        const pageSize = 1000;
-        let hasMore = true;
+        let query = supabase.from('timetables').select('*').order('start_time', { ascending: true }).range(0, 9999);
 
-        console.log('[getTimetable] Starting paginated fetch...');
-
-        while (hasMore) {
-            const from = page * pageSize;
-            const to = from + pageSize - 1;
-
-            console.log(`[getTimetable] Fetching page ${page + 1} (rows ${from}-${to})...`);
-
-            let query = supabase
-                .from('timetables')
-                .select('*')
-                .order('start_time', { ascending: true })
-                .range(from, to);
-
-            // 3. Apply Filters based on Role
-            if (profile.role === 'student') {
-                // Strict Filter: Only show my specific section
-                if (!profile.department || !profile.year || !profile.section) {
-                    console.log('[getTimetable] Incomplete student profile');
-                    res.status(400).json({ error: 'Profile incomplete. Please update your profile.' });
-                    return;
-                }
-                query = query
-                    .eq('department', profile.department)
-                    .eq('year', profile.year)
-                    .eq('section', profile.section);
-
-                if (page === 0) {
-                    console.log('[getTimetable] Applied student filters:', {
-                        department: profile.department,
-                        year: profile.year,
-                        section: profile.section
-                    });
-                }
-            } else {
-                // Admin/Faculty: Allow query params for filtering
-                const { department, year, section } = req.query;
-
-                if (department) query = query.eq('department', department);
-                if (year) query = query.eq('year', year);
-                if (section) query = query.eq('section', section);
-
-                if (page === 0) {
-                    console.log('[getTimetable] Applied admin/faculty filters:', {
-                        department: department || 'none',
-                        year: year || 'none',
-                        section: section || 'none'
-                    });
-                }
+        // 2. Apply Filters based on Role
+        if (profile.role === 'student') {
+            // Strict Filter: Only show my specific section
+            if (!profile.department || !profile.year || !profile.section) {
+                console.log('[getTimetable] Incomplete student profile');
+                res.status(400).json({ error: 'Profile incomplete. Please update your profile.' });
+                return;
             }
+            query = query
+                .eq('department', profile.department)
+                .eq('year', profile.year)
+                .eq('section', profile.section);
+            console.log('[getTimetable] Applied student filters:', {
+                department: profile.department,
+                year: profile.year,
+                section: profile.section
+            });
+        } else {
+            // Admin/Faculty: Allow query params for filtering
+            const { department, year, section } = req.query;
 
-            const { data, error } = await query;
+            if (department) query = query.eq('department', department);
+            if (year) query = query.eq('year', year);
+            if (section) query = query.eq('section', section);
 
-            if (error) {
-                console.error('[getTimetable] Supabase query error:', error);
-                throw error;
-            }
+            console.log('[getTimetable] Applied admin/faculty filters:', {
+                department: department || 'none',
+                year: year || 'none',
+                section: section || 'none'
+            });
 
-            if (!data || data.length === 0) {
-                console.log(`[getTimetable] Page ${page + 1}: No more data`);
-                hasMore = false;
-            } else {
-                console.log(`[getTimetable] Page ${page + 1}: Fetched ${data.length} entries`);
-                allData = allData.concat(data);
-
-                // If we got less than pageSize, we've reached the end
-                if (data.length < pageSize) {
-                    hasMore = false;
-                }
-
-                page++;
-            }
+            // Optional: Default to own department for Faculty if no filter?
+            // Keeping it simple: If no filter provided, they might see ALL or none. 
+            // Let's rely on frontend to send default filters or show "Select a Class".
         }
 
-        console.log('[getTimetable] ✅ Total entries fetched from Supabase:', allData.length);
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('[getTimetable] Supabase query error:', error);
+            throw error;
+        }
+
+        console.log('[getTimetable] Successfully fetched entries from Supabase:', data?.length || 0);
         console.log('[getTimetable] Returning data to frontend');
 
-        res.json(allData);
+        res.json(data);
     } catch (error: any) {
         console.error('[getTimetable] Error:', error.message);
         res.status(500).json({ error: error.message });

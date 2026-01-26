@@ -9,8 +9,8 @@ const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
-import fileUpload from 'express-fileupload';
-app.use(fileUpload());
+// import fileUpload from 'express-fileupload';
+// app.use(fileUpload()); // Removed to fix conflict with Multer
 
 app.get('/', (req, res) => {
     res.send('Campus Assistant API is running');

@@ -60,7 +60,7 @@ class ApiService {
 
   Future<dynamic> post(
     String endpoint,
-    Map<String, dynamic> body, {
+    dynamic body, {
     bool requireAuth = true,
   }) async {
     try {
@@ -87,7 +87,7 @@ class ApiService {
 
   Future<dynamic> put(
     String endpoint,
-    Map<String, dynamic> body, {
+    dynamic body, {
     bool requireAuth = true,
   }) async {
     try {
@@ -106,7 +106,7 @@ class ApiService {
 
   Future<dynamic> patch(
     String endpoint,
-    Map<String, dynamic> body, {
+    dynamic body, {
     bool requireAuth = true,
   }) async {
     try {
