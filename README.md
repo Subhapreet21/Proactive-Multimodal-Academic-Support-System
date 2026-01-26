@@ -11,22 +11,30 @@
 *   **Glassmorphism UI**: Modern, premium aesthetic with dark mode and smooth animations.
 *   **Offline First**: Optimized for uncertain network conditions.
 
-### 2. 🤖 AI Faculty Assistant (RAG-Powered)
-*   **University Handbook Chat**: Ask questions like *"What is the passing criteria?"* or *"How do I apply for leave?"*.
-    *   Powered by **Google Gemini** and **Supabase Vector Search** (RAG).
-*   **Timetable Intelligence**: Ask *"When is my next Operating Systems class?"* to query the database using natural language.
-*   **Multimodal**: Supports **Voice Input** and **Image Analysis**.
+### 2. 🤖 Context-Aware AI Assistant
+*   **Role-Based Personas**: Adapts responses based on user role:
+    *   **Student**: Encouraging tone, focuses on assignments and exams.
+    *   **Faculty**: Professional tone, focuses on schedules and admin duties.
+    *   **Admin**: Concise, operational updates on system status.
+*   **Smart Date Detection**: Understands natural language dates like *"What do I have next Monday?"* or *"Show me tomorrow's schedule"*.
+*   **University Handbook Chat**: RAG-powered answers for campus policies.
 
 ### 3. 🛡️ Role-Based Access Control (RBAC)
 *   **Students**: View-only access to their specific Class Schedule (`Dept-Year-Section`).
 *   **Faculty**: Edit access to their Department's Timetable and Notices.
-*   **Admins**: Full control over all system data.
+*   **Admins**: '"God Mode"' view of all departments and full system control.
 *   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In.
 
 ### 4. 📅 Smart Scheduling & Tasks
+*   **Master PDF Export**: Admin/Faculty can download full department timetables with custom filters.
 *   **Shared Dynamic Timetable**: Updates instantly for the entire class when a faculty member changes a slot.
 *   **Personal Reminders**: Private To-Do list with completion tracking.
 *   **Event Board**: Centralized notice board for campus news.
+
+### 5. 🧠 AI Study Planner
+*   **Dynamic Scheduling**: Generates personalized study plans by analyzing **real-time** free slots in your daily schedule.
+*   **Knowledge Integration**: Automatically suggests relevant study notes from the Knowledge Base for your pending tasks.
+*   **Department-Aware**: Tailors study advice (e.g., coding practice for CSE) based on your profile.
 
 ---
 
