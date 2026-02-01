@@ -68,7 +68,7 @@ graph TD
     end
 
     subgraph Cloud Services
-        Gemini[Google Gemini AI (x7 Keys)]
+        Gemini["Google Gemini AI (x7 Keys)"]
     end
 
     %% Connections
@@ -91,7 +91,7 @@ graph TD
 | **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus |
 | **Backend** | Node.js, Express, TypeScript, dotenv |
 | **Database** | Supabase (PostgreSQL), pgvector, Storage |
-| **AI Model** | Google Gemini (Gemini-1.5-Flash / Pro) |
+| **AI Model** | Google Gemini (Gemini-2.5-Flash / Pro) |
 | **Hosting** | Render (Backend), Vercel/Netlify (Web components) |
 
 ---
