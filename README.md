@@ -1,40 +1,47 @@
 # Proactive Multimodal Academic Support System (Campus Assistant)
 
-**Campus Assistant** is an AI-powered university companion app designed to streamline academic life. It combines a **Flutter Mobile App** for students/faculty with a **Node.js/Supabase Backend** to provide intelligent scheduling, real-time notices, and a context-aware AI assistant.
+**Campus Assistant** is an advanced, AI-powered university companion app designed to revolutionize the student experience. It seamlesssly integrates a **Flutter Mobile App**, a **Node.js/Supabase Backend**, and **Google Gemini AI** to provide a unified platform for navigation, scheduling, and academic assistance.
 
 ---
 
 ## 🚀 Key Features
 
-### 1. 📱 Mobile-First Experience (Flutter)
+### 1. 🏛️ Immersive Landing Experience [NEW]
+*   **Interactive 3D Campus Model**: A vertically centered, rotating 3D low-poly university building optimized for performance.
+*   **Infinite Feature Carousel**: Smooth, auto-scrolling marquee showcasing app capabilities with semantic icons.
+*   **Typewriter Animation**: Dynamic hero text with a custom "type-pause-delete" effect.
+*   **Glassmorphic Overlay**: Premium UI design with separate top/bottom gradients for clarity.
+
+### 2. 🤖 Virtual Tour AI Assistant [NEW]
+*   **Context-Aware Chat**: An intelligent floating assistant inside the Virtual Tour that knows *exactly* where you are.
+*   **Location Knowledge Base**: Ask *"What labs are in this building?"* or *"When does this library close?"* while viewing the actual scene.
+*   **Scene-Specific prompts**: Auto-generates suggested questions based on the current panorama (e.g., "Show me the cafeteria menu" when near the food court).
+*   **Fallback Robustness**: Works offline using cached scene data if the tour server is unreachable.
+
+### 3. 🖥️ Advanced AI Backend (Multi-Key) [NEW]
+*   **Load Balancing**: Distributed AI workload across **7 independent Gemini API Keys**.
+*   **Auto-Failover**: Smart retry logic automatically switches keys if one hits a rate limit (429) or error.
+*   **Role-Based Personas**:
+    *   **Student**: Encouraging tone, focuses on actionable academic advice.
+    *   **Faculty**: Professional tone, administrative focus.
+    *   **Admin**: System-level operational updates.
+
+### 4. 📱 Mobile-First Experience (Flutter)
 *   **Cross-Platform**: Built with **Flutter** for Android & iOS.
-*   **Glassmorphism UI**: Modern, premium aesthetic with dark mode and smooth animations.
-*   **Offline First**: Optimized for uncertain network conditions.
+*   **Glassmorphism UI**: Modern aesthetic with dark mode, blur effects, and smooth transitions.
+*   **Offline First**: Critical data (Notes, Timetable) is cached for access without internet.
 
-### 2. 🤖 Context-Aware AI Assistant
-*   **Role-Based Personas**: Adapts responses based on user role:
-    *   **Student**: Encouraging tone, focuses on assignments and exams.
-    *   **Faculty**: Professional tone, focuses on schedules and admin duties.
-    *   **Admin**: Concise, operational updates on system status.
-*   **Smart Date Detection**: Understands natural language dates like *"What do I have next Monday?"* or *"Show me tomorrow's schedule"*.
-*   **University Handbook Chat**: RAG-powered answers for campus policies.
+### 5. 🛡️ Role-Based Access Control (RBAC)
+*   **Students**: Read-only access to their specific Class Schedule (`Dept-Year-Section`).
+*   **Faculty**: Write access to their Department's Timetable and Notices.
+*   **Admins**: Full system control ("God Mode") to manage all data.
+*   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In with JWT sessions.
 
-### 3. 🛡️ Role-Based Access Control (RBAC)
-*   **Students**: View-only access to their specific Class Schedule (`Dept-Year-Section`).
-*   **Faculty**: Edit access to their Department's Timetable and Notices.
-*   **Admins**: '"God Mode"' view of all departments and full system control.
-*   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In.
-
-### 4. 📅 Smart Scheduling & Tasks
-*   **Master PDF Export**: Admin/Faculty can download full department timetables with custom filters.
-*   **Shared Dynamic Timetable**: Updates instantly for the entire class when a faculty member changes a slot.
+### 6. 📅 Smart Scheduling & Tasks
+*   **Dynamic Timetable**: Real-time updates for the entire class when faculty changes a slot.
+*   **Master PDF Export**: Admin/Faculty can generate and download full department schedules.
 *   **Personal Reminders**: Private To-Do list with completion tracking.
-*   **Event Board**: Centralized notice board for campus news.
-
-### 5. 🧠 AI Study Planner
-*   **Dynamic Scheduling**: Generates personalized study plans by analyzing **real-time** free slots in your daily schedule.
-*   **Knowledge Integration**: Automatically suggests relevant study notes from the Knowledge Base for your pending tasks.
-*   **Department-Aware**: Tailors study advice (e.g., coding practice for CSE) based on your profile.
+*   **Event Board**: Centralized digital notice board for campus news and alerts.
 
 ---
 
@@ -43,33 +50,36 @@
 ```mermaid
 graph TD
     subgraph Mobile App [Flutter Frontend]
+        3D[Model Viewer]
+        Tour[Virtual Tour + AI Overlay]
         UI[Glassmorphic UI]
         Auth[Supabase Auth]
-        Offline[Offline Storage]
     end
 
     subgraph Backend [Node.js Server]
         API[Express API]
+        LB[Multi-Key Load Balancer]
         RAG[RAG Engine]
-        Cron[Health Check / Keep-Alive]
+    end
+
+    subgraph Knowledge Base
+        Vectors[Supabase pgvector]
+        SceneData[Scene Metadata JSON]
     end
 
     subgraph Cloud Services
-        Supabase[(Supabase DB & Vector Store)]
-        Gemini[Google Gemini AI]
+        Gemini[Google Gemini AI (x7 Keys)]
     end
 
     %% Connections
     UI -->|HTTP Requests| API
-    UI -->|Auth Tokens| Auth
-    Auth -->|Verify| Supabase
-
-    API -->|Read/Write Data| Supabase
-    API -->|Vector Search| Supabase
-    API -->|Generate Content| Gemini
-
-    RAG -->|Fetch Context| Supabase
-    RAG -->|Prompt + Context| Gemini
+    Tour -->|Scene Context| API
+    
+    API -->|Key Rotation| LB
+    LB -->|Prompt Generation| Gemini
+    
+    API -->|Vector Search| Vectors
+    API -->|Read Scene Data| SceneData
 ```
 
 ---
@@ -78,11 +88,11 @@ graph TD
 
 | Component | Tech |
 | :--- | :--- |
-| **Mobile App** | Flutter, Dart, Riverpod/Provider, GoRouter |
-| **Backend** | Node.js, Express, TypeScript |
-| **Database** | Supabase (PostgreSQL), pgvector |
-| **AI Model** | Google Gemini Pro |
-| **Hosting** | Render (Backend) |
+| **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus |
+| **Backend** | Node.js, Express, TypeScript, dotenv |
+| **Database** | Supabase (PostgreSQL), pgvector, Storage |
+| **AI Model** | Google Gemini (Gemini-1.5-Flash / Pro) |
+| **Hosting** | Render (Backend), Vercel/Netlify (Web components) |
 
 ---
 
@@ -92,19 +102,21 @@ graph TD
 /
 ├── flutter_app/          # Mobile Application Code
 │   ├── lib/
-│   │   ├── screens/      # UI Pages (Dashboard, Chat, Timetable)
-│   │   ├── services/     # API Integration
-│   │   └── widgets/      # Reusable Components
-│   └── assets/           # Images & Icons
+│   │   ├── screens/      # Landing, Dashboard, Tour, Timetable, etc.
+│   │   ├── services/     # API Integration (TourService, AiService)
+│   │   ├── widgets/      # Reusable UI (ScrollingIconRow, GlassContainer)
+│   │   └── config/       # Themes, Routes, Constants
+│   └── assets/           # 3D Models (.glb), Icons, Images
 │
 ├── backend/              # Node.js Server Code
 │   ├── src/
-│   │   ├── controllers/  # Business Logic
-│   │   ├── routes/       # API Endpoints
-│   │   └── services/     # AI & DB Services
+│   │   ├── controllers/  # Request Handlers
+│   │   ├── routes/       # API Endpoints (virtual-tour, tasks, etc.)
+│   │   ├── services/     # aiService (Multi-Key), dbService
+│   │   └── data/         # scene_knowledge_base.json (Static Data)
 │   └── package.json
 │
-└── MASTER_DEPLOYMENT_GUIDE.md  # Deployment Instructions
+└── MASTER_DEPLOYMENT_GUIDE.md  # Detailed Deployment Instructions
 ```
 
 ---
@@ -117,24 +129,21 @@ graph TD
 *   Supabase Project
 
 ### 2. Setup Backend
-```bash
-cd backend
-npm install
-# Create .env file with API Keys
-npm run dev
-```
+1.  Navigate to `backend/`.
+2.  Install dependencies: `npm install`.
+3.  Create `.env` file with **7 Gemini API Keys** (`GEMINI_API_KEY_1`...`_7`) and Supabase credentials.
+4.  Run server: `npm run dev`.
 
 ### 3. Setup Mobile App
-```bash
-cd flutter_app
-# Create .env file with API_URL=http://localhost:5002
-flutter pub get
-flutter run
-```
+1.  Navigate to `flutter_app/`.
+2.  Install packages: `flutter pub get`.
+3.  Ensure `assets/3D-model/` contains the `.glb` file.
+4.  Run app: `flutter run`.
 
 ---
 
 ## 🔒 Security & Privacy
-*   **RLS Policies**: Row-Level Security ensures students cannot edit data.
-*   **Env Variables**: API Keys are never hardcoded.
-*   **Safe Auth**: JWT-based session management.
+*   **Key Rotation**: API keys are rotated randomly to prevent exhaustion.
+*   **RLS Policies**: Database access is strictly controlled by user role at the row level.
+*   **Env Variables**: Critical secrets are never committed to version control.
+

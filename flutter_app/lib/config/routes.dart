@@ -16,6 +16,7 @@ import '../screens/knowledge_base_screen.dart';
 import '../screens/reminders_screen.dart';
 import '../screens/study_screen.dart';
 import '../screens/profile_screen.dart';
+import '../screens/virtual_tour_screen.dart';
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
 
@@ -141,6 +142,10 @@ class AppRouter {
             GoRoute(
               path: '/app/profile',
               builder: (context, state) => const ProfileScreen(),
+            ),
+            GoRoute(
+              path: '/app/virtual-tour',
+              builder: (context, state) => const VirtualTourScreen(),
             ),
           ],
         ),

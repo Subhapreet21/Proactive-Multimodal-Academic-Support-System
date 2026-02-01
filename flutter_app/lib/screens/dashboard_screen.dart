@@ -116,6 +116,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(height: 24),
                           ],
 
+                          _buildVirtualTourCard(),
+                          const SizedBox(height: 24),
+
                           // Upcoming Reminders
                           _buildRemindersCard(),
                           const SizedBox(height: 32),
@@ -190,6 +193,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'AI-generated schedule ready',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Colors.white54, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVirtualTourCard() {
+    return GestureDetector(
+      onTap: () => context.go('/app/virtual-tour'),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.secondaryColor.withOpacity(0.2),
+              AppTheme.secondaryColor.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.secondaryColor.withOpacity(0.3)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.secondaryColor.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.vrpano_rounded,
+                    color: AppTheme.secondaryColor, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '360° Virtual Tour',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Explore campus in 3D',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withOpacity(0.7),

@@ -67,6 +67,11 @@ dependencies:
   excel: ^4.0.6
   flutter_file_dialog: ^3.0.3
   screenshot: ^3.0.0
+  webview_flutter: ^4.13.1
+  model_viewer_plus: ^1.7.0
+  flutter_inappwebview: ^6.1.5
+  animated_text_kit: ^4.2.2
+
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +99,11 @@ flutter_icons:
 
 flutter:
   uses-material-design: true
-  
   assets:
+    - assets/
     - assets/images/
+    - assets/tour.zip
+    - assets/3D-model/
+    # - assets/tour/ (etc removed)
+
     - .env

@@ -59,6 +59,12 @@ class _AppShellState extends State<AppShell> {
       unselectedIcon: Icons.radio_button_unchecked,
       path: '/app/reminders',
     ),
+    NavigationItem(
+      label: 'Tour',
+      selectedIcon: Icons.vrpano_rounded,
+      unselectedIcon: Icons.vrpano_outlined,
+      path: '/app/virtual-tour',
+    ),
   ];
 
   @override
@@ -342,6 +348,8 @@ class _AppShellState extends State<AppShell> {
     if (path.contains('/app/events-notices')) return 'Events & Notices';
     if (path.contains('/app/knowledge-base')) return 'Knowledge Base';
     if (path.contains('/app/chat')) return 'Chat Assistant';
+
+    if (path.contains('/app/virtual-tour')) return 'Campus 360° Tour';
 
     final index = _navItems.indexWhere((item) => item.path == path);
     if (index != -1) {

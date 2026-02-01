@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<krpano>
+
+<!-- ************************ -->
+<!--         Messages         -->
+<!-- ************************ -->
+
+  <data name="en_project_title"><![CDATA[campus]]></data>
+
+
+  <data name="en_panogroup224_title"><![CDATA[CAMPUS VIEW]]></data>
+
+  <data name="en_pano220_title"><![CDATA[01. University Block]]></data>
+  <data name="en_pano221_title"><![CDATA[02. Campus View - 1]]></data>
+  <data name="en_pano222_title"><![CDATA[03. Campus View - 2]]></data>
+  <data name="en_pano495_title"><![CDATA[04. Aerial View]]></data>
+
+  <data name="en_panogroup230_title"><![CDATA[VC CHAMBER]]></data>
+
+  <data name="en_pano228_title"><![CDATA[01. VC Chamber]]></data>
+  <data name="en_pano229_title"><![CDATA[02. Board Room]]></data>
+
+  <data name="en_panogroup234_title"><![CDATA[ADMISSION WING]]></data>
+
+  <data name="en_pano232_title"><![CDATA[01. Admission Wing]]></data>
+  <data name="en_pano579_title"><![CDATA[02. Administration Wing]]></data>
+
+  <data name="en_panogroup243_title"><![CDATA[DEPT. OF CSE]]></data>
+
+  <data name="en_pano236_title"><![CDATA[01. Class Room]]></data>
+  <data name="en_pano237_title"><![CDATA[02. Computer Science Lab]]></data>
+  <data name="en_pano581_title"><![CDATA[03. BEEE Lab]]></data>
+  <data name="en_pano239_title"><![CDATA[04. Engineering Workshop]]></data>
+  <data name="en_pano240_title"><![CDATA[05. Graphics Lab]]></data>
+  <data name="en_pano241_title"><![CDATA[06. Physics Lab]]></data>
+  <data name="en_pano242_title"><![CDATA[07. Classroom & Labs]]></data>
+
+  <data name="en_panogroup257_title"><![CDATA[DEPT. OF AGRICULTURE]]></data>
+
+  <data name="en_pano250_title"><![CDATA[01. Agriculture Department Block]]></data>
+  <data name="en_pano251_title"><![CDATA[02. Agriculture Department Classroom & Lab]]></data>
+  <data name="en_pano252_title"><![CDATA[03. Horticulture Lab ]]></data>
+  <data name="en_pano590_title"><![CDATA[04. Genetics & Plant Breeding Lab]]></data>
+  <data name="en_pano254_title"><![CDATA[05. Furrow System of Irrigation ]]></data>
+  <data name="en_pano597_title"><![CDATA[06. Cultivation of Plants Under Shade Net ]]></data>
+  <data name="en_pano256_title"><![CDATA[07. Demonstration & Construction of Poly House ]]></data>
+
+  <data name="en_panogroup661_title"><![CDATA[DEPT. OF MGMT.& SCIENCES]]></data>
+
+  <data name="en_pano657_title"><![CDATA[01. School of Mgmt. & Science Block]]></data>
+  <data name="en_pano658_title"><![CDATA[02. Class Room]]></data>
+  <data name="en_pano659_title"><![CDATA[03. Forensic Lab]]></data>
+  <data name="en_pano660_title"><![CDATA[04. Physics Lab]]></data>
+
+  <data name="en_panogroup681_title"><![CDATA[FACILITIES]]></data>
+
+  <data name="en_pano665_title"><![CDATA[01. Library]]></data>
+  <data name="en_pano666_title"><![CDATA[02. Cafeteria]]></data>
+  <data name="en_pano667_title"><![CDATA[03. Girls Hostel Block ]]></data>
+  <data name="en_pano668_title"><![CDATA[04. Girls Hostel  Mess]]></data>
+  <data name="en_pano669_title"><![CDATA[05. Girls Hostel Room]]></data>
+  <data name="en_pano670_title"><![CDATA[06. Boys Hostel Block]]></data>
+  <data name="en_pano671_title"><![CDATA[07. Boys Hostel Mess]]></data>
+  <data name="en_pano672_title"><![CDATA[08. Boys Hostel Room]]></data>
+  <data name="en_pano673_title"><![CDATA[09. Indoor Stadium]]></data>
+  <data name="en_pano674_title"><![CDATA[10. Indoor Games]]></data>
+  <data name="en_pano675_title"><![CDATA[11. Auditorium]]></data>
+  <data name="en_pano676_title"><![CDATA[12. GYM]]></data>
+  <data name="en_pano677_title"><![CDATA[13. Basket Ball Court]]></data>
+  <data name="en_pano678_title"><![CDATA[14. Cricket Ground]]></data>
+  <data name="en_pano679_title"><![CDATA[15. Volley Ball Court]]></data>
+  <data name="en_pano680_title"><![CDATA[16. Transport]]></data>
+
+
+
+
+
+
+  <data name="en_controlBar_classicplayVideoTip"><![CDATA[Play]]></data>
+  <data name="en_controlBar_classicpauseVideoTip"><![CDATA[Pause]]></data>
+  <data name="en_controlBar_classicprevSceneTip"><![CDATA[Previous panorama]]></data>
+  <data name="en_controlBar_classicnextSceneTip"><![CDATA[Next panorama]]></data>
+  <data name="en_controlBar_classiczoomInTip"><![CDATA[Zoom in]]></data>
+  <data name="en_controlBar_classiczoomOutTip"><![CDATA[Zoom out]]></data>
+  <data name="en_controlBar_classicmoveLeftTip"><![CDATA[Move left]]></data>
+  <data name="en_controlBar_classicmoveRightTip"><![CDATA[Move right]]></data>
+  <data name="en_controlBar_classicmoveUpTip"><![CDATA[Move up]]></data>
+  <data name="en_controlBar_classicmoveDownTip"><![CDATA[Move down]]></data>
+  <data name="en_controlBar_classichomeTip"><![CDATA[Home]]></data>
+  <data name="en_controlBar_classicopenFsTip"><![CDATA[Enter fullscreen]]></data>
+  <data name="en_controlBar_classiccloseFsTip"><![CDATA[Exit fullscreen]]></data>
+  <data name="en_controlBar_classicautorotateOnTip"><![CDATA[Start autorotation]]></data>
+  <data name="en_controlBar_classicautorotateOffTip"><![CDATA[Stop autorotation]]></data>
+  <data name="en_controlBar_classicautotourOnTip"><![CDATA[Start automatic tour]]></data>
+  <data name="en_controlBar_classicautotourOffTip"><![CDATA[Stop automatic tour]]></data>
+  <data name="en_controlBar_classicsoundsOnTip"><![CDATA[Start sounds]]></data>
+  <data name="en_controlBar_classicsoundsOffTip"><![CDATA[Stop sounds]]></data>
+  <data name="en_controlBar_classicdisplayControlsTip"><![CDATA[Show controls]]></data>
+  <data name="en_controlBar_classichideControlsTip"><![CDATA[Hide controls]]></data>
+  <data name="en_controlBar_classicctrlmodeDragTip"><![CDATA[Change control mode]]></data>
+  <data name="en_controlBar_classicctrlmodeMoveTip"><![CDATA[Change control mode]]></data>
+
+
+  <data name="en_vr_setup_hmd0"><![CDATA[SELECT YOUR HMD]]></data>
+  <data name="en_vr_setup_advanced"><![CDATA[ADVANCED SETTINGS]]></data>
+  <data name="en_vr_setup_title"><![CDATA[WEB VR SETTINGS]]></data>
+  <data name="en_vr_setup_dvn1"><![CDATA[Device:]]></data>
+  <data name="en_vr_setup_siz1"><![CDATA[Screen size:]]></data>
+  <data name="en_vr_setup_ipd1"><![CDATA[IPD:]]></data>
+  <data name="en_vr_setup_hmd1"><![CDATA[HMD:]]></data>
+  <data name="en_vr_setup_hmd3"><![CDATA[Customize]]></data>
+  <data name="en_vr_setup_cal"><![CDATA[Calibrate gyroscope]]></data>
+  <data name="en_vr_setup_sav"><![CDATA[SAVE]]></data>
+  <data name="en_vr_setup_rst"><![CDATA[RESET]]></data>
+  <data name="en_vr_setup_simple"><![CDATA[SIMPLE]]></data>
+  <data name="en_vr_setup_cls"><![CDATA[CLOSE]]></data>
+  <data name="en_vr_setup_m31"><![CDATA[HMD SETTINGS]]></data>
+  <data name="en_vr_setup_fov1"><![CDATA[FOV:]]></data>
+  <data name="en_vr_setup_dst1"><![CDATA[Distortion:]]></data>
+  <data name="en_vr_setup_d2tx"><![CDATA[Distortion 2:]]></data>
+  <data name="en_vr_setup_vig1"><![CDATA[Vignette:]]></data>
+  <data name="en_vr_setup_cac1"><![CDATA[Chromatic aberration:]]></data>
+  <data name="en_vr_setup_olp1"><![CDATA[Overlap:]]></data>
+  <data name="en_vr_setup_m35"><![CDATA[RETURN]]></data>
+  <data name="en_vr_setup_cb1"><![CDATA[GYROSCOPE]]></data>
+  <data name="en_vr_setup_cb2"><![CDATA[Place the device on a flat and[br]stable surface and tab CALIBRATE[br]to correct a gyroscope drifting.]]></data>
+  <data name="en_vr_setup_cb3"><![CDATA[CALIBRATE]]></data>
+  <data name="en_vr_setup_cb4"><![CDATA[RESET]]></data>
+  <data name="en_vr_setup_cb5"><![CDATA[RETURN]]></data>
+  <data name="en_vr_setup_cb6"><![CDATA[Calibrating...]]></data>
+  <data name="en_vr_setup_cb7"><![CDATA[Successful calibration]]></data>
+  <data name="en_vr_setup_cb8"><![CDATA[Calibration failed]]></data>
+  <data name="en_vr_setup_unavailable"><![CDATA[VR mode[br]is unavailable on your device]]></data>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</krpano>

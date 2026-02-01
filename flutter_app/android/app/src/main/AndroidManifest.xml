@@ -3,7 +3,8 @@
         android:label="campus_assistant"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
-        android:extractNativeLibs="true">
+        android:extractNativeLibs="true"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

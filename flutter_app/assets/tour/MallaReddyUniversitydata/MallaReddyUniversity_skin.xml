@@ -1,0 +1,1650 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<krpano version="1.19-pr16">
+
+<!-- ********** -->
+<!-- Classic Control Bar -->
+<!-- id : controlBar_classic -->
+<!-- ********** -->
+
+  <krpano controlBar_classicbarbuilt="false" controlBar_classicbackgroundwidthwhenclosed="0" controlBar_classicbackgroundwidthwhenopened="0" controlBar_classicIsOpened="false" />
+  <events name="controlBar_classicevents" 
+    onxmlcomplete="controlBar_classicbuildMenuBar();" 
+
+    openvideointerface="controlBar_classicOpenVideoplayer();" 
+    closevideointerface="controlBar_classicCloseVideoplayer();" 
+
+    keep="true" />
+
+
+
+  <action name="controlBar_classicbuildMenuBar">
+    ifnot (controlBar_classicbarbuilt, controlBar_classicbuildMenu(); set(controlBar_classicbarbuilt, true););
+  </action>
+
+  <action name="controlBar_classicbuildMenu">
+    
+    set(controlBar_classicbutton_pos, 20);
+
+    set(layer[controlBar_classicbtn_hidecontrols].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_showcontrols].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+    add(controlBar_classicbackgroundwidthwhenclosed, get(controlBar_classicbutton_pos), 20);
+
+
+
+    if (device.fullscreensupport,
+      set(layer[controlBar_classicbtn_openfs ].x, get(controlBar_classicbutton_pos));
+      set(layer[controlBar_classicbtn_closefs].x, get(controlBar_classicbutton_pos));
+      inc(controlBar_classicbutton_pos, 36);
+    );
+
+
+
+    set(layer[controlBar_classicbtn_autorotate_on ].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_autorotate_off].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+
+
+    set(layer[controlBar_classicbtn_autotour_on ].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_autotour_off].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+
+    set(layer[controlBar_classicbtn_sound_on ].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_sound_off].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+
+
+    if (device.desktop,
+      set(layer[controlBar_classicbtn_ctrlmode_drag_to].x, get(controlBar_classicbutton_pos));
+      set(layer[controlBar_classicbtn_ctrlmode_move_to].x, get(controlBar_classicbutton_pos));
+      inc(controlBar_classicbutton_pos, 36);
+    );
+
+
+
+
+
+    set(layer[controlBar_classicbtn_home].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_home].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+
+    if (device.desktop,
+        set(layer[controlBar_classicbtn_right].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+        set(layer[controlBar_classicbtn_left].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+    );
+    if (device.desktop,
+        set(layer[controlBar_classicbtn_down].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+        set(layer[controlBar_classicbtn_up].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+    );
+    if (device.desktop,
+        set(layer[controlBar_classicbtn_out].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+        set(layer[controlBar_classicbtn_in].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+    );
+    if (scene.count GT 1,
+        set(layer[controlBar_classicbtn_next_pano].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+        set(layer[controlBar_classicbtn_prev_pano].x, get(controlBar_classicbutton_pos));
+        inc(controlBar_classicbutton_pos, 36);
+      );
+
+
+    set(layer[controlBar_classicbtn_play_video].x, get(controlBar_classicbutton_pos));
+    set(layer[controlBar_classicbtn_pause_video].x, get(controlBar_classicbutton_pos));
+    inc(controlBar_classicbutton_pos, 36);
+
+    inc(controlBar_classicbutton_pos, 20);
+
+    set(controlBar_classicbackgroundwidthwhenopened, get(controlBar_classicbutton_pos));
+
+    sub(controlBar_classicbackgroundwidthwhenopenedwithoutvideo, controlBar_classicbackgroundwidthwhenopened, 36);
+
+
+    
+    add(controlBar_classicVerifyVisibility, 20, 20);
+    if(controlBar_classicbackgroundwidthwhenopened == controlBar_classicVerifyVisibility,
+      set(controlBar_classicbackgroundwidthwhenopened, 0);
+
+      set(controlBar_classicbackgroundwidthwhenopenedwithoutvideo, 0);
+
+    );
+
+	
+	
+  </action>
+
+	<events name="controlBar_classicStartTourEvents" onTourStart="controlBar_classicCallOnStartTour();" keep="true" />
+
+	<action name="controlBar_classicCallOnStartTour">
+		
+		set(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbutton_pos));
+		set(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbutton_pos));
+		controlBar_classicshowMenuControls();
+	</action>
+
+	<action name="controlBar_classicOpenVideoplayer">
+		set(controlBar_classic_use_videoplayer_interface, true);
+		
+		controlBar_classicupdateHideShowVideoplayerButtons();
+	</action>
+	<action name="controlBar_classicCloseVideoplayer">
+		set(controlBar_classic_use_videoplayer_interface, false);
+		
+		controlBar_classicupdateHideShowVideoplayerButtons();
+	</action>
+
+
+  <style name="controlBar_classic_btn_style"
+         keep="true"
+         alpha="0.8"
+         edge="right" align="right"
+         width="36" height="36"
+         zorder="3"
+         onover="controlBar_classicctrlbaronoveraction();"
+         onout="controlBar_classicctrlbaronoutaction();"
+         onhover="showTooltip('plugin', controlBar_classicmenuTooltipStyle, bottom);"
+         />
+  <action name="controlBar_classicctrlbaronoveraction">
+    tween(alpha,1,0.1,easeoutquad);
+    tween(y,-2,0.1,easeoutquad);
+  </action>  
+  <action name="controlBar_classicctrlbaronoutaction">
+    tween(alpha,0.8);
+    tween(y,0,0.1,easeoutquad);
+    hideTooltip();
+  </action>
+
+  <layer name="controlBar_classicmenu_controlbar_bg_img"
+         keep="true"
+         align="bottom"
+         x="0" y="10"
+         url="%FIRSTXML%/graphics/classiccontrolbar/footer.png"
+         zorder="1"
+         width="40"
+         height="40"
+         scale9grid="10|10|80|80"
+         visible="false"
+         />
+  <layer name="controlBar_classicmenu_controlbar_bg"
+         keep="true"
+         align="bottom"
+         x="0" y="10"
+         type="container"
+         zorder="2"
+         width="40"
+         height="40"
+         visible="false"
+         alpha="1.0"
+         >
+
+
+
+    <layer name="controlBar_classicbtn_ctrlmode_move_to"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_move_to.png"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicctrlmodeMoveTip"
+            onclick="setControlModeMoveTo();
+"
+            visible="false"
+            devices="desktop"
+            />
+    <layer name="controlBar_classicbtn_ctrlmode_drag_to"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_drag_to.png"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicctrlmodeDragTip"
+            onclick="setControlModeDragTo();
+"
+            visible="false"
+            devices="desktop"
+            />
+
+    <layer name="controlBar_classicbtn_in"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_zoom_in.png"
+            ondown="viewControlZoomIn(false);"
+            onup="viewControlZoomStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classiczoomInTip"
+            devices="desktop"
+            visible="false"
+            />
+    <layer name="controlBar_classicbtn_out"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_zoom_out.png"
+            ondown="viewControlZoomOut(false);
+"
+            onup="viewControlZoomStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classiczoomOutTip"
+            devices="desktop"
+            visible="false"
+            />
+
+    <layer name="controlBar_classicbtn_home"
+           url="%FIRSTXML%/graphics/classiccontrolbar/btn_home.png"
+           onclick="controlBar_classicbtn_home_action();"
+           style="controlBar_classic_btn_style"
+           tooltip="controlBar_classichomeTip"
+           visible="false"
+           />
+    <layer name="controlBar_classicbtn_left"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_move_left.png"
+            ondown="viewControlMoveLeft(false);
+"
+            onup="viewControlMoveHoriStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicmoveLeftTip"
+            devices="desktop"
+            visible="false"
+            />
+    <layer name="controlBar_classicbtn_right"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_move_right.png"
+            ondown="viewControlMoveRight(false);
+"
+            onup="viewControlMoveHoriStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicmoveRightTip"
+            devices="desktop"
+            visible="false"
+            />
+
+    <layer name="controlBar_classicbtn_up"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_move_up.png"
+            ondown="viewControlMoveUp(false);
+"
+            onup="viewControlMoveVertStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicmoveUpTip"
+            devices="desktop"
+            visible="false"
+            />
+    <layer name="controlBar_classicbtn_down"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_move_down.png"
+            ondown="viewControlMoveDown(false);
+"
+            onup="viewControlMoveVertStop();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicmoveDownTip"
+            devices="desktop"
+            visible="false"
+            />
+
+
+    <layer name="controlBar_classicbtn_sound_on"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_start_sound.png"
+            onclick="playTourSounds();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicsoundsOnTip"
+            />
+    <layer name="controlBar_classicbtn_sound_off"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_stop_sound.png"
+            onclick="stopTourSounds();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicsoundsOffTip"
+            />
+
+
+    <layer name="controlBar_classicbtn_prev_pano"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_previous_scene.png"
+            onclick="loadPreviousScene();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicprevSceneTip"
+            visible="false"
+            />
+    <layer name="controlBar_classicbtn_next_pano"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_next_scene.png"
+            onclick="loadNextScene();
+"
+            style="controlBar_classic_btn_style"
+            tooltip="controlBar_classicnextSceneTip"
+            visible="false"
+            />
+
+
+
+    <layer name="controlBar_classicbtn_openfs"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_enter_fs.png"
+            onclick="enterFullscreen();
+"
+            style="controlBar_classic_btn_style"
+            devices="fullscreensupport"
+            visible="false"
+            tooltip="controlBar_classicopenFsTip"
+            />
+    <layer name="controlBar_classicbtn_closefs"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_close_fs.png"
+            onclick="exitFullscreen();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            devices="fullscreensupport"
+            tooltip="controlBar_classiccloseFsTip"
+            />
+
+    <layer name="controlBar_classicbtn_autorotate_on"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_start_autorotation.png"
+            onclick="resumeautorotation();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicautorotateOnTip"
+            />
+    <layer name="controlBar_classicbtn_autorotate_off"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_stop_autorotation.png"
+            onclick="pauseautorotation();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicautorotateOffTip"
+            />
+
+
+    <layer name="controlBar_classicbtn_autotour_on"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_start_automatic_tour.png"
+            onclick="startautotour();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicautotourOnTip"
+            />
+    <layer name="controlBar_classicbtn_autotour_off"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_stop_automatic_tour.png"
+            onclick="stopautotour();
+"
+            style="controlBar_classic_btn_style"
+            visible="false"
+            tooltip="controlBar_classicautotourOffTip"
+            />
+
+    <layer name="controlBar_classicbtn_play_video"
+           url="%FIRSTXML%/graphics/classiccontrolbar/btn_start_videoplayer.png"
+           onclick="videointerface_togglepause();"
+           style="controlBar_classic_btn_style"
+           visible="false"
+           tooltip="controlBar_classicplayVideoTip"
+           />
+    <layer name="controlBar_classicbtn_pause_video"
+           url="%FIRSTXML%/graphics/classiccontrolbar/btn_pause_videoplayer.png"
+           onclick="videointerface_togglepause();"
+           style="controlBar_classic_btn_style"
+           visible="false"
+           tooltip="controlBar_classicpauseVideoTip"
+           />
+
+
+
+
+    <layer name="controlBar_classicbtn_hidecontrols"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_hide_controls.png"
+            style="controlBar_classic_btn_style"
+            onclick="controlBar_classichideMenuControls();hideTourControls();
+"
+            visible="false"
+            tooltip="controlBar_classichideControlsTip"
+            />
+    <layer name="controlBar_classicbtn_showcontrols"
+            url="%FIRSTXML%/graphics/classiccontrolbar/btn_show_controls.png"
+            style="controlBar_classic_btn_style"
+            onclick="controlBar_classicshowMenuControls();showTourControls();
+"
+            tooltip="controlBar_classicdisplayControlsTip"
+            visible="false"
+            />
+  </layer>
+
+
+
+
+	<events name="controlBar_classiccontrolmodechangedevent" 
+		oncontrolmodechanged="controlBar_classicupdateControlModeButtons();" 
+		keep="true" />
+	<action name="controlBar_classicHideControlModeButtons">
+		set(layer[controlBar_classicbtn_ctrlmode_move_to].visible, false);
+		set(layer[controlBar_classicbtn_ctrlmode_drag_to].visible, false);
+	</action>
+	<action name="controlBar_classicShowControlModeButtons">
+		if (tour_controlmodemousetype == "moveto",
+			set(layer[controlBar_classicbtn_ctrlmode_drag_to].visible, true);
+			set(layer[controlBar_classicbtn_ctrlmode_move_to].visible, false);
+		,
+			set(layer[controlBar_classicbtn_ctrlmode_move_to].visible, true);
+			set(layer[controlBar_classicbtn_ctrlmode_drag_to].visible, false);
+		);
+	</action>
+	<action name="controlBar_classicupdateControlModeButtons">
+	if (device.desktop,
+		if (controlBar_classicIsOpened,
+			controlBar_classicShowControlModeButtons();
+		,
+			controlBar_classicHideControlModeButtons();
+		);
+	,
+		controlBar_classicHideControlModeButtons();
+	);
+	</action>
+
+
+  <action name="controlBar_classichideMenuControls">
+    set(controlBar_classicIsOpened, false);
+    set(layer[controlBar_classicbtn_hidecontrols].visible, false);
+    set(layer[controlBar_classicbtn_showcontrols].visible, true);
+    controlBar_classicupdateFullscreenButtons();
+
+    controlBar_classicupdateSoundButtons();
+
+    if (scene.count GT 1,
+    set(layer[controlBar_classicbtn_prev_pano].visible, false);
+    set(layer[controlBar_classicbtn_next_pano].visible, false);
+    );
+    controlBar_classicupdateAutorotationButtons();
+
+    controlBar_classicupdateAutotourButtons();
+    controlBar_classicupdateHideShowVideoplayerButtons();
+
+    set(layer[controlBar_classicbtn_up].visible  , false);
+    set(layer[controlBar_classicbtn_down].visible, false);
+    set(layer[controlBar_classicbtn_home].visible, false);
+    set(layer[controlBar_classicbtn_right].visible, false);
+    set(layer[controlBar_classicbtn_left].visible , false);
+    set(layer[controlBar_classicbtn_in].visible , false);
+    set(layer[controlBar_classicbtn_out].visible, false);
+
+
+    controlBar_classicupdateControlModeButtons();
+
+
+
+
+    if(controlBar_classicbackgroundwidthwhenclosed == 0,
+      set(layer[controlBar_classicmenu_controlbar_bg_img].visible, false);
+      set(layer[controlBar_classicmenu_controlbar_bg].visible, false);
+    ,
+      set(layer[controlBar_classicmenu_controlbar_bg_img].visible, true);
+      set(layer[controlBar_classicmenu_controlbar_bg].visible, true);
+    );
+    tween(layer[controlBar_classicmenu_controlbar_bg_img].width,get(controlBar_classicbackgroundwidthwhenclosed),0.5,easeOutQuad);
+    tween(layer[controlBar_classicmenu_controlbar_bg].width,get(controlBar_classicbackgroundwidthwhenclosed),0.5,easeOutQuad);
+    tween(layer[controlBar_classicmenu_controlbar_bg_img].alpha,1.0,0.5,easeOutQuad);
+  </action>
+  <action name="controlBar_classicshowMenuControls">
+    set(controlBar_classicIsOpened, true);
+    set(layer[controlBar_classicbtn_hidecontrols].visible, true);
+    set(layer[controlBar_classicbtn_showcontrols].visible, false);
+    if(controlBar_classicbackgroundwidthwhenopened == 0,
+      set(layer[controlBar_classicmenu_controlbar_bg_img].visible, false);
+      set(layer[controlBar_classicmenu_controlbar_bg].visible, false);
+    ,
+      set(layer[controlBar_classicmenu_controlbar_bg_img].visible, true);
+      set(layer[controlBar_classicmenu_controlbar_bg].visible, true);
+    );
+    tween(layer[controlBar_classicmenu_controlbar_bg_img].alpha,1.0,0.5,easeOutQuad);
+    controlBar_classicshowMenuButtons();
+
+    if(scene[get(xml.scene)].video,
+
+      tween(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+      tween(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+
+    ,
+      tween(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo),0.5,easeOutQuad);
+      tween(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo),0.5,easeOutQuad);
+    );
+
+  </action>
+  <action name="controlBar_classicshowMenuButtons">
+    if (device.desktop,
+    set(layer[controlBar_classicbtn_up].visible  , true);
+    set(layer[controlBar_classicbtn_down].visible, true);
+    );
+    if (device.desktop,
+    set(layer[controlBar_classicbtn_right].visible, true);
+    set(layer[controlBar_classicbtn_left].visible , true);
+    );
+    if (device.desktop,
+    set(layer[controlBar_classicbtn_in].visible , true);
+    set(layer[controlBar_classicbtn_out].visible, true);
+    );
+    set(layer[controlBar_classicbtn_home].visible, true);
+
+
+    controlBar_classicupdateControlModeButtons();
+
+
+
+
+    controlBar_classicupdateFullscreenButtons();
+
+    controlBar_classicupdateSoundButtons();
+
+    if (scene.count GT 1,
+      set(layer[controlBar_classicbtn_prev_pano].visible, true);
+      set(layer[controlBar_classicbtn_next_pano].visible, true);
+    );
+    controlBar_classicupdateAutorotationButtons();
+
+    controlBar_classicupdateAutotourButtons();
+    controlBar_classicupdateHideShowVideoplayerButtons();
+
+  </action>
+
+
+
+	<events name="controlBar_classicmenufullscreenchangeevent"
+		onenterfullscreen="controlBar_classicupdateFullscreenButtons();"
+		onexitfullscreen="controlBar_classicupdateFullscreenButtons();"
+		keep="true"/>
+	<action name="controlBar_classicHideFullscreenButtons">
+		set(layer[controlBar_classicbtn_openfs].visible , false);
+		set(layer[controlBar_classicbtn_closefs].visible, false);
+	</action>
+	<action name="controlBar_classicShowFullscreenButtons">
+		if (device.fullscreensupport,
+			if(tour_fullscreen,
+				set(layer[controlBar_classicbtn_openfs].visible , false);
+				set(layer[controlBar_classicbtn_closefs].visible, true);
+			,
+				set(layer[controlBar_classicbtn_openfs].visible ,true);
+				set(layer[controlBar_classicbtn_closefs].visible,false);
+			);
+		,
+			controlBar_classicHideFullscreenButtons();
+		);
+	</action>
+	<action name="controlBar_classicupdateFullscreenButtons">
+		if (controlBar_classicIsOpened,
+			controlBar_classicShowFullscreenButtons();
+		,
+			controlBar_classicHideFullscreenButtons();
+		);
+	</action>
+
+	<events name="controlBar_classicAutorotationEvents"
+		onstartautorotation="controlBar_classicupdateAutorotationButtons();"
+		onresumeautorotation="controlBar_classicupdateAutorotationButtons();"
+		onstopautorotation="controlBar_classicupdateAutorotationButtons();"
+		onpauseautorotation="controlBar_classicupdateAutorotationButtons();"
+		keep="true"/>
+	<action name="controlBar_classicHideAutorotationButtons">
+		set(layer[controlBar_classicbtn_autorotate_off].visible, false);
+		set(layer[controlBar_classicbtn_autorotate_on].visible , false);
+	</action>
+	<action name="controlBar_classicShowAutorotationButtons">
+		if(autorotate.enabled == false,
+			set(layer[controlBar_classicbtn_autorotate_off].visible, false);
+			set(layer[controlBar_classicbtn_autorotate_on].visible , true);
+		,
+			set(layer[controlBar_classicbtn_autorotate_off].visible, true);
+			set(layer[controlBar_classicbtn_autorotate_on].visible , false);
+		);
+	</action>
+	<action name="controlBar_classicupdateAutorotationButtons">
+		if (controlBar_classicIsOpened,
+			controlBar_classicShowAutorotationButtons();
+		,
+			controlBar_classicHideAutorotationButtons();
+		);
+	</action>
+
+
+    <events name="controlBar_classichideshowvideoplayerevent" onplayvideointerface="controlBar_classicupdateHideShowVideoplayerButtons();" onpausevideointerface="controlBar_classicupdateHideShowVideoplayerButtons();" keep="true"/>
+    <action name="controlBar_classicHideHideShowVideoplayerButtons">
+      if(controlBar_classicbackgroundwidthwhenopened GT 0,
+        add(controlBar_classicVerifyVisibility, 20, 20);
+        if(controlBar_classicbackgroundwidthwhenopenedwithoutvideo LE controlBar_classicVerifyVisibility,
+          set(layer[controlBar_classicmenu_controlbar_bg_img].visible,false);
+          set(layer[controlBar_classicmenu_controlbar_bg].visible,false);
+        );
+        if (controlBar_classicIsOpened,
+          tween(layer[controlBar_classicmenu_controlbar_bg_img].width,get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo),0.5,easeOutQuad);
+          tween(layer[controlBar_classicmenu_controlbar_bg].width,get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo),0.5,easeOutQuad);
+        );
+      ,
+        set(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+        set(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+      );
+      set(layer[controlBar_classicbtn_play_video].visible, false);
+      set(layer[controlBar_classicbtn_pause_video].visible, false);
+    </action>
+    <action name="controlBar_classicShowHideShowVideoplayerButtons">
+      if(controlBar_classic_use_videoplayer_interface,
+        if (plugin[get(videointerface_video)],
+        add(controlBar_classicVerifyVisibility, 20, 20);
+        if(controlBar_classicbackgroundwidthwhenopenedwithoutvideo LE controlBar_classicVerifyVisibility,
+          set(layer[controlBar_classicmenu_controlbar_bg_img].visible,true);
+          set(layer[controlBar_classicmenu_controlbar_bg].visible,true);
+        );
+        if (plugin[get(videointerface_video)].ispaused,
+          if(controlBar_classicbackgroundwidthwhenopened GT 0,
+            tween(layer[controlBar_classicmenu_controlbar_bg_img].width,get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+            tween(layer[controlBar_classicmenu_controlbar_bg].width,get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+          ,
+            set(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+            set(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+          );
+          set(layer[controlBar_classicbtn_play_video].visible, true);
+          set(layer[controlBar_classicbtn_pause_video].visible, false);
+        ,
+          if(controlBar_classicbackgroundwidthwhenopened GT 0,
+            tween(layer[controlBar_classicmenu_controlbar_bg_img].width,get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+            tween(layer[controlBar_classicmenu_controlbar_bg].width,get(controlBar_classicbackgroundwidthwhenopened),0.5,easeOutQuad);
+          ,
+            set(layer[controlBar_classicmenu_controlbar_bg_img].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+            set(layer[controlBar_classicmenu_controlbar_bg].width, get(controlBar_classicbackgroundwidthwhenopenedwithoutvideo));
+          );
+          set(layer[controlBar_classicbtn_play_video].visible, false);
+          set(layer[controlBar_classicbtn_pause_video].visible, true);
+        ););
+      ,
+        controlBar_classicHideHideShowVideoplayerButtons();
+      );
+    </action>
+    <action name="controlBar_classicupdateHideShowVideoplayerButtons">
+      if (controlBar_classicIsOpened,
+        controlBar_classicShowHideShowVideoplayerButtons();
+      ,
+        controlBar_classicHideHideShowVideoplayerButtons();
+      );
+    </action>
+    
+	<events name="controlBar_classicAutotourEvents"
+		onstartautotour="controlBar_classicupdateAutotourButtons();"
+		onstopautotour="controlBar_classicupdateAutotourButtons();"
+		keep="true"/>
+	<action name="controlBar_classicHideAutotourButtons">
+		set(layer[controlBar_classicbtn_autotour_off].visible, false);
+		set(layer[controlBar_classicbtn_autotour_on].visible , false);
+	</action>
+	<action name="controlBar_classicShowAutotourButtons">
+		if (tour_autotourenabled == false,
+			set(layer[controlBar_classicbtn_autotour_off].visible, false);
+			set(layer[controlBar_classicbtn_autotour_on].visible , true);
+		,
+			set(layer[controlBar_classicbtn_autotour_off].visible, true);
+			set(layer[controlBar_classicbtn_autotour_on].visible , false);
+		);
+	</action>
+	<action name="controlBar_classicupdateAutotourButtons">
+		if (controlBar_classicIsOpened,
+			controlBar_classicShowAutotourButtons();
+		,
+			controlBar_classicHideAutotourButtons();
+		);
+	</action>
+
+	<events name="controlBar_classicplaystopsoundsevent" 
+		playtoursoundsevent="controlBar_classicupdateSoundButtons();" 
+		stoptoursoundsevent="controlBar_classicupdateSoundButtons();" 
+		keep="true" />
+	<action name="controlBar_classicHideSoundButtons">
+		set(layer[controlBar_classicbtn_sound_off].visible, false);
+		set(layer[controlBar_classicbtn_sound_on].visible , false);
+	</action>
+	<action name="controlBar_classicShowSoundButtons">
+		if (tour_soundson == false,
+			set(layer[controlBar_classicbtn_sound_off].visible, false);
+			set(layer[controlBar_classicbtn_sound_on].visible , true);
+		,
+			set(layer[controlBar_classicbtn_sound_off].visible, true);
+			set(layer[controlBar_classicbtn_sound_on].visible , false);
+		);
+	</action>
+	<action name="controlBar_classicupdateSoundButtons">
+		if (controlBar_classicIsOpened,
+			controlBar_classicShowSoundButtons();
+		,
+			controlBar_classicHideSoundButtons();
+		);
+	</action>
+
+
+    <action name="controlBar_classicbtn_home_action">
+      hideTooltip();lookto(get(panoview.h),get(panoview.v),get(panoview.fov),smooth(100,20,50));
+      if(scene[get(xml.scene)].video,
+        plugin[get(videointerface_video)].seek(0);
+        ifnot(plugin[get(videointerface_video)].ispaused,
+          plugin[get(videointerface_video)].play();
+        );
+      );
+    </action>
+
+<layer name="controlBar_classicmenuTooltipStyle"
+	keep="true"
+	enabled="false"
+	capture="false"
+	type="text"
+	align="center"
+	bg="false"
+	bgborder="0"
+	txtshadow="1.0 1.0 4.0 0x000000 1"
+	css="color:#e6e6e6;font-family:Helvetica;font-weight:bold;font-size:14px;text-align:left;"
+	interactivecontent="false"
+	zorder="0"
+	visible="false"
+	html=""
+	padding="2"
+	xoffset="0"
+	yoffset="0"
+	edge="bottom"
+	/>
+
+
+
+<!-- ********** -->
+<!-- Loading Picture -->
+<!-- id : LoaderImage -->
+<!-- ********** -->
+
+  <!-- EMPTY PICTURE : no image file -->
+  <!-- ************* -->
+  <!-- Panorama Menu -->
+  <!-- ************* -->
+
+<ptplugin name="panoramaMenu" engine="kolorMenu">
+	<settings>
+		<option name="position" value="topleft" type="string" />
+		<option name="orientation" value="horizontal" type="string" />
+		<option name="sub_orientation" value="vertical" type="string" />
+		<option name="margin_x" value="5" type="int" />
+		<option name="margin_y" value="5" type="int" />
+		<option name="background_color" value="ffffff" type="string" />
+		<option name="background_alpha" value="1" type="float" />
+		<option name="item_spacer" value="0" type="int" />
+		<option name="border_radius" value="0" type="int" />
+		<option name="full_size" value="false" type="bool" />
+		<option name="border_width" value="0" type="int" />
+		<option name="border_color" value="ffffff" type="string" />
+		<option name="border_alpha" value="1" type="float" />
+		<option name="border_style" value="solid" type="string" />
+		<option name="use_out_effect" value="true" type="bool" />
+		<option name="item_out_border_width" value="0" type="int" />
+		<option name="item_out_border_radius" value="7" type="int" />
+		<option name="item_out_border_color" value="0d0d0d" type="string" />
+		<option name="item_out_border_alpha" value="0.069993133440146488" type="float" />
+		<option name="item_out_border_style" value="solid" type="string" />
+		<option name="item_hover_border_radius" value="7" type="int" />
+		<option name="item_hover_border_width" value="0" type="int" />
+		<option name="item_hover_border_style" value="solid" type="string" />
+		<option name="item_hover_border_color" value="ffffff" type="string" />
+		<option name="item_hover_border_alpha" value="1" type="float" />
+		<option name="item_out_bg_color" value="ffffff" type="string" />
+		<option name="item_out_bg_alpha" value="1" type="float" />
+		<option name="item_out_font_color" value="ff0c0c" type="string" />
+		<option name="item_out_font_family" value="Arial" type="string" />
+		<option name="item_out_font_size" value="14" type="int" />
+		<option name="item_out_font_weight" value="normal" type="string" />
+		<option name="item_out_font_style" value="normal" type="string" />
+		<option name="item_out_font_decoration" value="normal" type="string" />
+		<option name="use_hover_effect" value="true" type="bool" />
+		<option name="item_hover_bg_color" value="ffffff" type="string" />
+		<option name="item_hover_bg_alpha" value="1" type="float" />
+		<option name="item_hover_font_color" value="ff0c0c" type="string" />
+		<option name="item_hover_font_family" value="Arial" type="string" />
+		<option name="item_hover_font_size" value="14" type="int" />
+		<option name="item_hover_font_weight" value="normal" type="string" />
+		<option name="item_hover_font_style" value="normal" type="string" />
+		<option name="item_hover_font_decoration" value="normal" type="string" />
+		<option name="padding_main" value="7" type="int" />
+		<option name="padding_sub" value="7" type="int" />
+		<option name="force_font_menu" value="true" type="bool" />
+		<option name="force_font_menu_color" value="ff1414" type="string" />
+		<option name="force_font_menu_family" value="Arial" type="string" />
+		<option name="force_font_menu_size" value="14" type="int" />
+		<option name="force_font_menu_weight" value="normal" type="string" />
+		<option name="force_font_menu_style" value="normal" type="string" />
+		<option name="force_font_menu_decoration" value="normal" type="string" />
+		<option name="force_font_submenu" value="true" type="bool" />
+		<option name="force_font_submenu_color" value="ff1a12" type="string" />
+		<option name="force_font_submenu_family" value="Arial" type="string" />
+		<option name="force_font_submenu_size" value="14" type="int" />
+		<option name="force_font_submenu_weight" value="normal" type="string" />
+		<option name="force_font_submenu_style" value="normal" type="string" />
+		<option name="force_font_submenu_decoration" value="normal" type="string" />
+		<option name="text_align" value="top" type="string" />
+		<option name="item_thumb_max_width" value="75" type="int" />
+		<option name="item_thumb_max_height" value="100" type="int" />
+		
+		<option name="item_title_max_width" value="270" type="int" />
+		<option name="item_title_max_width_limit" value="true" type="bool" />
+		<option name="item_title_tooltip" value="true" type="bool" />
+		
+		<option name="zorder" value="5" type="int" />
+		<option name="use_i18n" value="true" type="bool" />
+	</settings>
+	<internaldata>
+				<group name="group_1"
+						titleID="panogroup224_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup224"> 
+
+				
+				
+						<item name="group_1_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano220')"
+								titleID="pano220_title"
+								thumbnail="MallaReddyUniversitydata/_01__university___fro_220/thumbnail.jpg"
+							cssClass="pano220">
+						
+						
+						</item>
+						<item name="group_1_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano221')"
+								titleID="pano221_title"
+								thumbnail="MallaReddyUniversitydata/_02__campus_view___1_221/thumbnail.jpg"
+							cssClass="pano221">
+						
+						
+						</item>
+						<item name="group_1_item_3"
+							action="invokeKrFunction('mainloadscene', 'pano222')"
+								titleID="pano222_title"
+								thumbnail="MallaReddyUniversitydata/_03__campus_view___2_222/thumbnail.jpg"
+							cssClass="pano222">
+						
+						
+						</item>
+						<item name="group_1_item_4"
+							action="invokeKrFunction('mainloadscene', 'pano495')"
+								titleID="pano495_title"
+								thumbnail="MallaReddyUniversitydata/_04__aerial_view_495/thumbnail.jpg"
+							cssClass="pano495">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_2"
+						titleID="panogroup230_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup230"> 
+
+				
+				
+						<item name="group_2_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano228')"
+								titleID="pano228_title"
+								thumbnail="MallaReddyUniversitydata/_01__vc_chamber_228/thumbnail.jpg"
+							cssClass="pano228">
+						
+						
+						</item>
+						<item name="group_2_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano229')"
+								titleID="pano229_title"
+								thumbnail="MallaReddyUniversitydata/_02__board_room_229/thumbnail.jpg"
+							cssClass="pano229">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_3"
+						titleID="panogroup234_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup234"> 
+
+				
+				
+						<item name="group_3_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano232')"
+								titleID="pano232_title"
+								thumbnail="MallaReddyUniversitydata/_01__admission_wing_232/thumbnail.jpg"
+							cssClass="pano232">
+						
+						
+						</item>
+						<item name="group_3_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano579')"
+								titleID="pano579_title"
+								thumbnail="MallaReddyUniversitydata/_02__administration_w_579/thumbnail.jpg"
+							cssClass="pano579">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_4"
+						titleID="panogroup243_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup243"> 
+
+				
+				
+						<item name="group_4_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano236')"
+								titleID="pano236_title"
+								thumbnail="MallaReddyUniversitydata/_01__class_room_236/thumbnail.jpg"
+							cssClass="pano236">
+						
+						
+						</item>
+						<item name="group_4_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano237')"
+								titleID="pano237_title"
+								thumbnail="MallaReddyUniversitydata/_02__computer_science_237/thumbnail.jpg"
+							cssClass="pano237">
+						
+						
+						</item>
+						<item name="group_4_item_3"
+							action="invokeKrFunction('mainloadscene', 'pano581')"
+								titleID="pano581_title"
+								thumbnail="MallaReddyUniversitydata/_03__beee_lab_581/thumbnail.jpg"
+							cssClass="pano581">
+						
+						
+						</item>
+						<item name="group_4_item_4"
+							action="invokeKrFunction('mainloadscene', 'pano239')"
+								titleID="pano239_title"
+								thumbnail="MallaReddyUniversitydata/_04__engineering_work_239/thumbnail.jpg"
+							cssClass="pano239">
+						
+						
+						</item>
+						<item name="group_4_item_5"
+							action="invokeKrFunction('mainloadscene', 'pano240')"
+								titleID="pano240_title"
+								thumbnail="MallaReddyUniversitydata/_05__graphics_lab_240/thumbnail.jpg"
+							cssClass="pano240">
+						
+						
+						</item>
+						<item name="group_4_item_6"
+							action="invokeKrFunction('mainloadscene', 'pano241')"
+								titleID="pano241_title"
+								thumbnail="MallaReddyUniversitydata/_06__physics_lab_241/thumbnail.jpg"
+							cssClass="pano241">
+						
+						
+						</item>
+						<item name="group_4_item_7"
+							action="invokeKrFunction('mainloadscene', 'pano242')"
+								titleID="pano242_title"
+								thumbnail="MallaReddyUniversitydata/_07__classroom___labs_242/thumbnail.jpg"
+							cssClass="pano242">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_5"
+						titleID="panogroup257_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup257"> 
+
+				
+				
+						<item name="group_5_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano250')"
+								titleID="pano250_title"
+								thumbnail="MallaReddyUniversitydata/_01__agriculture_depa_250/thumbnail.jpg"
+							cssClass="pano250">
+						
+						
+						</item>
+						<item name="group_5_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano251')"
+								titleID="pano251_title"
+								thumbnail="MallaReddyUniversitydata/_02__agriculture_depa_251/thumbnail.jpg"
+							cssClass="pano251">
+						
+						
+						</item>
+						<item name="group_5_item_3"
+							action="invokeKrFunction('mainloadscene', 'pano252')"
+								titleID="pano252_title"
+								thumbnail="MallaReddyUniversitydata/_03__horiculture_lab_252/thumbnail.jpg"
+							cssClass="pano252">
+						
+						
+						</item>
+						<item name="group_5_item_4"
+							action="invokeKrFunction('mainloadscene', 'pano590')"
+								titleID="pano590_title"
+								thumbnail="MallaReddyUniversitydata/_04__genetics___plant_590/thumbnail.jpg"
+							cssClass="pano590">
+						
+						
+						</item>
+						<item name="group_5_item_5"
+							action="invokeKrFunction('mainloadscene', 'pano254')"
+								titleID="pano254_title"
+								thumbnail="MallaReddyUniversitydata/_05__furrow_system_of_254/thumbnail.jpg"
+							cssClass="pano254">
+						
+						
+						</item>
+						<item name="group_5_item_6"
+							action="invokeKrFunction('mainloadscene', 'pano597')"
+								titleID="pano597_title"
+								thumbnail="MallaReddyUniversitydata/_06__cultivation_of_p_597/thumbnail.jpg"
+							cssClass="pano597">
+						
+						
+						</item>
+						<item name="group_5_item_7"
+							action="invokeKrFunction('mainloadscene', 'pano256')"
+								titleID="pano256_title"
+								thumbnail="MallaReddyUniversitydata/_07__demonstration____256/thumbnail.jpg"
+							cssClass="pano256">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_6"
+						titleID="panogroup661_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup661"> 
+
+				
+				
+						<item name="group_6_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano657')"
+								titleID="pano657_title"
+								thumbnail="MallaReddyUniversitydata/_01__school_of_mgmt___657/thumbnail.jpg"
+							cssClass="pano657">
+						
+						
+						</item>
+						<item name="group_6_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano658')"
+								titleID="pano658_title"
+								thumbnail="MallaReddyUniversitydata/_02__class_room_658/thumbnail.jpg"
+							cssClass="pano658">
+						
+						
+						</item>
+						<item name="group_6_item_3"
+							action="invokeKrFunction('mainloadscene', 'pano659')"
+								titleID="pano659_title"
+								thumbnail="MallaReddyUniversitydata/_03__forensic_lab_659/thumbnail.jpg"
+							cssClass="pano659">
+						
+						
+						</item>
+						<item name="group_6_item_4"
+							action="invokeKrFunction('mainloadscene', 'pano660')"
+								titleID="pano660_title"
+								thumbnail="MallaReddyUniversitydata/_04__physics_lab_660/thumbnail.jpg"
+							cssClass="pano660">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+				<group name="group_7"
+						titleID="panogroup681_title"
+						thumbnail=""
+						subMenu="true"
+						cssClass="panogroup681"> 
+
+				
+				
+						<item name="group_7_item_1"
+							action="invokeKrFunction('mainloadscene', 'pano665')"
+								titleID="pano665_title"
+								thumbnail="MallaReddyUniversitydata/_01__library_665/thumbnail.jpg"
+							cssClass="pano665">
+						
+						
+						</item>
+						<item name="group_7_item_2"
+							action="invokeKrFunction('mainloadscene', 'pano666')"
+								titleID="pano666_title"
+								thumbnail="MallaReddyUniversitydata/_02__cafeteria_666/thumbnail.jpg"
+							cssClass="pano666">
+						
+						
+						</item>
+						<item name="group_7_item_3"
+							action="invokeKrFunction('mainloadscene', 'pano667')"
+								titleID="pano667_title"
+								thumbnail="MallaReddyUniversitydata/_03__girls_hostel_blo_667/thumbnail.jpg"
+							cssClass="pano667">
+						
+						
+						</item>
+						<item name="group_7_item_4"
+							action="invokeKrFunction('mainloadscene', 'pano668')"
+								titleID="pano668_title"
+								thumbnail="MallaReddyUniversitydata/_04__girls_hostel_mes_668/thumbnail.jpg"
+							cssClass="pano668">
+						
+						
+						</item>
+						<item name="group_7_item_5"
+							action="invokeKrFunction('mainloadscene', 'pano669')"
+								titleID="pano669_title"
+								thumbnail="MallaReddyUniversitydata/_05__girls_hostel_roo_669/thumbnail.jpg"
+							cssClass="pano669">
+						
+						
+						</item>
+						<item name="group_7_item_6"
+							action="invokeKrFunction('mainloadscene', 'pano670')"
+								titleID="pano670_title"
+								thumbnail="MallaReddyUniversitydata/_06__boys_hostel_bloc_670/thumbnail.jpg"
+							cssClass="pano670">
+						
+						
+						</item>
+						<item name="group_7_item_7"
+							action="invokeKrFunction('mainloadscene', 'pano671')"
+								titleID="pano671_title"
+								thumbnail="MallaReddyUniversitydata/_07__boys_hostel_mess_671/thumbnail.jpg"
+							cssClass="pano671">
+						
+						
+						</item>
+						<item name="group_7_item_8"
+							action="invokeKrFunction('mainloadscene', 'pano672')"
+								titleID="pano672_title"
+								thumbnail="MallaReddyUniversitydata/_08__boys_hostel_room_672/thumbnail.jpg"
+							cssClass="pano672">
+						
+						
+						</item>
+						<item name="group_7_item_9"
+							action="invokeKrFunction('mainloadscene', 'pano673')"
+								titleID="pano673_title"
+								thumbnail="MallaReddyUniversitydata/_09__indoor_stadium_673/thumbnail.jpg"
+							cssClass="pano673">
+						
+						
+						</item>
+						<item name="group_7_item_10"
+							action="invokeKrFunction('mainloadscene', 'pano674')"
+								titleID="pano674_title"
+								thumbnail="MallaReddyUniversitydata/_10__indoor_games_674/thumbnail.jpg"
+							cssClass="pano674">
+						
+						
+						</item>
+						<item name="group_7_item_11"
+							action="invokeKrFunction('mainloadscene', 'pano675')"
+								titleID="pano675_title"
+								thumbnail="MallaReddyUniversitydata/_11__auditorium_675/thumbnail.jpg"
+							cssClass="pano675">
+						
+						
+						</item>
+						<item name="group_7_item_12"
+							action="invokeKrFunction('mainloadscene', 'pano676')"
+								titleID="pano676_title"
+								thumbnail="MallaReddyUniversitydata/_12__gym_676/thumbnail.jpg"
+							cssClass="pano676">
+						
+						
+						</item>
+						<item name="group_7_item_13"
+							action="invokeKrFunction('mainloadscene', 'pano677')"
+								titleID="pano677_title"
+								thumbnail="MallaReddyUniversitydata/_13__basket_ball_cour_677/thumbnail.jpg"
+							cssClass="pano677">
+						
+						
+						</item>
+						<item name="group_7_item_14"
+							action="invokeKrFunction('mainloadscene', 'pano678')"
+								titleID="pano678_title"
+								thumbnail="MallaReddyUniversitydata/_14__cricket_ground_678/thumbnail.jpg"
+							cssClass="pano678">
+						
+						
+						</item>
+						<item name="group_7_item_15"
+							action="invokeKrFunction('mainloadscene', 'pano679')"
+								titleID="pano679_title"
+								thumbnail="MallaReddyUniversitydata/_15__volley_ball_cour_679/thumbnail.jpg"
+							cssClass="pano679">
+						
+						
+						</item>
+						<item name="group_7_item_16"
+							action="invokeKrFunction('mainloadscene', 'pano680')"
+								titleID="pano680_title"
+								thumbnail="MallaReddyUniversitydata/_16__transport_680/thumbnail.jpg"
+							cssClass="pano680">
+						
+						
+						</item>
+					
+					
+					
+				</group>
+	</internaldata>
+</ptplugin>
+
+<action name="kolorMenuJsReady_panoramaMenu">
+	set(ptplugin[panoramaMenu].jsready, true);
+</action>
+
+<action name="showKolorMenu_panoramaMenu">
+	
+	ifnot(ptplugin[panoramaMenu].isOpen,
+		stopdelayedcall(delay_panoramaMenu);
+		set(ptplugin[panoramaMenu].isOpen, true);
+		set(ptplugin[panoramaMenu].displayed, true);
+		js(openKolorMenu(panoramaMenu));
+	,
+		if(ptplugin[panoramaMenu].jsready,
+			stopdelayedcall(delay_panoramaMenu);
+			set(ptplugin[panoramaMenu].displayed, true);
+			js(invokePluginFunction(panoramaMenu, showKolorMenu));
+		,
+			delayedcall(delay_panoramaMenu, 0.1, showKolorMenu_panoramaMenu(););
+		);
+	);
+</action>
+
+<action name="hideKolorMenu_panoramaMenu">
+	if(ptplugin[panoramaMenu].jsready,
+		stopdelayedcall(delay_panoramaMenu);
+		set(ptplugin[panoramaMenu].displayed, false);
+		js(invokePluginFunction(panoramaMenu, hideKolorMenu));
+	,
+		delayedcall(delay_panoramaMenu, 0.1, hideKolorMenu_panoramaMenu(););
+	);
+</action>
+
+
+<action name="changeLanguage_panoramaMenu">
+	if(ptplugin[panoramaMenu].jsready,
+		stopdelayedcall(delay_panoramaMenu);
+		js(invokePluginFunction(panoramaMenu, changeLanguage));
+	,
+		delayedcall(delay_panoramaMenu, 0.1, changeLanguage_panoramaMenu(););
+	);
+</action>
+
+
+<events name="kolorMenuEvents_panoramaMenu" 
+	keep="true"
+	
+	
+	onTourStart="showKolorMenu_panoramaMenu();"
+	hidetourcontrols="hideKolorMenu_panoramaMenu();"
+	showtourcontrols="showKolorMenu_panoramaMenu();"
+	changetourlanguage="changeLanguage_panoramaMenu"
+/>
+
+<!-- ********** -->
+<!-- Title -->
+<!-- id : title -->
+<!-- ********** -->
+
+  <events name="title_events" 
+    onTourStart="showtitle();"
+    hidetourcontrols="hidetitle();" 
+    showtourcontrols="showtitle();" 
+    onnewpano="updatetitle();"
+    changetourlanguage="changeLanguagetitle"
+    keep="true" />
+
+  <action name="hidetitle">set(layer[title].visible, false);</action>
+  <action name="showtitle">set(layer[title].visible, true );</action>
+
+  <action name="changeLanguagetitle">
+    updatetitle();
+  </action>
+
+  <action name="updatetitle">
+    getmessage(layer[title].html, get(scene[get(xml.scene)].titleid));
+    escape(layer[title].html);
+  </action>
+  <layer name="title" keep="true" zorder="6"
+         type="text"
+         align="topright" x="40" y="40"
+         bg="false"
+         bgborder="0"
+         alpha="1"
+         visible="false"
+         capture="false" handcursor="false" enabled="false"
+         interactivecontent="false" 
+         txtshadow="1.0 1.0 4.0 0x000000 1.0"
+         css="text-align:right;
+              color:#e61c0d;
+              font-family:Arial;
+              font-weight:bold;
+              font-size:16px;"/>
+
+  <!-- Fullscreen Management -->
+  <action name="exitFullScreen" devices="fullscreensupport">set(tour_fullscreen,false);js(setFullscreen(false));</action>
+  <action name="enterFullScreen" devices="fullscreensupport">set(tour_fullscreen,true);js(setFullscreen(true));</action>
+  <action name="switchFullScreen">if(tour_fullscreen,exitFullScreen();,enterFullScreen(););</action>
+
+  
+  <events name="krpanoExitFullscreenEvent"
+    onexitfullscreen="if(tour_fullscreen,exitFullScreenChangeEvent(););"
+    keep="true" />
+
+  <action name="exitFullScreenChangeEvent" devices="fullscreensupport">set(tour_fullscreen,false);events.dispatch(onexitfullscreen);</action>
+  <action name="enterFullScreenChangeEvent" devices="fullscreensupport">set(tour_fullscreen,true);events.dispatch(onenterfullscreen);</action>
+  <action name="exitFullScreenFallback">set(fullscreen,false);</action>
+  <action name="enterFullScreenFallback">set(fullscreen,true);</action>
+  
+  <action name="resizeFullScreenEvent">delayedcall(0,updatescreen(););</action>
+
+  <!-- Hide / Show Controls -->
+  <action name="hideTourControls">set(tour_displaycontrols, false);events.dispatch(hidetourcontrols);</action>
+  <action name="showTourControls">set(tour_displaycontrols, true); events.dispatch(showtourcontrols);</action>
+
+
+<action name="viewControlMoveUp">
+	if(%1,
+		if(%2,
+			set(isfullvertical, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewvfov, panoview.vmax, panoview.vmin);
+				if (viewvfov == 180,
+					set(isfullvertical, true);
+				);
+			);
+			if(isfullvertical == false AND calc(view.vlookat-%2) LT view.vlookatmin,
+				moveto(get(view.hlookat), get(view.vlookatmin));
+			,
+				moveto(get(view.hlookat), calc(view.vlookat-%2));
+			);
+		,
+			set(vlookat_moveforce, -1);
+			delayedcall(0.1, viewControlMoveVertStop());
+		);
+	,
+		set(vlookat_moveforce, -1);
+	);
+</action>
+<action name="viewControlMoveDown">
+	if(%1,
+		if(%2,
+			set(isfullvertical, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewvfov, panoview.vmax, panoview.vmin);
+				if (viewvfov == 180,
+					set(isfullvertical, true);
+				);
+			);
+			if(sceneisfull360 == false AND calc(view.vlookat+%2) GT view.vlookatmax,
+				moveto(get(view.hlookat), get(view.vlookatmax));
+			,
+				moveto(get(view.hlookat), calc(view.vlookat+%2));
+			);
+		,
+			set(vlookat_moveforce, +1);
+			delayedcall(0.1, viewControlMoveVertStop());
+		);
+	,
+		set(vlookat_moveforce, +1);
+	);
+</action>
+<action name="viewControlMoveLeft">
+	if(%1,
+		if(%2,
+			set(isfullhorizontal, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewhfov, panoview.hmax, panoview.hmin);
+				if (viewhfov == 360,
+					set(isfullhorizontal, true);
+				);
+			);
+			if(isfullhorizontal == false AND calc(view.hlookat-%2) LT view.hlookatmin,
+				moveto(get(view.hlookatmin), get(view.vlookat));
+			,
+				moveto(calc(view.hlookat-%2), get(view.vlookat));
+			);
+		,
+			set(hlookat_moveforce, -1);
+			delayedcall(0.1, viewControlMoveHoriStop());
+		);
+	,
+		set(hlookat_moveforce, -1);
+	);
+</action>
+<action name="viewControlMoveRight">
+	if(%1,
+		if(%2,
+			set(isfullhorizontal, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewhfov, panoview.hmax, panoview.hmin);
+				if (viewhfov == 360,
+					set(isfullhorizontal, true);
+				);
+			);
+			if(isfullhorizontal == false AND calc(view.hlookat+%2) GT view.hlookatmax,
+				moveto(get(view.hlookatmax), get(view.vlookat));
+			,
+				moveto(calc(view.hlookat+%2), get(view.vlookat));
+			);
+		,
+			set(hlookat_moveforce, +1);
+			delayedcall(0.1, viewControlMoveHoriStop());
+			
+		);
+	,
+		set(hlookat_moveforce, +1);
+	);
+</action>
+<action name="viewControlMoveHoriStop">
+	set(hlookat_moveforce, 0);
+</action>
+<action name="viewControlMoveVertStop">
+	set(vlookat_moveforce, 0);
+</action>
+
+<action name="viewControlZoomIn">
+	if(%1,
+		if(%2,
+			if(%2 LT view.fovmin,
+				zoomto(get(view.fovmin));
+			,
+				if(%2 LT view.fov,
+					zoomto(%2);
+				);
+			);
+		,
+			set(fov_moveforce, -1);
+			delayedcall(0.1, viewControlZoomStop());
+		);
+	,
+		set(fov_moveforce, -1);
+	);
+</action>
+<action name="viewControlZoomOut">
+	if(%1,
+		if(%2,
+			if(%2 GT view.fovmax,
+				zoomto(get(view.fovmax));
+			,
+				if(%2 GT view.fov,
+					zoomto(%2);
+				);
+			);
+		,
+			set(fov_moveforce, +1);
+			delayedcall(0.1, viewControlZoomStop());
+		);
+	,
+		set(fov_moveforce, +1);
+	);
+</action>
+<action name="viewControlZoomStop">
+	set(fov_moveforce, 0);
+</action>
+
+  <!-- Sounds Management -->
+
+  <action name="play3DLocalSounds">
+    if (xml.scene, if (scene[get(xml.scene)].haslocalsounds, playpanolocalsounds();););
+  </action>
+  <action name="stop3DLocalSounds">
+    if (xml.scene, if (scene[get(xml.scene)].haslocalsounds, stoppanolocalsounds();););
+  </action>
+  <action name="resume3DLocalSounds">
+    if (xml.scene, if (scene[get(xml.scene)].haslocalsounds, 
+      set(kill3dSoundOnResume, true);
+      if(layer[displayedStandardVideo],
+      if(layer[displayedStandardVideo].pausebgsound,
+      if(tour_current_played_video,
+        set(kill3dSoundOnResume, false);
+      );););
+      if(layer[webvideodisplay_player],
+      if(layer[webvideodisplay_player].pausebgsound,
+      if(tour_current_played_web_video,
+        set(kill3dSoundOnResume, false);
+      );););
+      if(tour_current_played_sound_pausesound,
+      if(tour_current_played_sound,
+        set(kill3dSoundOnResume, false);
+      ););
+      if(kill3dSoundOnResume,
+        resumepanolocalsounds();
+      );
+    ););
+  </action>
+  <action name="pause3DLocalSounds">
+    if (xml.scene, if (scene[get(xml.scene)].haslocalsounds, pausepanolocalsounds();););
+  </action>
+  <action name="set3DLocalSoundsVolume">
+    if (xml.scene, if (scene[get(xml.scene)].haslocalsounds, setpanolocalsoundsvolume();););
+  </action>
+  <action name="playTourSounds">
+    set(tour_soundson, true);events.dispatch(playtoursoundsevent);
+    resumeTourSoundsActions(true,true,true,true,true);
+  </action>
+  <action name="stopTourSounds">
+    set(tour_soundson, false);events.dispatch(stoptoursoundsevent);
+    pauseTourSoundsActions(true,true,true,true,true);
+  </action>
+  <action name="setTourSoundsVolume">
+    set(tour_soundsvolume, %1);events.dispatch(changetoursoundsevent);
+    set3DLocalSoundsVolume();
+  </action>
+  <action name="playTourSoundsActions">
+    if(%1,
+        play3DLocalSounds();
+    );
+  </action>
+  <action name="stopTourSoundsActions">
+    if(%1,
+      stop3DLocalSounds();
+    );
+    if(%3,
+      stopVideoActionsSounds();
+    );
+  </action>
+  <action name="resumeTourSoundsActions">
+    if(%1,
+        resume3DLocalSounds();
+    );
+    if(%3,
+      resumeVideoActionsSounds();
+    );
+  </action>
+  <action name="pauseTourSoundsActions">
+    if(%1,
+      pause3DLocalSounds();
+    );
+    if(%3,
+      pauseVideoActionsSounds();
+    );
+  </action>
+  <action name="stopVideoActionsSounds">
+    if(tour_current_played_video,
+      if(layer[displayedStandardVideo],
+        layer[displayedStandardVideo].stop();
+        removelayer(displayedStandardVideo);
+        if(layer[displayedStandardVideoOverlayButton], removelayer(displayedStandardVideoOverlayButton); );
+        if(layer[displayedStandardVideoOverlay], removelayer(displayedStandardVideoOverlay); );
+        delete(tour_current_played_video);
+        set(tour_current_played_video_state, 0);
+      );
+    );
+    if(tour_current_played_web_video,
+      displayWebVideoObjectClose();
+    );
+  </action>
+  <action name="resumeVideoActionsSounds">
+    if(tour_current_played_video,
+      set(resumeVideoActionsVerification, true);
+      if(tour_current_played_sound,
+        if(tour_current_played_video_state LT tour_current_played_sound_state,
+          set(resumeVideoActionsVerification, false);
+        );
+      );
+      if(resumeVideoActionsVerification,
+        if (tour_soundson,
+          if(device.flash OR (device.webgl AND !device.ios),
+            div(volume, tour_soundsvolume, 100);
+            set(layer[displayedStandardVideo].volume, get(volume));
+          ,
+            ifnot(device.ios,
+              js(kpanotour.Sounds.startVideosSounds(get(volume)));
+            ,
+              if(tour_soundsvolume GT 0,
+                set(layer[displayedStandardVideo].muted, false);
+              ,
+                set(layer[displayedStandardVideo].muted, true);
+              );
+            );
+          );
+        ,
+          if(device.flash OR (device.webgl AND !device.ios),
+            set(layer[displayedStandardVideo].volume, 0);
+          ,
+            ifnot(device.ios,
+              js(kpanotour.Sounds.stopVideosSounds());
+            ,
+              set(layer[displayedStandardVideo].muted, true);
+            );
+          );
+        );
+      );
+    );
+  </action>
+  <action name="pauseVideoActionsSounds">
+    if(tour_current_played_video,
+      if(device.flash OR (device.webgl AND !device.ios),
+        set(layer[displayedStandardVideo].volume, 0);
+      ,
+        ifnot(device.ios,
+          js(kpanotour.Sounds.stopVideosSounds());
+        ,
+          set(layer[displayedStandardVideo].muted, true);
+        );
+      );
+    );
+  </action>
+
+</krpano>

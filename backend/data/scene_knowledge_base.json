@@ -1,0 +1,1048 @@
+{
+    "pano220": {
+        "sceneId": "pano220",
+        "title": "University Block",
+        "category": "CAMPUS_VIEW",
+        "description": "Main university administrative block and central building complex",
+        "facilities": [
+            "Administrative Offices",
+            "Registrar Office",
+            "Examination Cell",
+            "Finance Department",
+            "Student Services Center",
+            "Reception and Information Desk"
+        ],
+        "departments": [
+            "Administration",
+            "Finance",
+            "Examination"
+        ],
+        "programs": [],
+        "timings": "9:00 AM - 5:00 PM (Mon-Sat)",
+        "contactInfo": "info@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Main Entrance (50m south)",
+            "Cafeteria (100m east)",
+            "Library (150m north)"
+        ],
+        "historicalInfo": "Main administrative building established with the university founding"
+    },
+    "pano221": {
+        "sceneId": "pano221",
+        "title": "Campus View - 1",
+        "category": "CAMPUS_VIEW",
+        "description": "Wide campus view showcasing the sprawling university grounds and infrastructure",
+        "facilities": [
+            "Open Grounds",
+            "Walking Pathways",
+            "Landscaped Gardens",
+            "Outdoor Seating Areas"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "Open 24/7",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Sports Complex (200m west)",
+            "Academic Blocks (100m north)"
+        ],
+        "historicalInfo": "Campus development completed in multiple phases from 2005-2020"
+    },
+    "pano222": {
+        "sceneId": "pano222",
+        "title": "Campus View - 2",
+        "category": "CAMPUS_VIEW",
+        "description": "Panoramic view of the university campus with academic blocks and green spaces",
+        "facilities": [
+            "Academic Buildings",
+            "Green Spaces",
+            "Parking Areas",
+            "Student Common Areas"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "Open 24/7",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Library (150m east)",
+            "Cafeteria (120m south)"
+        ],
+        "historicalInfo": "Modern infrastructure developed to accommodate growing student population"
+    },
+    "pano495": {
+        "sceneId": "pano495",
+        "title": "Aerial View",
+        "category": "CAMPUS_VIEW",
+        "description": "Bird's eye view of the entire university campus showing layout and facilities",
+        "facilities": [
+            "Complete Campus Layout",
+            "Academic Blocks",
+            "Sports Facilities",
+            "Residential Areas",
+            "Green Zones"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "",
+        "contactInfo": "",
+        "nearbyLocations": [],
+        "historicalInfo": "Campus spans over 150 acres with modern infrastructure"
+    },
+    "pano228": {
+        "sceneId": "pano228",
+        "title": "VC Chamber",
+        "category": "VC_CHAMBER",
+        "description": "Vice Chancellor's office chamber - administrative leadership center",
+        "facilities": [
+            "Vice Chancellor Office",
+            "Conference Area",
+            "Meeting Room",
+            "Reception Area"
+        ],
+        "departments": [
+            "University Administration"
+        ],
+        "programs": [],
+        "timings": "9:00 AM - 5:00 PM (Mon-Fri)",
+        "contactInfo": "vc@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Board Room (adjacent)",
+            "Admin Block (same building)"
+        ],
+        "historicalInfo": "Leadership office for university strategic planning and governance"
+    },
+    "pano229": {
+        "sceneId": "pano229",
+        "title": "Board Room",
+        "category": "VC_CHAMBER",
+        "description": "Executive board room for university governance meetings and important discussions",
+        "facilities": [
+            "Executive Board Table",
+            "Audio-Visual Equipment",
+            "Presentation System",
+            "Conference Facilities"
+        ],
+        "departments": [
+            "University Governance"
+        ],
+        "programs": [],
+        "timings": "By Appointment Only",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "VC Chamber (adjacent)"
+        ],
+        "historicalInfo": "Venue for important university board meetings and strategic decisions"
+    },
+    "pano232": {
+        "sceneId": "pano232",
+        "title": "Admission Wing",
+        "category": "ADMISSION_WING",
+        "description": "Student admissions office handling inquiries and enrollment processes",
+        "facilities": [
+            "Admission Counseling Counters",
+            "Document Verification Area",
+            "Information Desks",
+            "Waiting Area",
+            "Inquiry Assistance"
+        ],
+        "departments": [
+            "Admissions"
+        ],
+        "programs": [
+            "All UG and PG Programs"
+        ],
+        "timings": "9:00 AM - 5:00 PM (Mon-Sat)",
+        "contactInfo": "admissions@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Administration Wing (adjacent)",
+            "Main Entrance (100m south)"
+        ],
+        "historicalInfo": "Centralized admissions processing for all university programs"
+    },
+    "pano579": {
+        "sceneId": "pano579",
+        "title": "Administration Wing",
+        "category": "ADMISSION_WING",
+        "description": "General administrative services and student support offices",
+        "facilities": [
+            "Student Records",
+            "Transcript Services",
+            "ID Card Office",
+            "Administrative Support"
+        ],
+        "departments": [
+            "Administration"
+        ],
+        "programs": [],
+        "timings": "9:00 AM - 5:00 PM (Mon-Sat)",
+        "contactInfo": "admin@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Admission Wing (adjacent)"
+        ],
+        "historicalInfo": "Central hub for all administrative student services"
+    },
+    "pano236": {
+        "sceneId": "pano236",
+        "title": "CSE Lab - 1",
+        "category": "DEPT_CSE",
+        "description": "Computer Science Engineering Laboratory with high-performance computing systems",
+        "facilities": [
+            "50+ Desktop Computers",
+            "High-Speed Internet",
+            "Programming Software Tools",
+            "Projector and Display",
+            "Lab Assistant Support"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "M.Tech CSE"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "cse@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Lab-2 (adjacent)",
+            "CSE Faculty Room (50m)"
+        ],
+        "historicalInfo": "Equipped with latest technology for programming and software development"
+    },
+    "pano237": {
+        "sceneId": "pano237",
+        "title": "CSE Lab - 2",
+        "category": "DEPT_CSE",
+        "description": "Advanced Computer Science Laboratory for specialized coursework",
+        "facilities": [
+            "50+ Desktop Computers",
+            "Specialized Software",
+            "Network Configuration Lab",
+            "Projector System"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "M.Tech CSE"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "cse@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Lab-1 (adjacent)",
+            "CSE Lab-3 (next door)"
+        ],
+        "historicalInfo": "Supports advanced programming and networking courses"
+    },
+    "pano581": {
+        "sceneId": "pano581",
+        "title": "CSE Project Lab",
+        "category": "DEPT_CSE",
+        "description": "Dedicated project development laboratory for student capstone projects",
+        "facilities": [
+            "40+ Workstations",
+            "Project Development Tools",
+            "Collaboration Spaces",
+            "Version Control Systems"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "M.Tech CSE"
+        ],
+        "timings": "8:00 AM - 8:00 PM (Mon-Sat)",
+        "contactInfo": "cse.projects@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Main Labs (same floor)"
+        ],
+        "historicalInfo": "Dedicated space for final year and research projects"
+    },
+    "pano239": {
+        "sceneId": "pano239",
+        "title": "AI & ML Lab",
+        "category": "DEPT_CSE",
+        "description": "Artificial Intelligence and Machine Learning research and training laboratory",
+        "facilities": [
+            "GPU-Enabled Workstations",
+            "Deep Learning Frameworks",
+            "Data Science Tools",
+            "AI Development Environment",
+            "Research Computing Resources"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE (AI/ML)",
+            "M.Tech CSE (AI)",
+            "Ph.D."
+        ],
+        "timings": "8:00 AM - 8:00 PM (Mon-Sat)",
+        "contactInfo": "aiml@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Department (same building)",
+            "Research Center (100m)"
+        ],
+        "historicalInfo": "State-of-the-art AI/ML research facility established in 2020"
+    },
+    "pano240": {
+        "sceneId": "pano240",
+        "title": "IoT Lab",
+        "category": "DEPT_CSE",
+        "description": "Internet of Things laboratory with embedded systems and sensor networks",
+        "facilities": [
+            "IoT Development Kits",
+            "Sensor Modules",
+            "Microcontroller Boards",
+            "Wireless Communication Equipment",
+            "Embedded Systems Tools"
+        ],
+        "departments": [
+            "Computer Science & Engineering",
+            "Electronics & Communication"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "B.Tech ECE",
+            "M.Tech"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "iot@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Department",
+            "ECE Department (200m)"
+        ],
+        "historicalInfo": "Modern IoT lab for hands-on embedded systems training"
+    },
+    "pano241": {
+        "sceneId": "pano241",
+        "title": "Software Lab",
+        "category": "DEPT_CSE",
+        "description": "Software Engineering laboratory for development and testing",
+        "facilities": [
+            "Software Development Tools",
+            "IDEs and Compilers",
+            "Version Control Systems",
+            "Testing Frameworks",
+            "Collaboration Tools"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "M.Tech Software Engineering"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "cse@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CSE Department Labs"
+        ],
+        "historicalInfo": "Comprehensive software engineering practice facility"
+    },
+    "pano242": {
+        "sceneId": "pano242",
+        "title": "CSE Classroom",
+        "category": "DEPT_CSE",
+        "description": "Modern classroom for Computer Science theory lectures and discussions",
+        "facilities": [
+            "Smart Board",
+            "Projector and Audio System",
+            "Seating for 60 students",
+            "Wi-Fi Connectivity",
+            "Air Conditioning"
+        ],
+        "departments": [
+            "Computer Science & Engineering"
+        ],
+        "programs": [
+            "B.Tech CSE",
+            "M.Tech CSE"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "CSE Labs (same floor)",
+            "CSE Faculty Room (adjacent)"
+        ],
+        "historicalInfo": "Modern teaching facility with latest educational technology"
+    },
+    "pano250": {
+        "sceneId": "pano250",
+        "title": "ECE Lab - 1",
+        "category": "DEPT_ECE",
+        "description": "Electronics and Communication Engineering core laboratory",
+        "facilities": [
+            "Electronic Test Equipment",
+            "Oscilloscopes",
+            "Signal Generators",
+            "Circuit Design Tools",
+            "Component Kits"
+        ],
+        "departments": [
+            "Electronics & Communication Engineering"
+        ],
+        "programs": [
+            "B.Tech ECE",
+            "M.Tech VLSI",
+            "M.Tech Communication Systems"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "ece@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "ECE Lab-2 (adjacent)",
+            "ECE Department Office"
+        ],
+        "historicalInfo": "Well-equipped electronics laboratory for circuit design and analysis"
+    },
+    "pano251": {
+        "sceneId": "pano251",
+        "title": "ECE Lab - 2",
+        "category": "DEPT_ECE",
+        "description": "Advanced ECE laboratory for communication systems and signal processing",
+        "facilities": [
+            "Communication Trainers",
+            "Signal Processing Equipment",
+            "DSP Kits",
+            "Antenna Testing Setup",
+            "Spectrum Analyzers"
+        ],
+        "departments": [
+            "Electronics & Communication Engineering"
+        ],
+        "programs": [
+            "B.Tech ECE",
+            "M.Tech"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "ece@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "ECE Lab-1 (adjacent)",
+            "VLSI Lab (50m)"
+        ],
+        "historicalInfo": "Advanced communication systems training facility"
+    },
+    "pano252": {
+        "sceneId": "pano252",
+        "title": "ECE VLSI Lab",
+        "category": "DEPT_ECE",
+        "description": "VLSI Design laboratory with chip design and verification tools",
+        "facilities": [
+            "VLSI Design Software",
+            "Cadence Tools",
+            "FPGA Boards",
+            "IC Design Station",
+            "Simulation Tools"
+        ],
+        "departments": [
+            "Electronics & Communication Engineering"
+        ],
+        "programs": [
+            "B.Tech ECE",
+            "M.Tech VLSI Design"
+        ],
+        "timings": "8:00 AM - 7:00 PM (Mon-Sat)",
+        "contactInfo": "vlsi@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "ECE Department",
+            "Research Labs"
+        ],
+        "historicalInfo": "Specialized VLSI design facility with industry-standard tools"
+    },
+    "pano590": {
+        "sceneId": "pano590",
+        "title": "ECE Classroom",
+        "category": "DEPT_ECE",
+        "description": "Electronics and Communication classroom for theory lectures",
+        "facilities": [
+            "Smart Classroom Technology",
+            "Projector and Screen",
+            "Audio System",
+            "Seating for 50 students",
+            "Whiteboard"
+        ],
+        "departments": [
+            "Electronics & Communication Engineering"
+        ],
+        "programs": [
+            "B.Tech ECE",
+            "M.Tech"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "ECE Labs (same floor)"
+        ],
+        "historicalInfo": "Modern classroom with multimedia teaching aids"
+    },
+    "pano254": {
+        "sceneId": "pano254",
+        "title": "EEE Lab - 1",
+        "category": "DEPT_EEE",
+        "description": "Electrical and Electronics Engineering core laboratory",
+        "facilities": [
+            "Power System Equipment",
+            "Electrical Machines",
+            "Control System Trainers",
+            "Measurement Instruments",
+            "Safety Equipment"
+        ],
+        "departments": [
+            "Electrical & Electronics Engineering"
+        ],
+        "programs": [
+            "B.Tech EEE",
+            "M.Tech Power Systems"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "eee@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "EEE Lab-2 (adjacent)",
+            "EEE Department Office"
+        ],
+        "historicalInfo": "Comprehensive electrical engineering laboratory"
+    },
+    "pano597": {
+        "sceneId": "pano597",
+        "title": "EEE Lab - 2",
+        "category": "DEPT_EEE",
+        "description": "Power systems and renewable energy laboratory",
+        "facilities": [
+            "Power Electronics Equipment",
+            "Renewable Energy Systems",
+            "Solar Panel Setup",
+            "Wind Energy Models",
+            "Grid Simulation Systems"
+        ],
+        "departments": [
+            "Electrical & Electronics Engineering"
+        ],
+        "programs": [
+            "B.Tech EEE",
+            "M.Tech"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "eee@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "EEE Lab-1 (adjacent)",
+            "Research Center"
+        ],
+        "historicalInfo": "Focus on sustainable energy and power electronics"
+    },
+    "pano256": {
+        "sceneId": "pano256",
+        "title": "Mechanical Lab",
+        "category": "DEPT_MECH",
+        "description": "Mechanical Engineering workshop and laboratory",
+        "facilities": [
+            "Machine Tools",
+            "Lathe Machines",
+            "Milling Machines",
+            "Welding Equipment",
+            "Measurement Tools",
+            "Workshop Area"
+        ],
+        "departments": [
+            "Mechanical Engineering"
+        ],
+        "programs": [
+            "B.Tech Mechanical",
+            "M.Tech"
+        ],
+        "timings": "8:00 AM - 6:00 PM (Mon-Sat)",
+        "contactInfo": "mech@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "CAD Lab (100m)",
+            "Thermal Lab (adjacent)"
+        ],
+        "historicalInfo": "Hands-on mechanical engineering workshop facility"
+    },
+    "pano657": {
+        "sceneId": "pano657",
+        "title": "Library - Entrance",
+        "category": "LIBRARY",
+        "description": "Main entrance to the central university library",
+        "facilities": [
+            "Library Reception",
+            "Entry Gates",
+            "Book Drop-off Point",
+            "Information Desk"
+        ],
+        "departments": [
+            "Library Services"
+        ],
+        "programs": [],
+        "timings": "8:00 AM - 10:00 PM (Mon-Sun)",
+        "contactInfo": "library@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Reading Halls (inside)",
+            "Digital Library (2nd floor)"
+        ],
+        "historicalInfo": "Central library with extensive book and digital resources collection"
+    },
+    "pano658": {
+        "sceneId": "pano658",
+        "title": "Reading Hall - 1",
+        "category": "LIBRARY",
+        "description": "Quiet study area with individual seating for focused study",
+        "facilities": [
+            "Individual Study Desks",
+            "Reading Lamps",
+            "Silent Zone",
+            "Seating for 100 students",
+            "Reference Books Section"
+        ],
+        "departments": [
+            "Library"
+        ],
+        "programs": [],
+        "timings": "8:00 AM - 10:00 PM (Mon-Sun)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Reading Hall-2 (adjacent)",
+            "Book Stacks (nearby)"
+        ],
+        "historicalInfo": "Dedicated quiet study space for serious academic work"
+    },
+    "pano659": {
+        "sceneId": "pano659",
+        "title": "Reading Hall - 2",
+        "category": "LIBRARY",
+        "description": "Spacious reading area with comfortable seating arrangements",
+        "facilities": [
+            "Comfortable Seating",
+            "Study Tables",
+            "Natural Lighting",
+            "Air Conditioning",
+            "Seating for 150 students"
+        ],
+        "departments": [
+            "Library"
+        ],
+        "programs": [],
+        "timings": "8:00 AM - 10:00 PM (Mon-Sun)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Reading Hall-1 (adjacent)",
+            "Periodicals Section (nearby)"
+        ],
+        "historicalInfo": "Large study hall accommodating many students simultaneously"
+    },
+    "pano660": {
+        "sceneId": "pano660",
+        "title": "Digital Library",
+        "category": "LIBRARY",
+        "description": "Computer-equipped digital library with e-resources access",
+        "facilities": [
+            "40+ Computer Workstations",
+            "E-Journals Access",
+            "Online Database Access",
+            "Printing Services",
+            "Scanning Facilities",
+            "Wi-Fi"
+        ],
+        "departments": [
+            "Library Services"
+        ],
+        "programs": [],
+        "timings": "8:00 AM - 10:00 PM (Mon-Sun)",
+        "contactInfo": "elibrary@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Reading Halls (1st floor)",
+            "Library Entrance"
+        ],
+        "historicalInfo": "Modern digital library with access to international journals and databases"
+    },
+    "pano665": {
+        "sceneId": "pano665",
+        "title": "Cafeteria - Main Area",
+        "category": "CAFETERIA",
+        "description": "Main cafeteria dining area serving meals and refreshments",
+        "facilities": [
+            "Food Counters",
+            "Dining Tables",
+            "Seating for 200",
+            "Hygiene Standards",
+            "Multiple Cuisine Options"
+        ],
+        "departments": [
+            "Student Services"
+        ],
+        "programs": [],
+        "timings": "7:00 AM - 8:00 PM (Mon-Sat)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Outdoor Seating (adjacent)",
+            "Vending Area (nearby)"
+        ],
+        "historicalInfo": "Central cafeteria serving nutritious meals to students and staff"
+    },
+    "pano666": {
+        "sceneId": "pano666",
+        "title": "Cafeteria - Seating Area",
+        "category": "CAFETERIA",
+        "description": "Additional seating and socializing area in cafeteria",
+        "facilities": [
+            "Comfortable Seating",
+            "Group Tables",
+            "Social Space",
+            "TV Entertainment"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "7:00 AM - 8:00 PM (Mon-Sat)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Main Cafeteria (adjacent)"
+        ],
+        "historicalInfo": "Popular student gathering and socializing space"
+    },
+    "pano667": {
+        "sceneId": "pano667",
+        "title": "Sports Complex - Outdoor",
+        "category": "SPORTS",
+        "description": "Outdoor sports facilities including cricket and football grounds",
+        "facilities": [
+            "Cricket Ground",
+            "Football Field",
+            "Running Track",
+            "Outdoor Courts",
+            "Sports Equipment Storage"
+        ],
+        "departments": [
+            "Physical Education"
+        ],
+        "programs": [],
+        "timings": "6:00 AM - 7:00 PM (Mon-Sun)",
+        "contactInfo": "sports@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Indoor Sports Complex (100m)",
+            "Gym (adjacent)"
+        ],
+        "historicalInfo": "Well-maintained outdoor sports facilities for various games"
+    },
+    "pano668": {
+        "sceneId": "pano668",
+        "title": "Indoor Sports Complex",
+        "category": "SPORTS",
+        "description": "Indoor stadium with multiple sports facilities",
+        "facilities": [
+            "Badminton Courts",
+            "Table Tennis Tables",
+            "Basketball Court",
+            "Volleyball Court",
+            "Spectator Seating",
+            "Changing Rooms"
+        ],
+        "departments": [
+            "Physical Education"
+        ],
+        "programs": [],
+        "timings": "6:00 AM - 9:00 PM (Mon-Sun)",
+        "contactInfo": "sports@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Outdoor Grounds (adjacent)",
+            "Gymnasium (nearby)"
+        ],
+        "historicalInfo": "Multi-purpose indoor sports facility for year-round activities"
+    },
+    "pano669": {
+        "sceneId": "pano669",
+        "title": "Gymnasium",
+        "category": "SPORTS",
+        "description": "Fitness center with modern equipment and training facilities",
+        "facilities": [
+            "Cardio Equipment",
+            "Weight Training Machines",
+            "Free Weights",
+            "Personal Training Area",
+            "Fitness Instructor Support"
+        ],
+        "departments": [
+            "Physical Education"
+        ],
+        "programs": [],
+        "timings": "6:00 AM - 9:00 PM (Mon-Sun)",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Indoor Sports Complex (adjacent)",
+            "Outdoor Grounds (100m)"
+        ],
+        "historicalInfo": "Modern fitness facility promoting student health and wellness"
+    },
+    "pano670": {
+        "sceneId": "pano670",
+        "title": "Hostel Block - A (Boys)",
+        "category": "HOSTEL",
+        "description": "Boys hostel residential building with accommodation facilities",
+        "facilities": [
+            "Residential Rooms",
+            "Common Room",
+            "Study Area",
+            "Wi-Fi Internet",
+            "24/7 Security",
+            "Mess Facility"
+        ],
+        "departments": [
+            "Student Housing"
+        ],
+        "programs": [],
+        "timings": "24/7 Access for Residents",
+        "contactInfo": "hostel@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Hostel Mess (ground floor)",
+            "Library (300m)"
+        ],
+        "historicalInfo": "Comfortable residential accommodation for male students"
+    },
+    "pano671": {
+        "sceneId": "pano671",
+        "title": "Hostel Block - B (Boys)",
+        "category": "HOSTEL",
+        "description": "Additional boys hostel wing with modern amenities",
+        "facilities": [
+            "AC/Non-AC Rooms",
+            "Recreation Room",
+            "Laundry Facilities",
+            "Wi-Fi",
+            "Water Coolers",
+            "Security"
+        ],
+        "departments": [
+            "Student Housing"
+        ],
+        "programs": [],
+        "timings": "24/7 Access for Residents",
+        "contactInfo": "hostel@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Hostel Block-A (adjacent)",
+            "Sports Complex (200m)"
+        ],
+        "historicalInfo": "Extended hostel facility to accommodate growing student population"
+    },
+    "pano672": {
+        "sceneId": "pano672",
+        "title": "Hostel Block - C (Girls)",
+        "category": "HOSTEL",
+        "description": "Girls hostel with secure and comfortable living arrangements",
+        "facilities": [
+            "Secure Residential Rooms",
+            "Common Areas",
+            "Study Spaces",
+            "Wi-Fi",
+            "24/7 Women Security",
+            "Mess Facility"
+        ],
+        "departments": [
+            "Student Housing"
+        ],
+        "programs": [],
+        "timings": "24/7 Access for Residents",
+        "contactInfo": "girlshostel@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Girls Hostel Block-D (adjacent)",
+            "Library (250m)"
+        ],
+        "historicalInfo": "Safe and comfortable accommodation for female students"
+    },
+    "pano673": {
+        "sceneId": "pano673",
+        "title": "Hostel Block - D (Girls)",
+        "category": "HOSTEL",
+        "description": "Additional girls hostel wing with enhanced facilities",
+        "facilities": [
+            "Modern Rooms",
+            "Recreation Area",
+            "Reading Room",
+            "Laundry",
+            "Wi-Fi Internet",
+            "24/7 Security"
+        ],
+        "departments": [
+            "Student Housing"
+        ],
+        "programs": [],
+        "timings": "24/7 Access for Residents",
+        "contactInfo": "girlshostel@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Girls Hostel Block-C (adjacent)",
+            "Cafeteria (150m)"
+        ],
+        "historicalInfo": "Modern hostel facility with focus on safety and comfort"
+    },
+    "pano674": {
+        "sceneId": "pano674",
+        "title": "Auditorium - Main Hall",
+        "category": "AUDITORIUM",
+        "description": "Large auditorium for events, seminars, and cultural programs",
+        "facilities": [
+            "Seating for 500",
+            "Stage with AV Setup",
+            "Lighting System",
+            "Sound System",
+            "Projection Equipment",
+            "Air Conditioning"
+        ],
+        "departments": [
+            "Event Management"
+        ],
+        "programs": [],
+        "timings": "Event-based Access",
+        "contactInfo": "events@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Green Room (backstage)",
+            "Main Building (100m)"
+        ],
+        "historicalInfo": "Premier venue for university events and guest lectures"
+    },
+    "pano675": {
+        "sceneId": "pano675",
+        "title": "Auditorium - Stage",
+        "category": "AUDITORIUM",
+        "description": "Auditorium stage area with professional setup",
+        "facilities": [
+            "Large Stage Platform",
+            "Professional Lighting",
+            "Sound System",
+            "Backdrop Screen",
+            "Podium"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "Event-based Access",
+        "contactInfo": "",
+        "nearbyLocations": [
+            "Main Hall (adjacent)",
+            "Control Room (nearby)"
+        ],
+        "historicalInfo": "Professional stage for performances and presentations"
+    },
+    "pano676": {
+        "sceneId": "pano676",
+        "title": "Conference Hall - 1",
+        "category": "CONFERENCE",
+        "description": "Conference room for meetings and academic discussions",
+        "facilities": [
+            "Conference Table",
+            "Seating for 30",
+            "Projector and Screen",
+            "Video Conferencing",
+            "Whiteboard",
+            "Air Conditioning"
+        ],
+        "departments": [
+            "Conference Services"
+        ],
+        "programs": [],
+        "timings": "9:00 AM - 6:00 PM (By Booking)",
+        "contactInfo": "conferences@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Conference Hall-2 (adjacent)",
+            "Admin Block"
+        ],
+        "historicalInfo": "Modern conference facility for academic and administrative meetings"
+    },
+    "pano677": {
+        "sceneId": "pano677",
+        "title": "Conference Hall - 2",
+        "category": "CONFERENCE",
+        "description": "Additional conference space for seminars and workshops",
+        "facilities": [
+            "Flexible Seating",
+            "AV Equipment",
+            "Presentation System",
+            "Wi-Fi",
+            "Tea/Coffee Facility"
+        ],
+        "departments": [],
+        "programs": [],
+        "timings": "9:00 AM - 6:00 PM (By Booking)",
+        "contactInfo": "conferences@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Conference Hall-1 (adjacent)"
+        ],
+        "historicalInfo": "Versatile space for workshops and training sessions"
+    },
+    "pano678": {
+        "sceneId": "pano678",
+        "title": "Research Center",
+        "category": "RESEARCH",
+        "description": "University research and development center",
+        "facilities": [
+            "Research Labs",
+            "Ph.D. Scholar Workspaces",
+            "Reference Library",
+            "Computing Resources",
+            "Meeting Rooms"
+        ],
+        "departments": [
+            "Research & Development"
+        ],
+        "programs": [
+            "Ph.D. Programs",
+            "Research Projects"
+        ],
+        "timings": "8:00 AM - 8:00 PM (Mon-Sat)",
+        "contactInfo": "research@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Central Library (100m)",
+            "Faculty Offices (50m)"
+        ],
+        "historicalInfo": "Dedicated facility for advanced research and innovation"
+    },
+    "pano679": {
+        "sceneId": "pano679",
+        "title": "Innovation Lab",
+        "category": "RESEARCH",
+        "description": "Innovation and entrepreneurship development lab",
+        "facilities": [
+            "Prototyping Equipment",
+            "3D Printers",
+            "Electronic Components",
+            "Collaboration Spaces",
+            "Mentorship Support"
+        ],
+        "departments": [
+            "Entrepreneurship Development"
+        ],
+        "programs": [
+            "All UG/PG Programs",
+            "Startup Incubation"
+        ],
+        "timings": "9:00 AM - 7:00 PM (Mon-Sat)",
+        "contactInfo": "innovation@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Research Center (adjacent)",
+            "CSE Department (100m)"
+        ],
+        "historicalInfo": "Hub for student innovation and startup development"
+    },
+    "pano680": {
+        "sceneId": "pano680",
+        "title": "Placement Cell",
+        "category": "PLACEMENT",
+        "description": "Career development and placement services office",
+        "facilities": [
+            "Interview Rooms",
+            "Counseling Areas",
+            "Training Rooms",
+            "Placement Database",
+            "Career Guidance Services"
+        ],
+        "departments": [
+            "Placement & Training"
+        ],
+        "programs": [
+            "All UG and PG Programs"
+        ],
+        "timings": "9:00 AM - 5:00 PM (Mon-Sat)",
+        "contactInfo": "placements@mallareddyuniversity.ac.in",
+        "nearbyLocations": [
+            "Training Hall (adjacent)",
+            "Admin Block (100m)"
+        ],
+        "historicalInfo": "Dedicated placement cell connecting students with industry opportunities"
+    }
+}
