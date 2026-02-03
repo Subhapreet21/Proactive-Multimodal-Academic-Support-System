@@ -45,6 +45,7 @@ import profileRoutes from './routes/profileRoutes';
 import authRoutes from './routes/authRoutes';
 import studyRoutes from './routes/studyRoutes';
 import tourAssistantRoutes from './routes/tourAssistantRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 app.use('/api/chat', chatRoutes);
 app.use('/api/timetable', timetableRoutes);
@@ -56,6 +57,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/virtual-tour', tourAssistantRoutes);
+app.use('/api/admin', adminRoutes);
 
 import os from 'os';
 

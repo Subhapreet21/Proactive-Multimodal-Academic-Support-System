@@ -1,6 +1,6 @@
-
 import { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import fetch from 'node-fetch'; // Added for URL validation
 
 import { generateText, getEmbedding } from '../services/aiService';
 
@@ -9,6 +9,65 @@ const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Helper to validate links
+const validateLinks = async (plan: any) => {
+    if (!plan.schedule) return plan;
+
+    for (const slot of plan.schedule) {
+        if (slot.resource_links && Array.isArray(slot.resource_links)) {
+            const validatedLinks = [];
+
+            for (const link of slot.resource_links) {
+                try {
+                    // 1. Fetch content (GET request with 3s timeout)
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 3000);
+
+                    const response = await fetch(link.url, {
+                        method: 'GET',
+                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeout);
+
+                    if (!response.ok) {
+                        throw new Error(`Status ${response.status}`);
+                    }
+
+                    // 2. Deep Content Check (Read first 2KB)
+                    const text = await response.text();
+                    const snippet = text.substring(0, 2000).toLowerCase(); // Scan only the beginning
+
+                    // "Red Flags" that indicate soft errors
+                    const isSoft404 = snippet.includes('page not found') ||
+                        snippet.includes('video unavailable') ||
+                        snippet.includes('404 error') ||
+                        snippet.includes('content removed');
+
+                    if (isSoft404) {
+                        throw new Error('Soft 404 detected');
+                    }
+
+                    // Valid Link
+                    validatedLinks.push(link);
+
+                } catch (e) {
+                    // 3. Fallback to Google Search if unreachable or removed
+                    const reason = e instanceof Error ? e.message : 'Unknown';
+                    console.log(`⚠️ Link flagged (${reason}): ${link.url} -> Falling back.`);
+
+                    validatedLinks.push({
+                        title: `Search: ${link.title}`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(link.title + ' ' + (slot.activity || ''))}`
+                    });
+                }
+            }
+            slot.resource_links = validatedLinks;
+        }
+    }
+    return plan;
+};
 
 export const generateStudyPlan = async (req: Request, res: Response) => {
     try {
@@ -122,12 +181,17 @@ export const generateStudyPlan = async (req: Request, res: Response) => {
             {
               "time": "HH:MM - HH:MM",
               "activity": "Actionable Title",
-              "focus_tip": "Specific tip or resource reference",
-              "type": "task" | "break" | "revision" | "class"
+              "focus_tip": "Specific tip",
+              "type": "task" | "break" | "revision" | "class",
+              "resource_links": [
+                { "title": "Source Name (e.g. GeeksforGeeks)", "url": "https://..." }
+              ]
             }
           ],
           "message": "A short, encouraging summary tailored to the workload."
         }
+        
+        **Constraint:** For every "task" or "revision" slot, you MUST provide at least 3 high-quality educational links (e.g., GeeksforGeeks, YouTube, W3Schools, Coursera, NIST) relevant to the specific topic.
         `;
 
         // 7. Call Gemini
@@ -135,7 +199,10 @@ export const generateStudyPlan = async (req: Request, res: Response) => {
 
         // 8. Parse & Return
         const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const plan = JSON.parse(jsonStr);
+        let plan = JSON.parse(jsonStr);
+
+        // 9. VALIDATE LINKS
+        plan = await validateLinks(plan);
 
         res.json(plan);
 

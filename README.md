@@ -119,6 +119,87 @@ graph TD
 └── MASTER_DEPLOYMENT_GUIDE.md  # Detailed Deployment Instructions
 ```
 
+## 👥 User Roles & Permissions
+
+The system enforces strict Role-Based Access Control (RBAC) to ensure security and data integrity.
+
+### **1. Student** 🎓
+*   **Navigation**: access to Dashboard, Virtual Tour, Knowledge Base, Study Progress, Private Chat, Profile.
+*   **Dashboard**: View personal timetable, upcoming events, and incomplete tasks.
+*   **Virtual Tour**: Full access to interactive campus tour and AI location assistant.
+*   **Daily Tasks**: Create, edit, and complete personal reminders/to-dos.
+*   **Timetable**: **Read-only** access to their specific class schedule (filtered by Dept/Year/Section).
+*   **Chat**: Private 1-on-1 AI conversations (history is private but deletable by admin).
+
+### **2. Faculty** 👨‍🏫
+*   **Privileges**: All "Student" features + Administrative Write Access for their Department.
+*   **Timetable Management**:
+    *   **Edit Access**: Can modify schedule slots for their specific Department.
+    *   **Reschedule**: Can move classes or assign new faculty to slots.
+*   **Public Notices**: Can post "Events" or "Notices" visible to all students on the Dashboard.
+*   **Knowledge Base**: Can contribute articles to the university wiki.
+*   **Restrictions**: Cannot view or modify data outside their own Department.
+
+### **3. Admin** 🛡️
+*   **Global Access ("God Mode")**: Full control over all system data.
+*   **User Management**:
+    *   View all registered users.
+    *   **Edit Roles**: Promote/Demote users (Student ↔ Faculty ↔ Admin).
+    *   **Bulk Actions**: Delete users, change departments, or migrate students to new sections/years in bulk.
+    *   **Safety Lock**: The current admin cannot accidental delete or demote themselves (UI Lock 🔒).
+*   **System-Wide Edits**: Can edit timetables for **ANY** department.
+*   **Content Moderation**: Can delete any Knowledge Base article or Event.
+*   **Data Integrity**: Special deletion logic preserves institutional knowledge (e.g., articles) even if the admin account is removed.
+
+---
+
+## 🔑 Environment Configuration
+
+To run this project, you must configure the following environment variables.
+
+### **1. Frontend (`flutter_app/.env`)**
+Create a `.env` file in the `flutter_app/` root directory:
+
+```ini
+# Backend Connection
+# Localhost (Android Emulator): http://10.0.2.2:5002
+# Localhost (Physical Device): http://YOUR_PC_IP:5002
+API_URL=http://127.0.0.1:5002
+
+# Authentication (Supabase)
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Auth Providers
+# Required for "Continue with Google"
+GOOGLE_WEB_CLIENT_ID=your-google-web-client-id
+CLERK_PUBLISHABLE_KEY=pk_test_... (If using Clerk migration)
+```
+
+### **2. Backend (`backend/.env`)**
+Create a `.env` file in the `backend/` root directory:
+
+```ini
+# Server Configuration
+PORT=5002
+
+# Database (Supabase)
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# AI Configuration (Multi-Key Setup)
+# Add at least one key. The system supports up to 7 for load balancing.
+GEMINI_API_KEY_1=AIzaSy...
+GEMINI_API_KEY_2=AIzaSy...
+GEMINI_API_KEY_3=AIzaSy...
+# ... up to GEMINI_API_KEY_7
+
+# Security Secrets (For Role Elevation)
+ADMIN_SECRET=admin123
+FACULTY_SECRET=faculty123
+```
+
 ---
 
 ## ⚡ Getting Started

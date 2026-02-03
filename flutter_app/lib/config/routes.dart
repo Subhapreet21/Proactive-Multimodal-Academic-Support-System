@@ -17,6 +17,7 @@ import '../screens/reminders_screen.dart';
 import '../screens/study_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/virtual_tour_screen.dart';
+import '../screens/admin_users_screen.dart'; // Added Import
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
 
@@ -146,6 +147,11 @@ class AppRouter {
             GoRoute(
               path: '/app/virtual-tour',
               builder: (context, state) => const VirtualTourScreen(),
+            ),
+            // Admin Routes
+            GoRoute(
+              path: '/app/admin/users',
+              builder: (context, state) => const AdminUsersScreen(),
             ),
           ],
         ),

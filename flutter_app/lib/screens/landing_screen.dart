@@ -11,6 +11,10 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Stack(
@@ -27,10 +31,13 @@ class LandingScreen extends StatelessWidget {
           ),
 
           // 2. 3D Model (RepaintBoundary optimized)
-          Positioned.fill(
-            top:
-                220, // Centering vertically (120 top + 120 bottom = 240 total, preserving size)
-            bottom: 90,
+          // In Landscape: Position on the Right Half
+          // In Portrait: Original Positioning
+          Positioned(
+            top: isLandscape ? 0 : 220,
+            bottom: isLandscape ? 60 : 90, // Leave space for bottom bar
+            right: 0,
+            left: isLandscape ? size.width * 0.5 : 0, // Landscape: Right Half
             child: RepaintBoundary(
               child: ModelViewer(
                 backgroundColor: Colors.transparent,
@@ -41,11 +48,10 @@ class LandingScreen extends StatelessWidget {
                 autoRotate: true,
                 cameraControls: true,
                 disableZoom: true,
-                disablePan: true, // Prevent panning (moving the model)
+                disablePan: true,
                 autoRotateDelay: 0,
                 rotationPerSecond: '20deg',
                 fieldOfView: "30deg",
-                // Zoomed out (100%) to fit properly
                 cameraOrbit: "45deg 75deg 95%",
                 minCameraOrbit: "auto 75deg auto",
                 maxCameraOrbit: "auto 75deg auto",
@@ -55,12 +61,12 @@ class LandingScreen extends StatelessWidget {
             ),
           ),
 
-          // 3. Top Scrim (Gradient)
+          // 3. Top Scrim (Gradient) - Adjusted for layout
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 300,
+            height: isLandscape ? 150 : 300,
             child: IgnorePointer(
               child: RepaintBoundary(
                 child: Container(
@@ -110,116 +116,138 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 16.0),
-                  child: Column(
+                Expanded(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header
-                      Row(
-                        children: [
-                          _buildLogo(),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Campus OS',
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                      // Content Column (Left Side in Landscape)
+                      Expanded(
+                        flex: isLandscape
+                            ? 1
+                            : 1, // Full width in portrait? No, need logic
+                        child: SingleChildScrollView(
+                          // Allow scrolling if height issues
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header
+                                Row(
+                                  children: [
+                                    _buildLogo(),
+                                    const SizedBox(width: 12),
+                                    const Text(
+                                      'Campus OS',
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimary,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: isLandscape ? 12 : 24),
 
-                      // Custom Backspace Typewriter
-                      RepaintBoundary(
-                        child: SizedBox(
-                          height: 100,
-                          child: _BackspaceTypewriter(
-                            phrases: const [
-                              'Experience University\nLike Never Before',
-                              'Navigate Campus\nWith Ease',
-                              'Manage Schedules\nEffortlessly',
-                            ],
-                            textStyle: const TextStyle(
-                              fontSize: 36,
-                              height: 1.1,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.textPrimary,
-                              fontFamily: 'Inter',
+                                // Custom Backspace Typewriter
+                                RepaintBoundary(
+                                  child: SizedBox(
+                                    height: isLandscape ? 80 : 100,
+                                    child: _BackspaceTypewriter(
+                                      phrases: const [
+                                        'Experience University\nLike Never Before',
+                                        'Navigate Campus\nWith Ease',
+                                        'Manage Schedules\nEffortlessly',
+                                      ],
+                                      textStyle: TextStyle(
+                                        fontSize: isLandscape
+                                            ? 28
+                                            : 36, // Smaller in LS
+                                        height: 1,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppTheme.textPrimary,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Subtitle
+                                Text(
+                                  'Your AI-powered companion for navigation, scheduling, and academic success.',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white70,
+                                    height: 1.5,
+                                  ),
+                                ),
+
+                                SizedBox(height: isLandscape ? 16 : 24),
+
+                                // Feature Icon Infinite Carousel
+                                _ScrollingIconRow(
+                                  children: [
+                                    _FeatureIcon(
+                                      icon: Icons.chat_bubble_outline,
+                                      label: 'AI Chat',
+                                      color: const Color(0xFF8B5CF6),
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.calendar_today_outlined,
+                                      label: 'Timetable',
+                                      color: Colors.amber,
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.event_available_outlined,
+                                      label: 'Events',
+                                      color: const Color(0xFFEC4899),
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.vrpano_outlined,
+                                      label: 'Tour',
+                                      color: const Color(0xFF0EA5E9),
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.library_books_outlined,
+                                      label: 'Knowledge',
+                                      color: Colors.teal,
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.notifications_outlined,
+                                      label: 'Reminders',
+                                      color: Colors.deepOrange,
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.auto_stories_outlined,
+                                      label: 'Study',
+                                      color: Colors.greenAccent,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-
-                      // Subtitle
-                      Text(
-                        'Your AI-powered companion for navigation, scheduling, and academic success.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                          height: 1.5,
+                      // Spacer for Right Side in Landscape (where model is)
+                      if (isLandscape)
+                        Expanded(
+                          flex: 1,
+                          child:
+                              const SizedBox(), // Transparent space for 3D model
                         ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Feature Icon Infinite Carousel
-                      _ScrollingIconRow(
-                        children: [
-                          _FeatureIcon(
-                            icon: Icons.chat_bubble_outline,
-                            label: 'AI Chat',
-                            color: const Color(0xFF8B5CF6),
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.calendar_today_outlined,
-                            label: 'Timetable',
-                            color: Colors.amber,
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.event_available_outlined,
-                            label: 'Events',
-                            color: const Color(0xFFEC4899),
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.vrpano_outlined,
-                            label: 'Tour',
-                            color: const Color(0xFF0EA5E9),
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.library_books_outlined,
-                            label: 'Knowledge',
-                            color: Colors.teal,
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.notifications_outlined,
-                            label: 'Reminders',
-                            color: Colors.deepOrange,
-                          ),
-                          _FeatureIcon(
-                            icon: Icons.auto_stories_outlined,
-                            label: 'Study',
-                            color: Colors.greenAccent,
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
 
-                const Spacer(),
-
-                // Bottom Section
+                // Bottom Section (Button)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 48.0),
+                  padding: EdgeInsets.only(bottom: isLandscape ? 12.0 : 48.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // CTA Button
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: Container(

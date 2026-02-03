@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart'; // Added import for launching URLs
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -93,9 +95,10 @@ class _StudyScreenState extends State<StudyScreen> {
               pw.Table(
                 border: pw.TableBorder.all(color: PdfColors.grey400),
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(1.5),
-                  1: const pw.FlexColumnWidth(2),
-                  2: const pw.FlexColumnWidth(2.5),
+                  0: const pw.FlexColumnWidth(1.2), // Time
+                  1: const pw.FlexColumnWidth(2), // Activity
+                  2: const pw.FlexColumnWidth(2.0), // Tips
+                  3: const pw.FlexColumnWidth(1.8), // Resources (New Column)
                 },
                 children: [
                   pw.TableRow(
@@ -117,12 +120,26 @@ class _StudyScreenState extends State<StudyScreen> {
                           child: pw.Text('Tips',
                               style: pw.TextStyle(
                                   fontWeight: pw.FontWeight.bold))),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(5),
+                          child: pw.Text('Resources',
+                              style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold))),
                     ],
                   ),
                   ...schedule.map((slot) {
                     final time = _stripEmojis(slot['time'] ?? '');
                     final activity = _stripEmojis(slot['activity'] ?? '');
                     final tip = _stripEmojis(slot['focus_tip'] ?? '');
+
+                    // Format links as simple text list for PDF
+                    final linksList = (slot['resource_links'] as List<dynamic>?)
+                        ?.take(3) // Take up to 3 links
+                        .map((l) => l['title'] ?? 'Link')
+                        .join('\n');
+                    final linksText = linksList != null && linksList.isNotEmpty
+                        ? linksList
+                        : '-';
 
                     return pw.TableRow(
                       children: [
@@ -137,6 +154,12 @@ class _StudyScreenState extends State<StudyScreen> {
                             child: pw.Text(tip,
                                 style: const pw.TextStyle(
                                     fontSize: 10, color: PdfColors.grey700))),
+                        // New Resources Cell
+                        pw.Padding(
+                            padding: const pw.EdgeInsets.all(5),
+                            child: pw.Text(linksText,
+                                style: const pw.TextStyle(
+                                    fontSize: 9, color: PdfColors.blue700))),
                       ],
                     );
                   }).toList(),
@@ -490,6 +513,7 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Widget _buildScheduleCard(Map<String, dynamic> slot, int index) {
     bool isBreak = slot['type'] == 'break';
+    List<dynamic>? links = slot['resource_links'];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -595,6 +619,46 @@ class _StudyScreenState extends State<StudyScreen> {
                     ],
                   ),
                 ],
+
+                // --- Resource Links Section ---
+                if (links != null && links.isNotEmpty && !isBreak) ...[
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Recommended Resources:",
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: links.map((link) {
+                      return ActionChip(
+                        avatar: const Icon(Icons.link_rounded,
+                            size: 14, color: AppTheme.primaryColor),
+                        label: Text(
+                          link['title'] ?? 'Link',
+                          style: const TextStyle(
+                              fontSize: 12, color: AppTheme.textPrimary),
+                        ),
+                        backgroundColor: AppTheme.cardColor,
+                        side: BorderSide(
+                            color: AppTheme.primaryColor.withOpacity(0.3)),
+                        onPressed: () async {
+                          final url = Uri.parse(link['url']);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ]
               ],
             ),
           ),

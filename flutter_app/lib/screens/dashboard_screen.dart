@@ -64,8 +64,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           'Section ${user?.section ?? 'A'} • ${user?.department ?? 'CSE'} Year ${user?.year ?? '1'}';
     }
 
-    // Removed Scaffold/AppBar to prevent double header.
-    // Shell/Parent likely handles the AppBar.
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -110,6 +108,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _buildNextClassCard(),
                           const SizedBox(height: 24),
 
+                          if (permissions.isAdmin) ...[
+                            _buildAdminPanelCard(),
+                            const SizedBox(height: 24),
+                          ],
+
                           if (!permissions.isAdmin &&
                               !permissions.isFaculty) ...[
                             _buildStudyPlanCard(),
@@ -143,6 +146,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildAdminPanelCard() {
+    return GestureDetector(
+      onTap: () => context.go('/app/admin/users'),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.redAccent.withOpacity(0.2),
+              Colors.redAccent.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.admin_panel_settings_rounded,
+                    color: Colors.redAccent, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Manage Users',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Faculty, Students & Admins',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Colors.white54, size: 16),
+            ],
+          ),
+        ),
       ),
     );
   }
