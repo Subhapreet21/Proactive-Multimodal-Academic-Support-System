@@ -556,7 +556,7 @@ class _DailyLecturePrepScreenState extends State<DailyLecturePrepScreen>
                         border: Border.all(color: Colors.white12)),
                     child: Row(
                       children: [
-                        _buildToggleOption(false, 'Daily Lecture'),
+                        _buildToggleOption(false, 'Lecture'),
                         _buildToggleOption(true, 'Revision'),
                       ],
                     ),
