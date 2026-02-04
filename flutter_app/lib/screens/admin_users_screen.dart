@@ -260,7 +260,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
                       // Department Filter
                       DropdownButtonFormField<String>(
-                        value: tempDept,
+                        initialValue: tempDept,
                         dropdownColor: AppTheme.cardColor,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -287,7 +287,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   value: d,
                                   child: Row(
                                     children: [
-                                      Icon(Icons.business_rounded,
+                                      const Icon(Icons.business_rounded,
                                           size: 18, color: Colors.white70),
                                       const SizedBox(width: 12),
                                       Text(d),
@@ -302,7 +302,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
                       // Year Filter
                       DropdownButtonFormField<String>(
-                        value: tempYear,
+                        initialValue: tempYear,
                         dropdownColor: AppTheme.cardColor,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -329,7 +329,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   value: y,
                                   child: Row(
                                     children: [
-                                      Icon(Icons.calendar_today_rounded,
+                                      const Icon(Icons.calendar_today_rounded,
                                           size: 18, color: Colors.white70),
                                       const SizedBox(width: 12),
                                       Text('Year $y'),
@@ -344,7 +344,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
                       // Section Filter
                       DropdownButtonFormField<String>(
-                        value: tempSection,
+                        initialValue: tempSection,
                         dropdownColor: AppTheme.cardColor,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -371,7 +371,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   value: s,
                                   child: Row(
                                     children: [
-                                      Icon(Icons.class_rounded,
+                                      const Icon(Icons.class_rounded,
                                           size: 18, color: Colors.white70),
                                       const SizedBox(width: 12),
                                       Text('Sec $s'),
@@ -408,7 +408,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   _filterSection = tempSection;
                                   _isLoading = true;
                                 });
-                                this.setState(() {
+                                setState(() {
                                   _filterDept = tempDept;
                                   _filterYear = tempYear;
                                   _filterSection = tempSection;
@@ -702,9 +702,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                           color: Colors.orange
                                               .withValues(alpha: 0.3)),
                                     ),
-                                    child: Row(
+                                    child: const Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
+                                      children: [
                                         Icon(Icons.lock,
                                             size: 10, color: Colors.orange),
                                         SizedBox(width: 4),
@@ -723,7 +723,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                         )
                       else
                         DropdownButtonFormField<String>(
-                          value: selectedRole,
+                          initialValue: selectedRole,
                           dropdownColor: AppTheme.cardColor,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
@@ -737,15 +737,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          items: [
+                          items: const [
                             DropdownMenuItem(
                                 value: 'student',
                                 child: Row(
                                   children: [
                                     Icon(Icons.person_rounded,
                                         size: 18, color: Colors.white70),
-                                    const SizedBox(width: 12),
-                                    const Text('Student'),
+                                    SizedBox(width: 12),
+                                    Text('Student'),
                                   ],
                                 )),
                             DropdownMenuItem(
@@ -754,8 +754,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   children: [
                                     Icon(Icons.school_rounded,
                                         size: 18, color: Colors.white70),
-                                    const SizedBox(width: 12),
-                                    const Text('Faculty'),
+                                    SizedBox(width: 12),
+                                    Text('Faculty'),
                                   ],
                                 )),
                             DropdownMenuItem(
@@ -764,8 +764,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   children: [
                                     Icon(Icons.admin_panel_settings_rounded,
                                         size: 18, color: Colors.white70),
-                                    const SizedBox(width: 12),
-                                    const Text('Admin'),
+                                    SizedBox(width: 12),
+                                    Text('Admin'),
                                   ],
                                 )),
                           ],
@@ -780,7 +780,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                       // Department (Hide for Admin)
                       if (selectedRole != 'admin')
                         DropdownButtonFormField<String>(
-                          value: selectedDept,
+                          initialValue: selectedDept,
                           dropdownColor: AppTheme.cardColor,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
@@ -799,7 +799,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                     value: d,
                                     child: Row(
                                       children: [
-                                        Icon(Icons.business_rounded,
+                                        const Icon(Icons.business_rounded,
                                             size: 18, color: Colors.white70),
                                         const SizedBox(width: 12),
                                         Text(d),
@@ -819,7 +819,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: selectedYear,
+                                initialValue: selectedYear,
                                 dropdownColor: AppTheme.cardColor,
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
@@ -840,7 +840,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                           value: y,
                                           child: Row(
                                             children: [
-                                              Icon(Icons.calendar_today_rounded,
+                                              const Icon(Icons.calendar_today_rounded,
                                                   size: 18,
                                                   color: Colors.white70),
                                               const SizedBox(width: 12),
@@ -856,7 +856,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                             const SizedBox(width: 16),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: selectedSection,
+                                initialValue: selectedSection,
                                 dropdownColor: AppTheme.cardColor,
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
@@ -877,7 +877,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                           value: s,
                                           child: Row(
                                             children: [
-                                              Icon(Icons.class_rounded,
+                                              const Icon(Icons.class_rounded,
                                                   size: 18,
                                                   color: Colors.white70),
                                               const SizedBox(width: 12),
@@ -1094,7 +1094,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 16),
               // Department
               DropdownButtonFormField<String>(
-                value: selectedDept,
+                initialValue: selectedDept,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1113,7 +1113,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: d,
                           child: Row(
                             children: [
-                              Icon(Icons.business_rounded,
+                              const Icon(Icons.business_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text(d),
@@ -1126,7 +1126,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 12),
               // Year
               DropdownButtonFormField<String>(
-                value: selectedYear,
+                initialValue: selectedYear,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1145,7 +1145,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: y,
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today_rounded,
+                              const Icon(Icons.calendar_today_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text('Year $y'),
@@ -1158,7 +1158,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 12),
               // Section
               DropdownButtonFormField<String>(
-                value: selectedSection,
+                initialValue: selectedSection,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1177,7 +1177,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: s,
                           child: Row(
                             children: [
-                              Icon(Icons.class_rounded,
+                              const Icon(Icons.class_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text('Sec $s'),
@@ -1263,7 +1263,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 16),
               // Dept
               DropdownButtonFormField<String>(
-                value: selectedDept,
+                initialValue: selectedDept,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1282,7 +1282,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: d,
                           child: Row(
                             children: [
-                              Icon(Icons.business_rounded,
+                              const Icon(Icons.business_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text(d),
@@ -1295,7 +1295,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 12),
               // Year
               DropdownButtonFormField<String>(
-                value: selectedYear,
+                initialValue: selectedYear,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1314,7 +1314,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: y,
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today_rounded,
+                              const Icon(Icons.calendar_today_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text('Year $y'),
@@ -1327,7 +1327,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               const SizedBox(height: 12),
               // Section
               DropdownButtonFormField<String>(
-                value: selectedSection,
+                initialValue: selectedSection,
                 dropdownColor: const Color(0xFF1E293B),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -1346,7 +1346,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           value: s,
                           child: Row(
                             children: [
-                              Icon(Icons.class_rounded,
+                              const Icon(Icons.class_rounded,
                                   size: 18, color: Colors.white70),
                               const SizedBox(width: 12),
                               Text('Sec $s'),
@@ -1395,7 +1395,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       content: StatefulBuilder(
         builder: (dialogContext, setDialogState) {
           return DropdownButtonFormField<String>(
-            value: selectedDept,
+            initialValue: selectedDept,
             dropdownColor: const Color(0xFF1E293B),
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
@@ -1413,7 +1413,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                       value: dept,
                       child: Row(
                         children: [
-                          Icon(Icons.business_rounded,
+                          const Icon(Icons.business_rounded,
                               size: 18, color: Colors.white70),
                           const SizedBox(width: 12),
                           Text(dept),
@@ -1484,7 +1484,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: selectedDept,
+              initialValue: selectedDept,
               dropdownColor: const Color(0xFF1E293B),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -1502,7 +1502,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                         value: d,
                         child: Row(
                           children: [
-                            Icon(Icons.business_rounded,
+                            const Icon(Icons.business_rounded,
                                 size: 18, color: Colors.white70),
                             const SizedBox(width: 12),
                             Text(d),

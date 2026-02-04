@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:collection';
-import 'dart:convert';
 import '../services/tour_assistant_service.dart';
 
 class VirtualTourScreen extends StatefulWidget {
@@ -774,7 +773,7 @@ class _VirtualTourScreenState extends State<VirtualTourScreen>
 
                                 // Calculate dynamic height: show up to 4 items
                                 // Each item is ~50px (48px height + padding)
-                                final itemHeight = 50.0;
+                                const itemHeight = 50.0;
                                 final itemsToShow =
                                     scenes.length > 4 ? 4 : scenes.length;
                                 final dynamicHeight = itemsToShow * itemHeight +
@@ -1007,14 +1006,14 @@ class _VirtualTourScreenState extends State<VirtualTourScreen>
                             // Chat Header
                             Container(
                               padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
                                   colors: [
                                     Color(0xFF6366F1),
                                     Color(0xFF5B21B6)
                                   ],
                                 ),
-                                borderRadius: const BorderRadius.vertical(
+                                borderRadius: BorderRadius.vertical(
                                   top: Radius.circular(24),
                                 ),
                               ),
@@ -1274,7 +1273,7 @@ class _VirtualTourScreenState extends State<VirtualTourScreen>
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2A2A2A).withOpacity(0.8),
-                                border: Border(
+                                border: const Border(
                                   top: BorderSide(color: Color(0xFF3A3A3A)),
                                 ),
                               ),

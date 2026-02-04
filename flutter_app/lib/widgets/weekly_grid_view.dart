@@ -136,7 +136,7 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
   Widget _buildHeaderRow(double timeWidth, double dayWidth) {
     return Container(
       height: 40,
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
       child: Row(
         children: [
           SizedBox(
@@ -150,7 +150,7 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
                 decoration: BoxDecoration(
                     border: Border(
                         left:
-                            BorderSide(color: Colors.white.withOpacity(0.1)))),
+                            BorderSide(color: Colors.white.withValues(alpha: 0.1)))),
                 child: Text(day,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),
@@ -189,15 +189,15 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     border: Border(
-                      left: BorderSide(color: Colors.white.withOpacity(0.1)),
-                      bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
+                      left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                     )),
                 child: Text(
                   slot['label'],
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       letterSpacing: 2,
                       fontWeight: FontWeight.bold,
                       fontSize: 12),
@@ -240,13 +240,13 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
           width: width,
           decoration: BoxDecoration(
             border: Border(
-              left: BorderSide(color: Colors.white.withOpacity(0.1)),
-              bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
+              left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             color: isHovering
-                ? AppTheme.primaryColor.withOpacity(0.4)
+                ? AppTheme.primaryColor.withValues(alpha: 0.4)
                 : (entry != null
-                    ? AppTheme.primaryColor.withOpacity(0.2)
+                    ? AppTheme.primaryColor.withValues(alpha: 0.2)
                     : Colors.transparent),
           ),
           padding: const EdgeInsets.all(4),
@@ -283,9 +283,10 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
     }
 
     return DragTarget<Map<String, dynamic>>(
-      onWillAccept: (data) =>
-          data != null && (entry == null || data['id'] != entry['id']),
-      onAccept: (data) => widget.onClassDrop(data, fullDay, slot),
+      onWillAcceptWithDetails: (details) =>
+          (entry == null || details.data['id'] != entry['id']),
+      onAcceptWithDetails: (details) =>
+          widget.onClassDrop(details.data, fullDay, slot),
       builder: (context, candidateData, rejectedData) {
         final isHovering = candidateData.isNotEmpty;
         final content = buildContent(isHovering: isHovering);
@@ -303,9 +304,9 @@ class _WeeklyGridViewState extends State<WeeklyGridView> {
                 width: width,
                 height: 60,
                 decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.9),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(color: Colors.black26, blurRadius: 10)
                     ]),
                 padding: const EdgeInsets.all(8),

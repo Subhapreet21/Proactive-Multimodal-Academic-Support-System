@@ -40,7 +40,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
   String _year = '1';
   String _section = 'A';
 
-  List<String> _days = [
+  final List<String> _days = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -258,10 +258,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.05),
+                                      color: Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                          color: Colors.white.withOpacity(0.1)),
+                                          color: Colors.white.withValues(alpha: 0.1)),
                                     ),
                                     child: Row(
                                       children: [
@@ -529,13 +529,14 @@ class _TimetableScreenState extends State<TimetableScreen> {
     String? selectedSection = _section;
 
     // Get available options from AppConstants
-    final depts = AppConstants.departments;
+    const depts = AppConstants.departments;
     final years = ['All', ...AppConstants.years];
     final sections = ['All', ...AppConstants.sections];
 
     // Safety checks: ensure current selection is in the list
-    if (!depts.contains(selectedDept))
+    if (!depts.contains(selectedDept)) {
       selectedDept = depts.first; // Default to first dept (CSE)
+    }
     if (!years.contains(selectedYear)) selectedYear = 'All';
     if (!sections.contains(selectedSection)) selectedSection = 'All';
 
@@ -558,10 +559,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -897,8 +898,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   child: pw.Center(
                       child: pw.Text(d.substring(0, 3), // Mon, Tue...
                           style: pw.TextStyle(font: fontBold, fontSize: 11))))),
+              pw.Container(),
             ]
-              ..add(pw.Container()) // Debug: Force evaluation
+              // Debug: Force evaluation
               ..removeLast() // Remove the debug container
               ..forEach((child) => print('📊 PDF Grid: Header child added'))),
 
@@ -1645,9 +1647,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
               ],
             ),
             child: SingleChildScrollView(
@@ -1681,9 +1683,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: _days.take(7).map((d) {
-                      if (d == 'Sunday')
+                      if (d == 'Sunday') {
                         return const SizedBox
                             .shrink(); // Hide Sunday if usually unused
+                      }
                       // Or just show standard days
                       final isSelected = selectedDays.contains(d);
                       return FilterChip(
@@ -1696,8 +1699,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                                   if (selected) {
                                     selectedDays.add(d);
                                   } else {
-                                    if (selectedDays.length > 1)
+                                    if (selectedDays.length > 1) {
                                       selectedDays.remove(d);
+                                    }
                                   }
                                 });
                               },
@@ -1708,7 +1712,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                           fontWeight:
                               isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
-                        backgroundColor: Colors.white.withOpacity(0.05),
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                         side: BorderSide(
@@ -1727,7 +1731,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   DropdownButtonFormField<Map<String, dynamic>>(
                     decoration: InputDecoration(
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.05),
+                        fillColor: Colors.white.withValues(alpha: 0.05),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none),
@@ -1735,7 +1739,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                             color: Colors.white70)),
                     dropdownColor: const Color(0xFF1E293B),
                     style: const TextStyle(color: Colors.white),
-                    value: _schedule.isNotEmpty
+                    initialValue: _schedule.isNotEmpty
                         ? _schedule.firstWhere(
                             (s) =>
                                 s['start'] ==
@@ -1782,7 +1786,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           if (codeController.text.isEmpty ||
-                              nameController.text.isEmpty) return;
+                              nameController.text.isEmpty) {
+                            return;
+                          }
                           try {
                             // Prepare Data
                             final Map<String, dynamic> data = {
@@ -1847,18 +1853,18 @@ class _TimetableScreenState extends State<TimetableScreen> {
       {IconData? icon}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
           prefixIcon: icon != null
-              ? Icon(icon, color: Colors.white.withOpacity(0.7), size: 20)
+              ? Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: 20)
               : null,
           border: InputBorder.none,
           contentPadding:
@@ -1886,10 +1892,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
               colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -1901,7 +1907,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.1),
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.delete_rounded,
@@ -1922,7 +1928,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 24),
@@ -1985,9 +1991,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: const Icon(Icons.info_outline_rounded,
                       size: 20, color: Colors.white70),
@@ -2013,9 +2019,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2064,10 +2070,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -2166,10 +2172,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius:
               BorderRadius.circular(12), // Squaricle to match general theme
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Icon(icon, size: 20, color: color),
       ),
@@ -2181,7 +2187,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
       tooltip: 'Admin Options',
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       color: const Color(0xFF1E293B),
       offset: const Offset(0, 40),
@@ -2205,9 +2211,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child:
             const Icon(Icons.settings_rounded, size: 20, color: Colors.white70),
@@ -2243,16 +2249,16 @@ class _TimetableScreenState extends State<TimetableScreen> {
       children: [
         Text(label,
             style:
-                TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: isEnabled
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.2),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -2311,10 +2317,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
               colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 blurRadius: 20,
               ),
             ],
@@ -2322,7 +2328,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.crop_rotate_rounded,
+              const Icon(Icons.crop_rotate_rounded,
                   size: 48, color: AppTheme.primaryLight),
               const SizedBox(height: 16),
               const Text(
@@ -2339,7 +2345,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   height: 1.5,
                 ),
               ),
@@ -2361,7 +2367,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -2416,9 +2422,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -2469,12 +2475,12 @@ class _TimetableScreenState extends State<TimetableScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.primaryColor
-                    : Colors.white.withOpacity(0.05),
+                    : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
                       ? AppTheme.primaryColor
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                 ),
               ),
               child: Center(
@@ -2501,10 +2507,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.calendar_today_rounded,
-                size: 64, color: Colors.white.withOpacity(0.2)),
+                size: 64, color: Colors.white.withValues(alpha: 0.2)),
             const SizedBox(height: 16),
             Text('No schedule structure found',
-                style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
           ],
         ),
       );
@@ -2528,15 +2534,15 @@ class _TimetableScreenState extends State<TimetableScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Center(
               child: Text(
                 '${slot['label']} (${slot['start']} - ${slot['end']})',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                   letterSpacing: 1,
@@ -2553,9 +2559,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
           // WRAP IN DRAG TARGET (For Dropping in Day View)
           return DragTarget<Map<String, dynamic>>(
-            onWillAccept: (data) =>
-                canManage && data != null && data['id'] != entry['id'],
-            onAccept: (data) => _handleClassDrop(data, _selectedDay, slot),
+            onWillAcceptWithDetails: (details) =>
+                canManage && details.data['id'] != entry['id'],
+            onAcceptWithDetails: (details) =>
+                _handleClassDrop(details.data, _selectedDay, slot),
             builder: (context, candidateData, rejectedData) {
               final isHovering = candidateData.isNotEmpty;
               Widget content;
@@ -2591,17 +2598,17 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   height: 100, // Fixed height for empty slot target
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.02),
+                    color: Colors.white.withValues(alpha: 0.02),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         style: BorderStyle.solid),
                   ),
                   child: Center(
                     child: Text(
                       "Free Slot ($startTime)",
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.2), fontSize: 12),
+                          color: Colors.white.withValues(alpha: 0.2), fontSize: 12),
                     ),
                   ),
                 );
@@ -2650,8 +2657,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
           backgroundColor: const Color(0xFF1E293B), // Match AppTheme
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Row(
-            children: const [
+          title: const Row(
+            children: [
               Icon(Icons.swap_horiz_rounded, color: AppTheme.primaryLight),
               SizedBox(width: 12),
               Text('Swap Classes?',
@@ -2666,7 +2673,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 const Icon(Icons.arrow_downward_rounded,
                     color: Colors.white54, size: 24),
                 _buildSwapCard(targetEntry, "Replacing",
-                    Colors.redAccent.withOpacity(0.8)),
+                    Colors.redAccent.withValues(alpha: 0.8)),
               ],
             ),
           ),
@@ -2749,9 +2756,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2763,7 +2770,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.2),
+                  color: accentColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(label.toUpperCase(),
@@ -2776,18 +2783,18 @@ class _TimetableScreenState extends State<TimetableScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.calendar_today_rounded,
-                        size: 11, color: Colors.white.withOpacity(0.7)),
+                        size: 11, color: Colors.white.withValues(alpha: 0.7)),
                     const SizedBox(width: 6),
                     Text(
                       '$dayStr • $timeStr',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 11,
                           fontWeight: FontWeight.w500),
                     ),
@@ -2811,13 +2818,13 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Row(
             children: [
               Icon(Icons.location_on_outlined,
-                  size: 13, color: Colors.white.withOpacity(0.6)),
+                  size: 13, color: Colors.white.withValues(alpha: 0.6)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   '${entry['course_code']} • ${entry['location']}',
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.6), fontSize: 13),
+                      color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -2848,9 +2855,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
           width: 280, // Fixed width for each day column
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             children: [
@@ -2871,7 +2878,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -2899,16 +2906,16 @@ class _TimetableScreenState extends State<TimetableScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
                           border:
-                              Border.all(color: Colors.white.withOpacity(0.05)),
+                              Border.all(color: Colors.white.withValues(alpha: 0.05)),
                         ),
                         child: Center(
                           child: Text(
                             '${slot['label']} (${slot['start']} - ${slot['end']})',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
                               letterSpacing: 1,
@@ -2925,11 +2932,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
                       // WRAP IN DRAG TARGET (For Dropping)
                       return DragTarget<Map<String, dynamic>>(
-                        onWillAccept: (data) =>
-                            canManage &&
-                            data != null &&
-                            data['id'] != entry['id'],
-                        onAccept: (data) => _handleClassDrop(data, day, slot),
+                        onWillAcceptWithDetails: (details) =>
+                            canManage && details.data['id'] != entry['id'],
+                        onAcceptWithDetails: (details) =>
+                            _handleClassDrop(details.data, day, slot),
                         builder: (context, candidateData, rejectedData) {
                           final isHovering = candidateData.isNotEmpty;
                           Widget content;
@@ -2968,17 +2974,17 @@ class _TimetableScreenState extends State<TimetableScreen> {
                               height: 100, // Approximate height of a class card
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.02),
+                                color: Colors.white.withValues(alpha: 0.02),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.05),
+                                    color: Colors.white.withValues(alpha: 0.05),
                                     style: BorderStyle.solid),
                               ),
                               child: Center(
                                 child: Text(
                                   "Free Slot",
                                   style: TextStyle(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                       fontSize: 12),
                                 ),
                               ),
@@ -3019,12 +3025,12 @@ class _TimetableScreenState extends State<TimetableScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.6), // Glass
+        color: const Color(0xFF1E293B).withValues(alpha: 0.6), // Glass
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -3054,7 +3060,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     const SizedBox(height: 4),
                     Text(
                       entry['course_code'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.primaryLight,
@@ -3066,7 +3072,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
               ),
               if (canManage)
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: Colors.white54, size: 20),
+                  icon: const Icon(Icons.more_vert,
+                      color: Colors.white54, size: 20),
                   color: const Color(0xFF1E293B),
                   onSelected: (val) {
                     if (val == 'edit') _showAddEditClassDialog(entry: entry);
@@ -3089,13 +3096,13 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Row(
             children: [
               Icon(Icons.access_time_rounded,
-                  size: 14, color: Colors.white.withOpacity(0.5)),
+                  size: 14, color: Colors.white.withValues(alpha: 0.5)),
               const SizedBox(width: 6),
               Text(
                 timeStr,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -3105,13 +3112,13 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Row(
             children: [
               Icon(Icons.location_on_outlined,
-                  size: 14, color: Colors.white.withOpacity(0.5)),
+                  size: 14, color: Colors.white.withValues(alpha: 0.5)),
               const SizedBox(width: 6),
               Text(
                 entry['location'],
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -3191,9 +3198,9 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
             colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
           ),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
           ],
         ),
         child: Column(
@@ -3213,7 +3220,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                 Container(
                   height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -3409,9 +3416,9 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -3458,9 +3465,9 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -3480,7 +3487,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                       ? 'Break: ${item['label']}'
                       : 'Class Slot',
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.5), fontSize: 12),
+                      color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                 ),
               ],
             ),
@@ -3509,10 +3516,10 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                         colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                       ),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -3524,7 +3531,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppTheme.errorColor.withOpacity(0.1),
+                            color: AppTheme.errorColor.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.delete_rounded,
@@ -3545,7 +3552,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -3651,10 +3658,10 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                 colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -3685,9 +3692,9 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     children: [
@@ -3697,7 +3704,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                             setConfigState(() => isBreak = val!),
                         activeColor: AppTheme.primaryColor,
                         checkColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4)),
                       ),
@@ -3764,16 +3771,16 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
   Widget _buildDialogField(TextEditingController controller, String label) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

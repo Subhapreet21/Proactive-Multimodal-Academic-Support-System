@@ -58,6 +58,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/virtual-tour', tourAssistantRoutes);
 app.use('/api/admin', adminRoutes);
+import lectureRoutes from './routes/lectureRoutes';
+app.use('/api/lectures', lectureRoutes);
 
 import os from 'os';
 

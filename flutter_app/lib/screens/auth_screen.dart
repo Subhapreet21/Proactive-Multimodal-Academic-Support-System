@@ -301,7 +301,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                               onTap: () => setState(
                                                   () => _isLogin = true),
                                               behavior: HitTestBehavior.opaque,
-                                              child: Center(
+                                              child: const Center(
                                                 child: Text(
                                                   'Log In',
                                                   style: TextStyle(
@@ -318,7 +318,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                               onTap: () => setState(
                                                   () => _isLogin = false),
                                               behavior: HitTestBehavior.opaque,
-                                              child: Center(
+                                              child: const Center(
                                                 child: Text(
                                                   'Sign Up',
                                                   style: TextStyle(

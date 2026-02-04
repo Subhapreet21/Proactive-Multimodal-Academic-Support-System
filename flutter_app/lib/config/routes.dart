@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart'; // Actually needed for BuildContext? Yes.
+// Actually needed for BuildContext? Yes.
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart'; // Needed for AuthProvider? Yes, in AppRouter.router(AuthProvider authProvider).
+// Needed for AuthProvider? Yes, in AppRouter.router(AuthProvider authProvider).
 import '../providers/auth_provider.dart';
 import '../screens/landing_screen.dart';
 import '../screens/auth_screen.dart';
@@ -17,7 +17,8 @@ import '../screens/reminders_screen.dart';
 import '../screens/study_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/virtual_tour_screen.dart';
-import '../screens/admin_users_screen.dart'; // Added Import
+import '../screens/admin_users_screen.dart';
+import '../screens/daily_lecture_prep_screen.dart';
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
 
@@ -55,7 +56,9 @@ class AppRouter {
           if (isGoingToAuth ||
               isGoingToLanding ||
               isGoingToVerifyOtp ||
-              isGoingToResetPassword) return null;
+              isGoingToResetPassword) {
+            return null;
+          }
           return '/';
         }
 
@@ -152,6 +155,10 @@ class AppRouter {
             GoRoute(
               path: '/app/admin/users',
               builder: (context, state) => const AdminUsersScreen(),
+            ),
+            GoRoute(
+              path: '/app/faculty/daily-prep',
+              builder: (context, state) => const DailyLecturePrepScreen(),
             ),
           ],
         ),

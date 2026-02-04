@@ -104,7 +104,7 @@ class ScheduleService {
       return result;
     } catch (e) {
       debugPrint('🌐 API Error: $e');
-      throw e;
+      rethrow;
     }
   }
 }

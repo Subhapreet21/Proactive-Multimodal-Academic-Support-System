@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
-import 'dart:ui';
 import '../config/theme.dart';
 
 class LandingScreen extends StatelessWidget {
@@ -38,7 +37,7 @@ class LandingScreen extends StatelessWidget {
             bottom: isLandscape ? 60 : 90, // Leave space for bottom bar
             right: 0,
             left: isLandscape ? size.width * 0.5 : 0, // Landscape: Right Half
-            child: RepaintBoundary(
+            child: const RepaintBoundary(
               child: ModelViewer(
                 backgroundColor: Colors.transparent,
                 src:
@@ -75,8 +74,8 @@ class LandingScreen extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        AppTheme.backgroundColor.withOpacity(0.95),
-                        AppTheme.backgroundColor.withOpacity(0.0),
+                        AppTheme.backgroundColor.withValues(alpha: 0.95),
+                        AppTheme.backgroundColor.withValues(alpha: 0.0),
                       ],
                       stops: const [0.0, 1.0],
                     ),
@@ -100,8 +99,8 @@ class LandingScreen extends StatelessWidget {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        AppTheme.backgroundColor.withOpacity(0.95),
-                        AppTheme.backgroundColor.withOpacity(0.0),
+                        AppTheme.backgroundColor.withValues(alpha: 0.95),
+                        AppTheme.backgroundColor.withValues(alpha: 0.0),
                       ],
                       stops: const [0.0, 1.0],
                     ),
@@ -175,9 +174,9 @@ class LandingScreen extends StatelessWidget {
                                 ),
 
                                 // Subtitle
-                                Text(
+                                const Text(
                                   'Your AI-powered companion for navigation, scheduling, and academic success.',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.white70,
                                     height: 1.5,
@@ -187,42 +186,47 @@ class LandingScreen extends StatelessWidget {
                                 SizedBox(height: isLandscape ? 16 : 24),
 
                                 // Feature Icon Infinite Carousel
-                                _ScrollingIconRow(
+                                const _ScrollingIconRow(
                                   children: [
                                     _FeatureIcon(
                                       icon: Icons.chat_bubble_outline,
                                       label: 'AI Chat',
-                                      color: const Color(0xFF8B5CF6),
+                                      color: Color(0xFFEF4444), // Red
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.calendar_today_outlined,
                                       label: 'Timetable',
-                                      color: Colors.amber,
+                                      color: Color(0xFFF59E0B), // Orange
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.event_available_outlined,
                                       label: 'Events',
-                                      color: const Color(0xFFEC4899),
+                                      color: Color(0xFFFACC15), // Yellow
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.vrpano_outlined,
                                       label: 'Tour',
-                                      color: const Color(0xFF0EA5E9),
+                                      color: Color(0xFF10B981), // Green
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.library_books_outlined,
                                       label: 'Knowledge',
-                                      color: Colors.teal,
+                                      color: Color(0xFF06B6D4), // Cyan
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.notifications_outlined,
                                       label: 'Reminders',
-                                      color: Colors.deepOrange,
+                                      color: Color(0xFF3B82F6), // Blue
                                     ),
                                     _FeatureIcon(
                                       icon: Icons.auto_stories_outlined,
                                       label: 'Study',
-                                      color: Colors.greenAccent,
+                                      color: AppTheme.primaryColor, // Indigo
+                                    ),
+                                    _FeatureIcon(
+                                      icon: Icons.co_present_outlined,
+                                      label: 'Co-Pilot',
+                                      color: AppTheme.secondaryColor, // Violet
                                     ),
                                   ],
                                 ),
@@ -233,10 +237,9 @@ class LandingScreen extends StatelessWidget {
                       ),
                       // Spacer for Right Side in Landscape (where model is)
                       if (isLandscape)
-                        Expanded(
+                        const Expanded(
                           flex: 1,
-                          child:
-                              const SizedBox(), // Transparent space for 3D model
+                          child: SizedBox(), // Transparent space for 3D model
                         ),
                     ],
                   ),
@@ -256,7 +259,8 @@ class LandingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.4),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -305,7 +309,7 @@ class LandingScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12), // Increased padding (was 8)
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.5),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
         shape: BoxShape.circle,
         border: Border.all(color: AppTheme.borderColor),
       ),
@@ -343,10 +347,10 @@ class _FeatureIcon extends StatelessWidget {
           height: 64,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius:
                 BorderRadius.circular(18), // Slightly squarer (was 20)
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Icon(icon, color: color, size: 32),
         ),
@@ -363,7 +367,6 @@ class _BackspaceTypewriter extends StatefulWidget {
   const _BackspaceTypewriter({
     required this.phrases,
     required this.textStyle,
-    super.key,
   });
 
   @override
@@ -455,7 +458,7 @@ class _BackspaceTypewriterState extends State<_BackspaceTypewriter> {
 // Custom Widget for Infinite Scrolling Icons
 class _ScrollingIconRow extends StatefulWidget {
   final List<Widget> children;
-  const _ScrollingIconRow({required this.children, super.key});
+  const _ScrollingIconRow({required this.children});
 
   @override
   State<_ScrollingIconRow> createState() => _ScrollingIconRowState();

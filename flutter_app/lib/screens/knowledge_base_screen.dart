@@ -341,7 +341,7 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
                       maxLines: 8, icon: Icons.article_rounded),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: category,
+                    initialValue: category,
                     dropdownColor: const Color(0xFF1E293B),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
@@ -389,7 +389,9 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           if (titleController.text.isEmpty ||
-                              contentController.text.isEmpty) return;
+                              contentController.text.isEmpty) {
+                            return;
+                          }
 
                           final data = {
                             'title': titleController.text,
@@ -578,7 +580,7 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
                                   ...myArticles
                                       .map((article) => _buildArticleCard(
                                           article, true, true))
-                                      .toList(),
+                                      ,
                                   const SizedBox(height: 24),
                                 ],
                                 const Padding(
@@ -616,7 +618,7 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
                                 ...otherArticles
                                     .map((article) => _buildArticleCard(
                                         article, false, false))
-                                    .toList(),
+                                    ,
 
                               const SizedBox(
                                   height: 80), // Bottom padding for FAB

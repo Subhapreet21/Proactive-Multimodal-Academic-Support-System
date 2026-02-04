@@ -119,7 +119,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
         centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -328,7 +328,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
     String Function(String)? itemLabelBuilder,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       dropdownColor: const Color(0xFF1E293B), // Dark slate for dropdown menu
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

@@ -6,16 +6,22 @@
 
 ## 🚀 Key Features
 
-### 1. 🏛️ Immersive Landing Experience [NEW]
+### 1. 🏛️ Immersive Landing Experience [UPDATED]
 *   **Interactive 3D Campus Model**: A vertically centered, rotating 3D low-poly university building optimized for performance.
-*   **Infinite Feature Carousel**: Smooth, auto-scrolling marquee showcasing app capabilities with semantic icons.
+*   **Rainbow Feature Carousel**: Vibrant, auto-scrolling marquee following a spectral (ROYGCBIV) sequence with distinct color coding for each feature.
 *   **Typewriter Animation**: Dynamic hero text with a custom "type-pause-delete" effect.
 *   **Glassmorphic Overlay**: Premium UI design with separate top/bottom gradients for clarity.
 
-### 2. 🤖 Virtual Tour AI Assistant [NEW]
+### 2. 👨‍🏫 AI Lecture Co-Pilot [NEW]
+*   **Automated Lesson Planning**: Instantly generate detailed lecture structures, learning objectives, and talking points.
+*   **Verified Resource Hub**: Automated discovery of 5+ specialized academic articles and YouTube resources.
+*   **Smart PDF Export**: Professional export with clickable resource links and intelligent title wrapping.
+*   **Tone-Selectable Content**: Choose between *Formal*, *Engaging*, or *Storytelling* modes to match teaching styles.
+
+### 3. 🤖 Virtual Tour AI Assistant [NEW]
 *   **Context-Aware Chat**: An intelligent floating assistant inside the Virtual Tour that knows *exactly* where you are.
 *   **Location Knowledge Base**: Ask *"What labs are in this building?"* or *"When does this library close?"* while viewing the actual scene.
-*   **Scene-Specific prompts**: Auto-generates suggested questions based on the current panorama (e.g., "Show me the cafeteria menu" when near the food court).
+*   **Scene-Specific prompts**: Auto-generates suggested questions based on the current panorama.
 *   **Fallback Robustness**: Works offline using cached scene data if the tour server is unreachable.
 
 ### 3. 🖥️ Advanced AI Backend (Multi-Key) [NEW]
@@ -26,12 +32,13 @@
     *   **Faculty**: Professional tone, administrative focus.
     *   **Admin**: System-level operational updates.
 
-### 4. 📱 Mobile-First Experience (Flutter)
+### 5. 📱 Mobile-First Experience (Flutter)
 *   **Cross-Platform**: Built with **Flutter** for Android & iOS.
 *   **Glassmorphism UI**: Modern aesthetic with dark mode, blur effects, and smooth transitions.
+*   **Optimized Rendering**: Multi-layered backgrounds and Impeller-ready UI for 60FPS performance.
 *   **Offline First**: Critical data (Notes, Timetable) is cached for access without internet.
 
-### 5. 🛡️ Role-Based Access Control (RBAC)
+### 6. 🛡️ Role-Based Access Control (RBAC)
 *   **Students**: Read-only access to their specific Class Schedule (`Dept-Year-Section`).
 *   **Faculty**: Write access to their Department's Timetable and Notices.
 *   **Admins**: Full system control ("God Mode") to manage all data.
@@ -49,37 +56,77 @@
 
 ```mermaid
 graph TD
-    subgraph Mobile App [Flutter Frontend]
-        3D[Model Viewer]
-        Tour[Virtual Tour + AI Overlay]
-        UI[Glassmorphic UI]
-        Auth[Supabase Auth]
+    subgraph Users [Access Roles]
+        S[Student]
+        F[Faculty]
+        A[Admin]
     end
 
-    subgraph Backend [Node.js Server]
-        API[Express API]
-        LB[Multi-Key Load Balancer]
-        RAG[RAG Engine]
+    subgraph MobileApp [Flutter Frontend]
+        direction TB
+        subgraph Public [Public Pages]
+            Landing[Landing Screen]
+            Auth[Login / Signup]
+        end
+
+        subgraph Common [Shared Modules]
+            Dash[Main Dashboard]
+            Tour[360° Virtual Tour + AI]
+            Chat[AI Smart Chat]
+            Know[Knowledge Base]
+            Events[Campus Notices]
+        end
+
+        subgraph Roles [Role-Specific Screens]
+            subgraph StuPages [Student Views]
+                Study[AI Study Planner]
+                Task[Task Reminders]
+                TimeS[Class Timetable]
+            end
+
+            subgraph FacPages [Faculty Views]
+                Prep[AI Lecture Co-Pilot]
+                TimeF[Timetable Editor]
+            end
+
+            subgraph AdmPages [Admin Panel]
+                UsersM[User Management]
+                Sys[System Settings]
+            end
+        end
     end
 
-    subgraph Knowledge Base
-        Vectors[Supabase pgvector]
-        SceneData[Scene Metadata JSON]
+    subgraph BackendSystem [Cloud Infrastructure]
+        subgraph APILayer [Node.js / Express]
+            API[Core Engine]
+            LB[Gemini Key Balancer]
+            RAG[RAG Logic]
+        end
+
+        subgraph Data [Storage & AI]
+            DB[(Supabase DB)]
+            Vec[pgvector Search]
+            AI[Google Gemini x7]
+        end
     end
 
-    subgraph Cloud Services
-        Gemini["Google Gemini AI (x7 Keys)"]
-    end
+    %% Role Access Logic
+    S --> StuPages
+    S --> Common
+    F --> FacPages
+    F --> Common
+    A --> AdmPages
+    A --> Common
+    A --> StuPages
+    A --> FacPages
 
-    %% Connections
-    UI -->|HTTP Requests| API
-    Tour -->|Scene Context| API
-    
-    API -->|Key Rotation| LB
-    LB -->|Prompt Generation| Gemini
-    
-    API -->|Vector Search| Vectors
-    API -->|Read Scene Data| SceneData
+    %% Data Flow
+    Common --> API
+    Roles --> API
+    API --> LB
+    LB --> AI
+    API --> DB
+    API --> Vec
 ```
 
 ---
@@ -88,10 +135,10 @@ graph TD
 
 | Component | Tech |
 | :--- | :--- |
-| **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus |
-| **Backend** | Node.js, Express, TypeScript, dotenv |
+| **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus, pdf, printing, url_launcher |
+| **Backend** | Node.js, Express, TypeScript, dotenv, Cheerio (Web Discovery) |
 | **Database** | Supabase (PostgreSQL), pgvector, Storage |
-| **AI Model** | Google Gemini (Gemini-2.5-Flash / Pro) |
+| **AI Model** | Google Gemini (Gemini-2.0-Flash / Pro) |
 | **Hosting** | Render (Backend), Vercel/Netlify (Web components) |
 
 ---
@@ -133,6 +180,10 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 
 ### **2. Faculty** 👨‍🏫
 *   **Privileges**: All "Student" features + Administrative Write Access for their Department.
+*   **AI Lecture Co-Pilot**:
+    *   **Generation**: Can use AI to generate complete daily lesson plans.
+    *   **Resources**: Integrated search for academic papers and teaching videos.
+    *   **Export**: Professional PDF export for lecture distribution.
 *   **Timetable Management**:
     *   **Edit Access**: Can modify schedule slots for their specific Department.
     *   **Reschedule**: Can move classes or assign new faculty to slots.

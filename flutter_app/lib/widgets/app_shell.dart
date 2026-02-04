@@ -71,9 +71,10 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentPath = widget.currentPath;
-    final isStudent = authProvider.userRole == 'student'; // Helper check
+    final isStudent = authProvider.userRole == 'student';
+    final isFaculty = authProvider.userRole == 'faculty';
 
-    // Better approach: Define the specific Study Item
+    // Specific Items
     final studyItem = NavigationItem(
       label: 'Study',
       selectedIcon: Icons.school_rounded,
@@ -81,10 +82,24 @@ class _AppShellState extends State<AppShell> {
       path: '/app/study-planner',
     );
 
+    final coPilotItem = NavigationItem(
+      label: 'Co-Pilot',
+      selectedIcon: Icons.co_present_rounded,
+      unselectedIcon: Icons.co_present_outlined,
+      path: '/app/faculty/daily-prep',
+    );
+
     // Create the effective list of items to display
     final effectiveItems = List<NavigationItem>.from(_navItems);
+
+    // Add Study Planner for Students
     if (isStudent && !effectiveItems.any((i) => i.path == studyItem.path)) {
       effectiveItems.add(studyItem);
+    }
+
+    // Add Co-Pilot for Faculty (Add to end)
+    if (isFaculty && !effectiveItems.any((i) => i.path == coPilotItem.path)) {
+      effectiveItems.add(coPilotItem);
     }
 
     // Update current index based on path
@@ -279,7 +294,7 @@ class _AppShellState extends State<AppShell> {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                children: [
+                children: const [
                   // Add extra items here if needed in future
                 ],
               ),
@@ -347,7 +362,9 @@ class _AppShellState extends State<AppShell> {
     if (path.contains('/app/profile')) return 'Profile';
     if (path.contains('/app/events-notices')) return 'Events & Notices';
     if (path.contains('/app/knowledge-base')) return 'Knowledge Base';
+    if (path.contains('/app/knowledge-base')) return 'Knowledge Base';
     if (path.contains('/app/chat')) return 'Chat Assistant';
+    if (path.contains('/app/faculty/daily-prep')) return 'AI Lecture Co-Pilot';
 
     if (path.contains('/app/virtual-tour')) return 'Campus 360° Tour';
 

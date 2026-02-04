@@ -162,7 +162,7 @@ class _StudyScreenState extends State<StudyScreen> {
                                     fontSize: 9, color: PdfColors.blue700))),
                       ],
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ];
@@ -186,9 +186,6 @@ class _StudyScreenState extends State<StudyScreen> {
       }
     }
   }
-
-  // Mood/Energy Options
-  final List<String> _energyLevels = ['Low', 'Medium', 'High'];
 
   Future<void> _generateStudyPlan() async {
     setState(() => _isLoading = true);
@@ -272,48 +269,56 @@ class _StudyScreenState extends State<StudyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: _studyPlan != null
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white),
-                onPressed: () => setState(() => _studyPlan = null),
-                tooltip: 'Back to Mood Selection',
-              )
-            : null,
-        actions: [
-          if (_studyPlan != null) ...[
-            IconButton(
-              icon: const Icon(Icons.download_rounded, color: Colors.white),
-              onPressed: _downloadPdf,
-              tooltip: 'Download PDF',
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                icon: const Icon(Icons.autorenew_rounded, color: Colors.white),
-                onPressed: _generateStudyPlan,
-                tooltip: 'Regenerate Plan',
-              ),
-            ),
-          ],
-        ],
-      ),
       body: Container(
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppTheme.backgroundGradient,
         ),
         child: SafeArea(
-          child: _isLoading
-              ? _buildLoadingState()
-              : _studyPlan == null
-                  ? _buildEmptyState()
-                  : _buildPlanView(),
+          child: Column(
+            children: [
+              if (_studyPlan != null) _buildResultToolbar(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _studyPlan == null
+                        ? _buildEmptyState()
+                        : _buildPlanView(),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildResultToolbar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white),
+            onPressed: () => setState(() => _studyPlan = null),
+            tooltip: 'Back to Mood Selection',
+          ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.download_rounded, color: Colors.white),
+                onPressed: _downloadPdf,
+                tooltip: 'Download PDF',
+              ),
+              IconButton(
+                icon: const Icon(Icons.autorenew_rounded, color: Colors.white),
+                onPressed: _generateStudyPlan,
+                tooltip: 'Regenerate Plan',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -327,13 +332,13 @@ class _StudyScreenState extends State<StudyScreen> {
           const SizedBox(height: 16),
           Text(
             'Analyzing your schedule & tasks...',
-            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 8),
           Text(
             'Crafting the perfect plan for you 🚀',
-            style:
-                TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
           ),
         ],
       ),
@@ -348,11 +353,11 @@ class _StudyScreenState extends State<StudyScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.2),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     blurRadius: 30,
                     spreadRadius: 5,
                   )
@@ -377,7 +382,7 @@ class _StudyScreenState extends State<StudyScreen> {
             'I can generate a personalized study schedule based on your timetable, deadlines, and current energy level.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 16,
               height: 1.5,
             ),
@@ -397,9 +402,9 @@ class _StudyScreenState extends State<StudyScreen> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor.withOpacity(0.5),
+              color: AppTheme.cardColor.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -434,7 +439,7 @@ class _StudyScreenState extends State<StudyScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 8,
-                shadowColor: AppTheme.primaryColor.withOpacity(0.4),
+                shadowColor: AppTheme.primaryColor.withValues(alpha: 0.4),
               ),
               child: const Text(
                 'Generate Study Plan',
@@ -469,13 +474,13 @@ class _StudyScreenState extends State<StudyScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.secondaryColor.withOpacity(0.2),
-                    AppTheme.secondaryColor.withOpacity(0.05),
+                    AppTheme.secondaryColor.withValues(alpha: 0.2),
+                    AppTheme.secondaryColor.withValues(alpha: 0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: AppTheme.secondaryColor.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppTheme.secondaryColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -525,13 +530,13 @@ class _StudyScreenState extends State<StudyScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isBreak
-                  ? Colors.white.withOpacity(0.05)
-                  : AppTheme.cardColor.withOpacity(0.6),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : AppTheme.cardColor.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isBreak
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.white.withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white.withValues(alpha: 0.1),
               ),
             ),
             child: Column(
@@ -605,14 +610,14 @@ class _StudyScreenState extends State<StudyScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(Icons.lightbulb_outline_rounded,
-                          size: 16, color: Colors.white.withOpacity(0.5)),
+                          size: 16, color: Colors.white.withValues(alpha: 0.5)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           slot['focus_tip'],
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -647,7 +652,8 @@ class _StudyScreenState extends State<StudyScreen> {
                         ),
                         backgroundColor: AppTheme.cardColor,
                         side: BorderSide(
-                            color: AppTheme.primaryColor.withOpacity(0.3)),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.3)),
                         onPressed: () async {
                           final url = Uri.parse(link['url']);
                           if (await canLaunchUrl(url)) {
@@ -675,7 +681,8 @@ class _StudyScreenState extends State<StudyScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
+          color:
+              isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -684,7 +691,7 @@ class _StudyScreenState extends State<StudyScreen> {
               isSelected: isSelected,
               child: Icon(
                 icon,
-                color: isSelected ? color : Colors.white.withOpacity(0.4),
+                color: isSelected ? color : Colors.white.withValues(alpha: 0.4),
                 size: 32,
               ),
             ),
@@ -692,7 +699,7 @@ class _StudyScreenState extends State<StudyScreen> {
             Text(
               level,
               style: TextStyle(
-                color: isSelected ? color : Colors.white.withOpacity(0.4),
+                color: isSelected ? color : Colors.white.withValues(alpha: 0.4),
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -768,10 +775,10 @@ class _PomodoroTimerDialogState extends State<_PomodoroTimerDialog> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 30,
             ),
           ],
@@ -800,7 +807,7 @@ class _PomodoroTimerDialogState extends State<_PomodoroTimerDialog> {
                   child: CircularProgressIndicator(
                     value: progress,
                     strokeWidth: 12,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     color: AppTheme.primaryColor,
                   ),
                 ),
@@ -849,7 +856,7 @@ class _PomodoroTimerDialogState extends State<_PomodoroTimerDialog> {
                   icon: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.stop_rounded, color: Colors.red),

@@ -113,6 +113,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(height: 24),
                           ],
 
+                          if (permissions.isFaculty || permissions.isAdmin) ...[
+                            _buildFacultyPrepCard(),
+                            const SizedBox(height: 24),
+                          ],
+
                           if (!permissions.isAdmin &&
                               !permissions.isFaculty) ...[
                             _buildStudyPlanCard(),
@@ -713,6 +718,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildFacultyPrepCard() {
+    return GestureDetector(
+      onTap: () => context.go('/app/faculty/daily-prep'),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.primaryColor.withOpacity(0.2),
+              AppTheme.primaryColor.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.co_present_rounded,
+                    color: AppTheme.primaryLight, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AI Lecture Co-Pilot',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Generate daily lesson plans instantly',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Colors.white54, size: 16),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

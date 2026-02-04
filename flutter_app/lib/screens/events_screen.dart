@@ -125,7 +125,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       icon: Icons.location_on_rounded),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: category,
+                    initialValue: category,
                     dropdownColor: const Color(0xFF1E293B),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
@@ -176,8 +176,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                   onPrimary: Colors.white,
                                   surface: Color(0xFF1E293B),
                                   onSurface: Colors.white,
-                                ),
-                                dialogBackgroundColor: const Color(0xFF1E293B),
+                                ), dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1E293B)),
                               ),
                               child: child!,
                             );
@@ -244,7 +243,7 @@ class _EventsScreenState extends State<EventsScreen> {
 
                             if (isEdit) {
                               await _apiService.put(
-                                  '${AppConstants.eventsEndpoint}/${event!.id}',
+                                  '${AppConstants.eventsEndpoint}/${event.id}',
                                   data);
                             } else {
                               await _apiService.post(

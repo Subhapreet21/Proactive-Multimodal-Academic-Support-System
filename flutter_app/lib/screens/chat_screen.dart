@@ -399,7 +399,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
+                        const Expanded(
                             child: Text("Image selected",
                                 style: TextStyle(color: Colors.white70))),
                         IconButton(
@@ -471,7 +471,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             BoxShadow(
                                 color: AppTheme.primaryColor.withOpacity(0.4),
                                 blurRadius: 8,
-                                offset: Offset(0, 2))
+                                offset: const Offset(0, 2))
                           ]),
                       child: IconButton(
                         icon: const Icon(Icons.send_rounded),

@@ -17,7 +17,7 @@ class RoleSelectionScreen extends StatelessWidget {
 // ... (rest of the file remains, jumping to the blur part)
 
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
