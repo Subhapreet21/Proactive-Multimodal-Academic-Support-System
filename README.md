@@ -43,6 +43,7 @@
 *   **Faculty**: Write access to their Department's Timetable and Notices.
 *   **Admins**: Full system control ("God Mode") to manage all data.
 *   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In with JWT sessions.
+*   **Invitation System**: Dynamic, database-backed access codes for Faculty/Admin role promotion (Single-use or Bulk).
 
 ### 6. 📅 Smart Scheduling & Tasks
 *   **Dynamic Timetable**: Real-time updates for the entire class when faculty changes a slot.
@@ -164,7 +165,7 @@ graph TD
 | **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus, pdf, printing, url_launcher |
 | **Backend** | Node.js, Express, TypeScript, dotenv, Cheerio (Web Discovery) |
 | **Database** | Supabase (PostgreSQL), pgvector, Storage |
-| **AI Model** | Google Gemini (Gemini-2.0-Flash / Pro) |
+| **AI Model** | Google Gemini (Gemini-2.5-Flash / Pro) |
 | **Hosting** | Render (Backend), Vercel/Netlify (Web components) |
 
 ---
@@ -313,9 +314,10 @@ GEMINI_API_KEY_2=AIzaSy...
 GEMINI_API_KEY_3=AIzaSy...
 # ... up to GEMINI_API_KEY_7
 
-# Security Secrets (For Role Elevation)
-ADMIN_SECRET=admin123
-FACULTY_SECRET=faculty123
+# Security Secrets
+# NOTE: Static secrets (ADMIN_SECRET) are DEPRECATED.
+# The system now uses a database-driven Invitation System.
+# Generate codes via the Admin Dashboard.
 ```
 
 ---

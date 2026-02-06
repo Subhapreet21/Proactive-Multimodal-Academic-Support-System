@@ -9,6 +9,12 @@ const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
+
+// Request logger
+app.use((req, res, next) => {
+    console.log(`📡 [${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 // import fileUpload from 'express-fileupload';
 // app.use(fileUpload()); // Removed to fix conflict with Multer
 
@@ -59,6 +65,12 @@ app.use('/api/virtual-tour', tourAssistantRoutes);
 app.use('/api/admin', adminRoutes);
 import lectureRoutes from './routes/lectureRoutes';
 app.use('/api/lectures', lectureRoutes);
+
+// Fallback 404 handler
+app.use((req, res) => {
+    console.log(`🚫 [404 Not Found] ${req.method} ${req.url}`);
+    res.status(404).json({ error: 'Route not found', path: req.url });
+});
 
 import os from 'os';
 

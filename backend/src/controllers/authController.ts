@@ -19,16 +19,37 @@ export const updateUserRole = async (req: Request, res: Response) => {
         }
 
         // Verify Access Codes for Privileged Roles
-        if (role === 'admin') {
-            if (code !== process.env.ADMIN_SECRET) {
-                return res.status(403).json({ error: "Invalid Admin Access Code" });
+        // Verify Access Codes for Privileged Roles
+        if (role === 'admin' || role === 'faculty') {
+            if (!code) {
+                return res.status(403).json({ error: "Access Code is required for this role" });
             }
-        }
 
-        if (role === 'faculty') {
-            if (code !== process.env.FACULTY_SECRET) {
-                return res.status(403).json({ error: "Invalid Faculty Access Code" });
+            const { data: invite, error } = await supabase
+                .from('invitation_codes')
+                .select('*')
+                .eq('code', code)
+                .eq('role', role)
+                .single();
+
+            if (error || !invite) {
+                return res.status(403).json({ error: "Invalid Access Code" });
             }
+
+            if (invite.used_count >= invite.usage_limit) {
+                return res.status(403).json({ error: "Access Code has expired (Usage Limit Reached)" });
+            }
+
+            if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+                return res.status(403).json({ error: "Access Code has expired (Time Limit)" });
+            }
+
+            // Increment usage count
+            // Note: In high currency, use an RPC. For now, read-modify-write is acceptable.
+            await supabase
+                .from('invitation_codes')
+                .update({ used_count: invite.used_count + 1 })
+                .eq('code', code);
         }
 
         // Update Clerk Metadata (Skip for mock users)

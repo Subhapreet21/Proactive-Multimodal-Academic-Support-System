@@ -54,15 +54,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A), // Slate 900
-              Color(0xFF1E293B), // Slate 800
-              Color(0xFF1E1B4B), // Indigo 950
-            ],
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: SafeArea(
           child: Center(
@@ -146,7 +138,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                               letterSpacing: 8,
                             ),
                             filled: true,
-                            fillColor: Colors.black.withOpacity(0.2),
+                            fillColor: Colors.white.withOpacity(0.05),
                             contentPadding: const EdgeInsets.symmetric(
                                 vertical: 16, horizontal: 16),
                             border: OutlineInputBorder(

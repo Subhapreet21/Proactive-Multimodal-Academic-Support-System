@@ -51,3 +51,36 @@ export const debugAuth = (req: Request, res: Response, next: NextFunction) => {
     console.log("Auth Status:", (req as any).auth);
     next();
 };
+
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    // 1. Ensure User is Authenticated
+    if (!(req as any).auth?.userId) {
+        return res.status(401).json({ error: 'Unauthorized: Authentication required' });
+    }
+
+    const userId = (req as any).auth.userId;
+
+    // 2. Allow Mock Admin for testing (if applicable)
+    if (userId.startsWith('user_mock_admin')) {
+        return next();
+    }
+
+    // 3. Check Role in Database
+    try {
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', userId)
+            .single();
+
+        if (error || !profile || profile.role !== 'admin') {
+            console.warn(`⛔ [AuthMiddleware] Access denied for user ${userId}. Required: Admin, Found: ${profile?.role}`);
+            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+
+        next();
+    } catch (err) {
+        console.error('Error verifying admin role:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

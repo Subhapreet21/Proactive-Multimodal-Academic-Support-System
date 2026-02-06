@@ -13,17 +13,20 @@ class AppConstants {
   static const String profileEndpoint = '/api/profile';
   static const String onboardingEndpoint = '/api/auth/role';
   static const String resetProfileEndpoint = '/api/auth/reset-profile';
-  
+  static const String invGenerateEndpoint = '/api/admin/invitations/generate';
+  static const String invListEndpoint = '/api/admin/invitations/list';
+  static const String invDeleteEndpoint = '/api/admin/invitations'; // + /:code
+
   // Role Types
   static const String roleStudent = 'student';
   static const String roleFaculty = 'faculty';
   static const String roleAdmin = 'admin';
-  
+
   // Storage Keys
   static const String storageKeyToken = 'auth_token';
   static const String storageKeyUserId = 'user_id';
   static const String storageKeyUserRole = 'user_role';
-  
+
   // Department Options
   static const List<String> departments = [
     'CSE',
@@ -33,7 +36,7 @@ class AppConstants {
     'CE',
     'IT',
   ];
-  
+
   // Year Options
   static const List<String> years = [
     '1',
@@ -41,14 +44,14 @@ class AppConstants {
     '3',
     '4',
   ];
-  
+
   // Section Options
   static const List<String> sections = [
     'A',
     'B',
     'C',
   ];
-  
+
   // Reminder Categories
   static const List<String> reminderCategories = [
     'Assignment',
@@ -57,7 +60,7 @@ class AppConstants {
     'Personal',
     'Other',
   ];
-  
+
   // Event Categories
   static const List<String> eventCategories = [
     'Academic',

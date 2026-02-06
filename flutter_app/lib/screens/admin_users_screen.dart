@@ -44,12 +44,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
   @override
   void dispose() {
-    // Reset Orientations (Allow Landscape again)
+    // Reset Orientations (Revert to Global Portrait Default)
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
     ]);
     _tabController.dispose();
     _searchController.dispose();
@@ -840,7 +838,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                           value: y,
                                           child: Row(
                                             children: [
-                                              const Icon(Icons.calendar_today_rounded,
+                                              const Icon(
+                                                  Icons.calendar_today_rounded,
                                                   size: 18,
                                                   color: Colors.white70),
                                               const SizedBox(width: 12),

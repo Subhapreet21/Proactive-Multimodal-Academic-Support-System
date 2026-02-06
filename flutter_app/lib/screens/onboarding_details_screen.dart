@@ -21,6 +21,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
   String? _selectedSection;
   final _accessCodeController = TextEditingController();
   bool _isLoading = false;
+  bool _isAuthCodeVisible = false;
 
   @override
   void dispose() {
@@ -120,15 +121,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A), // Slate 900
-              Color(0xFF1E293B), // Slate 800
-              Color(0xFF1E1B4B), // Indigo 950
-            ],
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: SafeArea(
           child: Center(
@@ -231,7 +224,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
                               hintStyle: TextStyle(
                                   color: Colors.white.withOpacity(0.4)),
                               filled: true,
-                              fillColor: Colors.black.withOpacity(0.2),
+                              fillColor: Colors.white.withOpacity(0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
@@ -247,8 +240,22 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
                                 borderSide: const BorderSide(
                                     color: AppTheme.primaryColor),
                               ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isAuthCodeVisible
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: Colors.white.withOpacity(0.4),
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isAuthCodeVisible = !_isAuthCodeVisible;
+                                  });
+                                },
+                              ),
                             ),
-                            obscureText: true,
+                            obscureText: !_isAuthCodeVisible,
                           ),
                           const SizedBox(height: 16),
                           Container(
@@ -336,7 +343,7 @@ class _OnboardingDetailsScreenState extends State<OnboardingDetailsScreen> {
         labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
         prefixIcon: Icon(icon, color: Colors.white70),
         filled: true,
-        fillColor: Colors.black.withOpacity(0.2),
+        fillColor: Colors.white.withOpacity(0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
