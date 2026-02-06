@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:excel/excel.dart' as excel_pkg;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,12 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
   @override
   void dispose() {
+    // Lock back to Portrait when leaving Timetable
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     _dayVerticalController.dispose();
     _weekHorizontalController.dispose();
     for (var controller in _weekDayControllers.values) {
@@ -166,6 +173,10 @@ class _TimetableScreenState extends State<TimetableScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Unlock rotation (Allow Landscape) for Timetable
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+
     // Initialize day controllers for Week View
     for (var day in _days) {
       _weekDayControllers[day] = ScrollController();
@@ -258,10 +269,12 @@ class _TimetableScreenState extends State<TimetableScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.05),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.1)),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.1)),
                                     ),
                                     child: Row(
                                       children: [
@@ -559,7 +572,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.5),
@@ -1649,7 +1663,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
               ],
             ),
             child: SingleChildScrollView(
@@ -1993,7 +2008,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: const Icon(Icons.info_outline_rounded,
                       size: 20, color: Colors.white70),
@@ -2021,7 +2037,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2248,8 +2265,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2608,7 +2625,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     child: Text(
                       "Free Slot ($startTime)",
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.2), fontSize: 12),
+                          color: Colors.white.withValues(alpha: 0.2),
+                          fontSize: 12),
                     ),
                   ),
                 );
@@ -2908,8 +2926,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
-                          border:
-                              Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
                         child: Center(
                           child: Text(
@@ -2984,7 +3002,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                                 child: Text(
                                   "Free Slot",
                                   style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
                                       fontSize: 12),
                                 ),
                               ),
@@ -3200,7 +3219,8 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5), blurRadius: 20),
           ],
         ),
         child: Column(
@@ -3516,7 +3536,8 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                         colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                       ),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.5),
@@ -3694,7 +3715,8 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     children: [
@@ -3704,7 +3726,8 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                             setConfigState(() => isBreak = val!),
                         activeColor: AppTheme.primaryColor,
                         checkColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.5)),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4)),
                       ),

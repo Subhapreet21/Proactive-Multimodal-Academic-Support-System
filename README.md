@@ -56,77 +56,103 @@
 
 ```mermaid
 graph TD
-    subgraph Users [Access Roles]
-        S[Student]
-        F[Faculty]
-        A[Admin]
-    end
+    %% --- Style Definitions ---
+    classDef role fill:#e0f2fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    classDef flutter fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef tech fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef cloud fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef db fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
 
-    subgraph MobileApp [Flutter Frontend]
+    subgraph UserGroup [👥 Access Roles]
         direction TB
-        subgraph Public [Public Pages]
-            Landing[Landing Screen]
-            Auth[Login / Signup]
+        S[🎓 Student]:::role
+        F[👨‍🏫 Faculty]:::role
+        A[🛡️ Admin]:::role
+    end
+
+    subgraph Frontend [📱 Mobile Application - Flutter]
+        direction TB
+        
+        subgraph PublicArea [🔓 Public Zone]
+            Landing[Landing Page]:::flutter
+            Auth[Authentication]:::flutter
         end
 
-        subgraph Common [Shared Modules]
-            Dash[Main Dashboard]
-            Tour[360° Virtual Tour + AI]
-            Chat[AI Smart Chat]
-            Know[Knowledge Base]
-            Events[Campus Notices]
-        end
-
-        subgraph Roles [Role-Specific Screens]
-            subgraph StuPages [Student Views]
-                Study[AI Study Planner]
-                Task[Task Reminders]
-                TimeS[Class Timetable]
+        subgraph Authenticated [🔒 Secure App Shell]
+            Dash[Dashboard]:::flutter
+            
+            subgraph Features [✨ Core Features]
+                Chat[🤖 AI Assistant]:::flutter
+                Tour[🎥 Virtual Tour]:::flutter
+                KB[📚 Knowledge Base]:::flutter
+                Events[📢 Notices]:::flutter
             end
 
-            subgraph FacPages [Faculty Views]
-                Prep[AI Lecture Co-Pilot]
-                TimeF[Timetable Editor]
-            end
-
-            subgraph AdmPages [Admin Panel]
-                UsersM[User Management]
-                Sys[System Settings]
+            subgraph RoleSpecific [🎯 Role-Based Modules]
+                Study[AI Study Planner]:::flutter
+                CoPilot[AI Lecture Co-Pilot]:::flutter
+                Time[Smart Timetable]:::flutter
+                AdminPanel[Admin Console]:::flutter
             end
         end
     end
 
-    subgraph BackendSystem [Cloud Infrastructure]
-        subgraph APILayer [Node.js / Express]
-            API[Core Engine]
-            LB[Gemini Key Balancer]
-            RAG[RAG Logic]
+    subgraph BackendServices [☁️ Cloud Infrastructure]
+        direction TB
+        
+        subgraph API_Layer [⚡ Node.js API]
+            Server[Express Server]:::tech
+            LB[⚖️ Key Balancer]:::tech
+            Keeper[❤️ Keep-Alive System]:::tech
         end
 
-        subgraph Data [Storage & AI]
-            DB[(Supabase DB)]
-            Vec[pgvector Search]
-            AI[Google Gemini x7]
+        subgraph Intelligence [🧠 AI Core]
+            Gemini[✨ Google Gemini]:::cloud
+            Gemini_x7[🗝️ 7x API Keys]:::cloud
+        end
+
+        subgraph DataLayer [💾 Persistence]
+            Supabase[(Supabase DB)]:::db
+            Vector[(pgvector Store)]:::db
         end
     end
 
-    %% Role Access Logic
-    S --> StuPages
-    S --> Common
-    F --> FacPages
-    F --> Common
-    A --> AdmPages
-    A --> Common
-    A --> StuPages
-    A --> FacPages
+    %% --- Connections ---
 
-    %% Data Flow
-    Common --> API
-    Roles --> API
-    API --> LB
-    LB --> AI
-    API --> DB
-    API --> Vec
+    %% User Access
+    S --> Auth
+    F --> Auth
+    A --> Auth
+    Auth --> Dash
+
+    %% Key Features Access
+    Dash --> Chat
+    Dash --> Tour
+    Dash --> KB
+    Dash --> Events
+
+    %% Role Specific Logic
+    Dash -. Student .-> Study
+    Dash -. Faculty .-> CoPilot
+    Dash -. Admin .-> AdminPanel
+    
+    %% Backend Interactions
+    Chat <==> Server
+    CoPilot <==> Server
+    Study <==> Server
+    Tour <==> Server
+
+    %% Internal Backend Flow
+    Server --> LB
+    Server --> Keeper
+    LB --> Gemini
+    Gemini -.-> Gemini_x7
+    
+    Server <--> Supabase
+    Server <--> Vector
+
+    %% Keep Alive Logic
+    Keeper -. Ping .-> Supabase
 ```
 
 ---
@@ -204,6 +230,47 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 
 ---
 
+## 📖 App Page Reference & Access Control
+
+| Page Name | Route | Allowed Roles | Functionality Description |
+| :--- | :--- | :--- | :--- |
+| **Landing** | `/` | **All (Public)** | 3D Interactive Campus, Feature Carousel, Login Entry. |
+| **Auth** | `/auth` | **All (Public)** | Email/Password Login, Google Social Auth, Sign Up. |
+| **Dashboard** | `/app/dashboard` | **All** | Central hub showing upcoming classes, tasks, and notices. |
+| **Timetable** | `/app/timetable` | **Student** (Read)<br>**Faculty** (Edit Dept)<br>**Admin** (Edit All) | **Student**: View personal class schedule.<br>**Faculty/Admin**: Edit slots, assign teachers, drag-and-drop rescheduling. <br>*(Landscape Mode Supported)* |
+| **Virtual Tour** | `/app/virtual-tour` | **All** | 360° Panorama navigation with AI location assistant. |
+| **Knowledge Base** | `/app/knowledge-base` | **All** (Read)<br>**Fac/Admin** (Write) | University Wiki for rules, labs, and FAQs. |
+| **AI Chat** | `/app/chat` | **All** | Private 1-on-1 conversations with Gemini AI. |
+| **Study Planner** | `/app/study-planner` | **Student** | Generate AI study schedules based on syllabus/exams. |
+| **Reminders** | `/app/reminders` | **Student** | Personal To-Do list with deadlines. |
+| **Events** | `/app/events-notices` | **All** (Read)<br>**Fac/Admin** (Post) | Campus news board and official announcements. |
+| **Profile** | `/app/profile` | **All** | View personal details and sign out. |
+| **Lecture Co-Pilot** | `/app/faculty/daily-prep` | **Faculty** | **AI Lesson Planner**: Generate scripts, find resources, and export PDF lesson plans. |
+| **User Mgmt** | `/app/admin/users` | **Admin** | Bulk manage users, promote/demote roles, data cleanup. |
+
+---
+
+## ⚙️ Infrastructure & Maintenance (CRON)
+
+To overcome the limitations of free-tier hosting (Render sleep & Supabase pausing), this project uses a robust **Keep-Alive System**.
+
+### 🔄 The "Heartbeat" CRON Job
+A background monitor (e.g., UptimeRobot) is configured to ping the backend every **10 minutes**.
+
+*   **Endpoint:** `GET /api/health`
+*   **Strategy:** "Fire-and-Forget" optimized for stability.
+
+### How it Works:
+1.  **Immediate Response**: The server returns `200 OK` **instantly** to the monitoring service.
+    *   *Benefit*: Prevents "Timeout" or "503 Service Unavailable" alerts on the status page.
+2.  **Background Wake-Up**: After responding, the server silently triggers a lightweight query to **Supabase**.
+    *   *Benefit*: Resets Supabase's 7-day inactivity timer without delaying the HTTP response.
+    *   *Benefit*: Keeps the Render instance "hot" and ready for real user traffic.
+
+> **Note**: This setup ensures 24/7 availability without upgrading to paid tiers during the development/demo phase.
+
+---
+
 ## 🔑 Environment Configuration
 
 To run this project, you must configure the following environment variables.
@@ -270,7 +337,19 @@ FACULTY_SECRET=faculty123
 1.  Navigate to `flutter_app/`.
 2.  Install packages: `flutter pub get`.
 3.  Ensure `assets/3D-model/` contains the `.glb` file.
-4.  Run app: `flutter run`.
+4.  **USB Debugging (Physical Device)**:
+    If running on a real Android phone via USB, you **MUST** run this command to allow the phone to see your computer's localhost:
+    ```bash
+    adb reverse tcp:5002 tcp:5002
+    ```
+5.  Run app: `flutter run`.
+
+---
+
+## 📱 UI & Experience Upgrades [NEW]
+*   **Strict Portrait Mode**: The app is globally locked to Portrait mode to prevent UI congestion.
+*   **Smart Landscape Support**: The **Timetable Screen** automatically unlocks Landscape mode for optimal grid viewing.
+*   **Rainbow Carousel**: The Landing Page features a vibrant implementation of the full ROYGCBIV spectrum.
 
 ---
 

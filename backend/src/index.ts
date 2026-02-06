@@ -18,21 +18,20 @@ app.get('/', (req, res) => {
 
 import { supabase } from './services/supabaseClient';
 
-app.get('/api/health', async (req, res) => {
-    try {
-        // Simple query to keep Supabase active
-        const { error } = await supabase.from('profiles').select('id').limit(1);
-        if (error) throw error;
+app.get('/api/health', (req, res) => {
+    // 1. Respond INSTANTLY to Uptime Robot (Prevent 503/Timeout)
+    res.json({
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        note: 'Background DB Ping Initiated'
+    });
 
-        res.json({
-            status: 'online',
-            timestamp: new Date().toISOString(),
-            database: 'active'
+    // 2. Fire-and-forget DB Query to wake up Supabase (Background)
+    supabase.from('profiles').select('id').limit(1)
+        .then(({ error }) => {
+            if (error) console.error('Background DB Ping Failed:', error.message);
+            else console.log('Background DB Ping Success');
         });
-    } catch (error) {
-        console.error('Health check failed:', error);
-        res.status(500).json({ status: 'error', database: 'disconnected' });
-    }
 });
 
 import chatRoutes from './routes/chatRoutes';

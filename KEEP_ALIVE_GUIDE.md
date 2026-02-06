@@ -10,10 +10,13 @@ I have implemented a **"Two-Birds-One-Stone"** fix locally (`/api/health`). Here
 
 ## 🛠️ The Strategy
 I added a special endpoint: **`/api/health`**
-*   When accessed, it wakes up the **Render Backend**.
-*   Then, it runs a tiny query to your **Supabase Database**.
+1.  **Instant Response**: It returns `200 OK` **immediately** to satisfy UptimeRobot (preventing 503/Timeout errors).
+2.  **Background Wake-Up**: After responding, it silently runs a query to **Supabase** in the background.
 
-**Result**: By hitting this one URL automatically, you keep *both* services active!
+**Result**: 
+*   **Render** stays awake because it handled a request.
+*   **Supabase** wakes up (if asleep) because it received a query, but UptimeRobot **doesn't wait** for this slow process.
+*   **No More False Alarms**: Even if Supabase takes 20 seconds to wake up, your status page remains Green (Online).
 
 ---
 
