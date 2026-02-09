@@ -61,6 +61,8 @@ ${sceneContext.timings ? `TIMINGS: ${sceneContext.timings}` : ''}
 
 ${sceneContext.contactInfo ? `CONTACT: ${sceneContext.contactInfo}` : ''}
 
+${sceneContext.directions ? `DIRECTIONS: ${sceneContext.directions}` : ''}
+
 ${sceneContext.nearbyLocations.length > 0 ? `NEARBY LOCATIONS:\n${sceneContext.nearbyLocations.map((loc: string) => `- ${loc}`).join('\n')}` : ''}
 
 ${sceneContext.historicalInfo ? `HISTORICAL INFO: ${sceneContext.historicalInfo}` : ''}
@@ -71,7 +73,7 @@ ${historyStr}
 === INSTRUCTIONS ===
 - Answer the student's question based on the current location context above
 - Be informative, friendly, and concise
-- If asked about directions, use the "Nearby Locations" information
+- If asked about directions, use the "Directions" and "Nearby Locations" information
 - If asked about something not in the context, provide general helpful information
 - Focus on helping prospective students understand the campus
 
