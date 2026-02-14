@@ -52,6 +52,8 @@ const executeWithRetry = async <T>(operation: (genAI: GoogleGenerativeAI) => Pro
     throw lastError || new Error("All API keys failed");
 };
 
+// ...
+// ...
 export const generateText = async (prompt: string, context?: string) => {
     return executeWithRetry(async (genAI) => {
         console.log("🤖 Generating text with gemini-2.5-flash...");
@@ -66,6 +68,8 @@ export const generateFromImage = async (prompt: string, imageBuffer: Buffer, mim
     return executeWithRetry(async (genAI) => {
         console.log("👁️ Generating vision response with gemini-2.5-flash...");
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // ...
+        // ...
 
         // Convert buffer to base64
         const imagePart = {
@@ -82,8 +86,8 @@ export const generateFromImage = async (prompt: string, imageBuffer: Buffer, mim
 
 export const getEmbedding = async (text: string) => {
     return executeWithRetry(async (genAI) => {
-        console.log("🧬 Generating embedding with text-embedding-004...");
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        console.log("🧬 Generating embedding with gemini-embedding-001...");
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
         const result = await model.embedContent(text);
         return result.embedding.values;
     });

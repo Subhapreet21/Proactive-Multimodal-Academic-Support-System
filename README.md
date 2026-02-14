@@ -165,7 +165,7 @@ graph TD
 | **Mobile App** | Flutter 3.x, Dart 3, Riverpod, GoRouter, webview_flutter, model_viewer_plus, pdf, printing, url_launcher |
 | **Backend** | Node.js, Express, TypeScript, dotenv, Cheerio (Web Discovery) |
 | **Database** | Supabase (PostgreSQL), pgvector, Storage |
-| **AI Model** | Google Gemini (Gemini-2.5-Flash / Pro) |
+| **AI Model** | Google Gemini (Gemini-2.5-Flash / Pro + Gemini-Embedding-001) |
 | **Hosting** | Render (Backend), Vercel/Netlify (Web components) |
 
 ---

@@ -71,6 +71,7 @@ dependencies:
   model_viewer_plus: ^1.7.0
   flutter_inappwebview: ^6.1.5
   animated_text_kit: ^4.2.2
+  rive: ^0.13.20
 
 
 dev_dependencies:
