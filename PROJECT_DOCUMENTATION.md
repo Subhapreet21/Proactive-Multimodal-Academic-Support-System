@@ -317,6 +317,164 @@ flowchart TD
     Validate -- No --> Retry[Retry / Error Msg]
 ```
 
+### 4.2.5 Class Diagram
+```mermaid
+classDiagram
+    %% Entities (Models)
+    class Profile {
+        +UUID id
+        +String email
+        +String full_name
+        +String avatar_url
+        +Role role
+        +String department
+        +String year
+        +String section
+        +JSON preferences
+        +DateTime created_at
+    }
+
+    class EventNotice {
+        +UUID id
+        +String title
+        +String description
+        +DateTime event_date
+        +String category
+        +String location
+        +String source_image_url
+        +UUID created_by
+        +DateTime created_at
+    }
+
+    class InvitationCode {
+        +String code
+        +Role role
+        +Integer usage_limit
+        +Integer used_count
+        +DateTime expires_at
+        +UUID created_by
+        +DateTime created_at
+    }
+
+    class KBArticle {
+        +UUID id
+        +String title
+        +String slug
+        +String content
+        +String category
+        +UUID author_id
+        +DateTime created_at
+        +DateTime updated_at
+    }
+
+    class KBEmbedding {
+        +UUID id
+        +UUID article_id
+        +String chunk_content
+        +Vector embedding
+        +JSON metadata
+        +Integer chunk_index
+    }
+
+    class Reminder {
+        +UUID id
+        +UUID user_id
+        +String title
+        +String description
+        +DateTime due_at
+        +Boolean is_completed
+        +String category
+        +DateTime created_at
+    }
+
+    class Timetable {
+        +UUID id
+        +UUID user_id
+        +String day_of_week
+        +Time start_time
+        +Time end_time
+        +String course_code
+        +String course_name
+        +String location
+        +String department
+        +String year
+        +String section
+        +DateTime created_at
+    }
+
+    class TimetableMetadata {
+        +BigInt id
+        +String key
+        +JSON value
+        +DateTime updated_at
+    }
+
+    %% Controllers (Services)
+    class AuthController {
+        +updateUserRole(req, res)
+        +syncUser(req, res)
+        +resetProfile(req, res)
+    }
+
+    class ChatController {
+        +handleTextChat(req, res)
+        +handleImageChat(req, res)
+        +getChatHistory(req, res)
+        +getConversations(req, res)
+    }
+
+    class EventsController {
+        +getEvents(req, res)
+        +addEvent(req, res)
+        +updateEvent(req, res)
+        +deleteEvent(req, res)
+    }
+
+    class KBController {
+        +searchKB(req, res)
+        +addArticle(req, res)
+        +getAllArticles(req, res)
+        +updateArticle(req, res)
+        +deleteArticle(req, res)
+    }
+
+    class RemindersController {
+        +getReminders(req, res)
+        +addReminder(req, res)
+        +updateReminderStatus(req, res)
+        +updateReminderDetails(req, res)
+        +deleteReminder(req, res)
+    }
+
+    class TimetableController {
+        +getTimetable(req, res)
+        +addTimetableEntry(req, res)
+        +updateTimetableEntry(req, res)
+        +deleteTimetableEntry(req, res)
+        +importTimetable(req, res)
+        +batchUpdateTimetable(req, res)
+    }
+
+    %% Relationships
+    Profile "1" -- "0..*" Reminder : has
+    Profile "1" -- "0..*" Timetable : manages/has
+    Profile "1" -- "0..*" EventNotice : creates
+    Profile "1" -- "0..*" KBArticle : authors
+    KBArticle "1" -- "0..*" KBEmbedding : contains
+    
+    %% Controller Dependencies (Conceptual)
+    AuthController ..> Profile : manages
+    ChatController ..> Profile : reads
+    ChatController ..> Timetable : reads
+    ChatController ..> Reminder : reads
+    ChatController ..> KBArticle : searches
+    EventsController ..> EventNotice : manages
+    KBController ..> KBArticle : manages
+    RemindersController ..> Reminder : manages
+    TimetableController ..> Timetable : manages
+    TimetableController ..> Profile : reads
+```
+
 ## 4.3 Database Design (Schema)
 
 ```mermaid
