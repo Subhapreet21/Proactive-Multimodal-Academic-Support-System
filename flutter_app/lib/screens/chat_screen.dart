@@ -113,9 +113,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void _loadSuggestions() {
     _suggestions = [
       {'label': "What's my next class?", 'icon': '📅'},
-      {'label': 'Pending Assignments', 'icon': '📝'},
-      {'label': 'Exam Schedule', 'icon': '📌'},
-      {'label': 'Library Hours', 'icon': '📚'},
+      {'label': 'Pending Tasks', 'icon': '📝'},
+      {'label': 'Campus Notices', 'icon': '📢'},
+      {'label': 'Rules and Regulations', 'icon': '📜'},
     ];
   }
 

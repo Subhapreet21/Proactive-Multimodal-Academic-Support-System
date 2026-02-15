@@ -238,7 +238,7 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 | **Landing** | `/` | **All (Public)** | 3D Interactive Campus, Feature Carousel, Login Entry. |
 | **Auth** | `/auth` | **All (Public)** | Email/Password Login, Google Social Auth, Sign Up. |
 | **Dashboard** | `/app/dashboard` | **All** | Central hub showing upcoming classes, tasks, and notices. |
-| **Timetable** | `/app/timetable` | **Student** (Read)<br>**Faculty** (Edit Dept)<br>**Admin** (Edit All) | **Student**: View personal class schedule.<br>**Faculty/Admin**: Edit slots, assign teachers, drag-and-drop rescheduling. <br>*(Landscape Mode Supported)* |
+| **Timetable** | `/app/timetable` | **Student** (Read)<br>**Faculty** (Read Dept)<br>**Admin** (Edit All) | **Student**: View personal class schedule.<br>**Faculty**: View department class schedule.<br>**Admin**: Edit slots, drag-and-drop rescheduling. <br>*(Landscape Mode Supported)* |
 | **Virtual Tour** | `/app/virtual-tour` | **All** | 360° Panorama navigation with AI location assistant. |
 | **Knowledge Base** | `/app/knowledge-base` | **All** (Read)<br>**Fac/Admin** (Write) | University Wiki for rules, labs, and FAQs. |
 | **AI Chat** | `/app/chat` | **All** | Private 1-on-1 conversations with Gemini AI. |

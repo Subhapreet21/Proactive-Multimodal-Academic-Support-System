@@ -23,7 +23,7 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
         // A. Get Profile first to know Dept/Year/Section for Timetable
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role, department, year, section')
+            .select('role, department, year, section, full_name')
             .eq('id', userId)
             .single();
 
@@ -35,6 +35,7 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
         // --- Smart Day Detection ---
         let targetDay = currentDay;
         const lowerMsg = message.toLowerCase();
+        let isWeekendLookahead = false;
 
         if (lowerMsg.includes('tomorrow')) {
             targetDay = days[(todayIndex + 1) % 7];
@@ -42,11 +43,20 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
             targetDay = days[(todayIndex - 1 + 7) % 7];
         } else {
             // Check for explicit day names
+            let explicitDayFound = false;
             for (const day of days) {
                 if (lowerMsg.includes(day.toLowerCase())) {
                     targetDay = day;
+                    explicitDayFound = true;
                     break;
                 }
+            }
+
+            // WEEKEND LOGIC: If it's Sunday (0) and user didn't specify a day, show Monday
+            if (!explicitDayFound && todayIndex === 0) {
+                targetDay = 'Monday';
+                isWeekendLookahead = true;
+                console.log('[Chat] Sunday detected. Auto-switching target to Monday.');
             }
         }
 
@@ -102,29 +112,64 @@ export const handleTextChat = async (req: Request, res: Response): Promise<void>
 
         // 4. Fetch Knowledge Base Context
         const embedding = await getEmbedding(message);
-        const { data: kbData } = await supabase.rpc('match_kb_articles', {
-            query_embedding: embedding,
-            match_threshold: 0.3,
-            match_count: 3
-        });
+
+        let kbData: any[] = [];
+        const lowerMsgInput = message.toLowerCase().trim();
+
+        // SPECIAL HANDLING: If user asks for "Rules and Regulations" (Suggestion Chip), fetch a broad summary
+        if (lowerMsgInput.includes('rules') && lowerMsgInput.includes('regulations')) {
+            console.log(`[Chat] "Rules and Regulations" request detected. Fetching broad KB context for summary.`);
+
+            // Fetch top 30 articles to give a broad overview (ignoring embedding similarity for this specific case)
+            // We order by title to have some consistency, or id.
+            const { data: allRules } = await supabase
+                .from('kb_articles')
+                .select('title, content')
+                .limit(30);
+
+            kbData = allRules || [];
+        } else {
+            // Standard Vector Search for specific queries
+            const { data } = await supabase.rpc('match_kb_articles', {
+                query_embedding: embedding,
+                match_threshold: 0.3,
+                match_count: 5
+            });
+            kbData = data || [];
+        }
 
         // 5. Construct System Prompt
         const userRole = profile?.role ? profile.role.toUpperCase() : 'USER';
         const userDept = profile?.department || 'General';
+        const userName = profile?.full_name || 'User';
 
         const systemContext = `
-You are the Campus Assistant AI. You are talking to a ${userRole} from the ${userDept} department.
+You are the Campus Assistant AI. You are talking to ${userName} (${userRole}) from the ${userDept} department.
 You have access to the user's personal schedule and campus data. 
 The user's query implies interest in: ${targetDay} (Calculated from "${message}").
 Current Real-Time: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })} (${currentDay}).
+${isWeekendLookahead ? `**NOTE**: It is currently ${currentDay} (Weekend). The user likely wants to prepare for tomorrow. The TIMETABLE below is for MONDAY.` : ''}
 
-Answer the user's question based on their role:
-- If STUDENT: Focus on upcoming classes, assignments, and study advice. Be encouraging.
-- If FACULTY: Focus on their teaching schedule, department responsibilities, and administrative tasks. Be professional.
-- If ADMIN: Focus on system status, overall schedules, and campus alerts. Be concise and operational.
+### INSTRUCTIONS:
+1. **Context-Aware Answers**: Always prioritize the provided User Context (Timetable, Reminders, Notices) and Knowledge Base.
+   - If the user asks about "Next Class":
+     - **Check the Day**: If it is a Weekend (Sunday), explicitly state "It's the weekend! But here is your schedule for Monday...".
+     - **STUDENT**: Look at the TIMETABLE. Compare 'start_time' with Current Time. If the day is TOMORROW/MONDAY, list the first class. If TODAY, find the immediate next class.
+     - **FACULTY**: Look at the TIMETABLE for the Department. List the upcoming classes and ask the user to identify theirs, as instructor assignment is not currently tracked.
+   - If the user asks about "Pending Tasks", check the PENDING REMINDERS section.
+   - If the user asks about "Notices" or "Events", check the RECENT NOTICES section and **only mention those relevant to a ${userRole}**.
+   - If the user asks about "Rules and Regulations", **Provide a categorized bullet-point summary of ALL the articles in the KNOWLEDGE BASE section below**. Do not just pick one. Group them logically (e.g., "Attendance", "Discipline", "Library").
+   - If the user asks specific questions like "Library fines", check the KNOWLEDGE BASE for that specific topic.
 
-Use the following context and conversation history if relevant.
-If the answer is NOT found in the context, use your general knowledge to answer helpfuly.
+2. **General Knowledge Fallback**: 
+   - If the user's query is NOT related to the campus, or if the data is missing from the context (e.g., "What is the capital of France?", "Explain Quantum Physics"), **YOU MUST USE YOUR GENERAL KNOWLEDGE**. 
+   - Do not say "I don't know" unless it's a specific personal data point you truly don't have access to. 
+   - Be helpful and answering just like a standard AI assistant for non-campus topics.
+
+3. **Tone**: 
+   - For Students: Encouraging, helpful, and concise.
+   - For Faculty: Professional, organized, and respectful.
+   - For Admin: Operational, direct, and data-focused.
 
 --- CONVERSATION HISTORY (Last 10 messages) ---
 ${conversationHistory.map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n')}
@@ -140,7 +185,7 @@ ${reminders.length ? reminders.map((r: any) => `- ${r.title} (Due: ${r.due_at})`
 RECENT NOTICES:
 ${events.length ? events.map((e: any) => `- ${e.title}: ${e.description}`).join('\n') : "No recent notices."}
 
-KNOWLEDGE BASE:
+KNOWLEDGE BASE (matches for query):
 ${kbData && kbData.length > 0 ? kbData.map((d: any) => `- ${d.title}: ${d.content}`).join('\n') : "No specific KB articles found."}
 --------------------
 `;
