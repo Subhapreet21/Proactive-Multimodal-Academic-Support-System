@@ -43,7 +43,7 @@ The education sector is undergoing a massive digital transformation, moving away
 
 In a typical university environment, stakeholders (students, faculty, and administrators) operate in silos. Information is often fragmented across physical notice boards, legacy web portals, disparate email threads, and informal social media groups. This fragmentation leads to communication gaps, administrative inefficiencies, and a disjointed user experience.
 
-This project addresses these challenges by creating a **Unified Digital Ecosystem**. Built upon the robust **Flutter** framework for cross-platform mobile access and powered by **Google Gemini AI**, the system offers a cohesive interface for all academic needs. It moves beyond simple digitization by alerting users *proactively*—reminding students of upcoming deadlines, notifying faculty of schedule clashes, and guiding visitors through an interactive 3D virtual tour.
+This project addresses these challenges by creating a **Unified Digital Ecosystem**. Built upon the robust **Flutter** framework for cross-platform mobile access and powered by **Google Gemini AI**, the system offers a cohesive interface for all academic needs. It moves beyond simple digitization by alerting users *proactively*—reminding students of upcoming deadlines, notifying faculty of schedule clashes, generating persistent AI attendance forecasts, and guiding visitors through an interactive 3D virtual tour.
 
 ## 1.2 Problem Statement
 Despite the availability of various digital tools, the academic environment continues to face persistent challenges:
@@ -51,6 +51,7 @@ Despite the availability of various digital tools, the academic environment cont
 2.  **Lack of Personalized, 24/7 Support**: Students often have repetitive queries regarding syllabus verification, lab timings, or administrative procedures. Administrative offices operate during fixed hours and cannot handle the volume of redundant queries, leading to long wait times and frustration.
 3.  **Static & Confusing Navigation**: University campuses are often sprawling and complex. New students and visitors struggle to navigate using generic 2D maps, which lack context and real-time guidance.
 4.  **Inefficient Resource Management**: Faculty and administrators spend a disproportionate amount of time on manual scheduling and conflict resolution, detracting from their core educational responsibilities.
+5.  **Reactive Attendance Tracking**: Traditional attendance systems only act as a ledger. Students don't realize they are at risk until the end of the semester, and faculty lack tools to quickly identify dropping trends.
 
 ## 1.3 Objective of Project
 The primary objectives of this project are multi-faceted, aiming to solve technological and operational problems:
@@ -58,6 +59,7 @@ The primary objectives of this project are multi-faceted, aiming to solve techno
 *   **Intelligent Automation**: To implement an **AI-powered assistant** capable of Natural Language Understanding (NLU). This assistant serves as a "first-line responder" for student queries, using RAG (Retrieval-Augmented Generation) to provide accurate answers cited from the official university handbook.
 *   **Immersive Navigation**: To provide an **interactive 3D Virtual Tour** of the campus, allowing users to virtually explore facilities, locate classrooms, and understand the campus layout remotely.
 *   **Real-time Synchronization**: To enable instant updates for timetables and notices. A change made by an administrator should reflect on a student's device within milliseconds, ensuring everyone is on the same page.
+*   **Proactive Analytics**: To move from reactive to proactive monitoring by using AI to forecast attendance trends and identify at-risk students securely via Stale-While-Revalidate caching.
 *   **Role-Based Security & Personalization**: To ensure that the system adapts to the user. A student sees their specific classes, while a faculty member sees their teaching load, secured by robust authentication policies.
 
 ## 1.4 Goal of Project
@@ -150,18 +152,21 @@ The project is constructed using a carefully selected stack of modern technologi
 *   **FR-S-04**: View and filter Announcements/Events.
 *   **FR-S-05**: Access 3D Virtual Tour.
 *   **FR-S-06**: Receive push notifications for schedule changes.
+*   **FR-S-07**: Track daily attendance, view cumulative percentage, and receive AI-driven trend forecasts.
 
 ### 3.3.2 Faculty Module
 *   **FR-F-01**: View teaching schedule.
 *   **FR-F-02**: Look up student details (restricted view).
 *   **FR-F-03**: Post class-specific announcements.
 *   **FR-F-04**: Use AI Co-Pilot to generate Lecture Plans.
+*   **FR-F-05**: Mark batch attendance for assigned teaching slots with dynamic sorting (e.g., absent-first).
 
 ### 3.3.3 Admin Module
 *   **FR-A-01**: Manage Users (Create/Delete Accounts).
 *   **FR-A-02**: Global Timetable Management (Edit Slots).
 *   **FR-A-03**: Post Global Notices (Holiday, Emergencies).
 *   **FR-A-04**: Manage Knowledge Base for AI.
+*   **FR-A-05**: Perform complete departmental attendance audits with AI anomaly highlighting.
 
 ## 3.4 Non-Functional Requirements
 1.  **NFR-01 Scalability**: The database schema must support 10,000+ users and 500,000+ timetable rows without performance degradation.
@@ -208,20 +213,23 @@ graph LR
         %% Student Specific
         UC_MySchedule(View My Timetable)
         UC_Events(View Events & Notices)
+        UC_MyAttendance(View My Attendance & AI)
         
         %% Faculty Specific
         UC_DeptSchedule(View Dept Timetable)
         UC_CreateNotice(Post Articles)
+        UC_MarkAttendance(Mark Batch Attendance)
         
         %% Admin Specific
         UC_ManageUsers(Manage Users & Roles)
         UC_ManageKB(Manage AI Knowledge Base)
         UC_GlobalTimetable(Manage Global Timetable)
+        UC_AuditAttendance(Audit Global Attendance)
     end
 
-    Student --> UC_Login & UC_Dash & UC_Chat & UC_Tour & UC_MySchedule & UC_Events
-    Faculty --> UC_Login & UC_Dash & UC_Chat & UC_DeptSchedule & UC_CreateNotice
-    Admin --> UC_Login & UC_Dash & UC_Chat & UC_ManageUsers & UC_ManageKB & UC_GlobalTimetable
+    Student --> UC_Login & UC_Dash & UC_Chat & UC_Tour & UC_MySchedule & UC_Events & UC_MyAttendance
+    Faculty --> UC_Login & UC_Dash & UC_Chat & UC_DeptSchedule & UC_CreateNotice & UC_MarkAttendance
+    Admin --> UC_Login & UC_Dash & UC_Chat & UC_ManageUsers & UC_ManageKB & UC_GlobalTimetable & UC_AuditAttendance
 ```
 
 ### 4.2.2 Sequence Diagram (AI Chat Flow with RAG)
@@ -430,6 +438,20 @@ classDiagram
         +deleteEvent(req, res)
     }
 
+    class AttendanceController {
+        +markAttendance(req, res)
+        +getStudentAttendance(req, res)
+        +getClassAttendance(req, res)
+        +getStudentStats(req, res)
+        +getAdminStats(req, res)
+        +getOverallAttendance(req, res)
+    }
+
+    class AIForecastController {
+        +getStudentForecast(req, res)
+        +getDepartmentForecast(req, res)
+    }
+
     class KBController {
         +searchKB(req, res)
         +addArticle(req, res)
@@ -473,6 +495,9 @@ classDiagram
     RemindersController ..> Reminder : manages
     TimetableController ..> Timetable : manages
     TimetableController ..> Profile : reads
+    AttendanceController ..> Timetable : reads
+    AttendanceController ..> Profile : reads
+    AIForecastController ..> Profile : reads
 ```
 
 ## 4.3 Database Design (Schema)
@@ -483,6 +508,10 @@ erDiagram
     profiles ||--o{ reminders : "sets"
     profiles ||--o{ events_notices : "creates (faculty/admin)"
     profiles ||--o{ kb_articles : "authors (admin)"
+    profiles ||--o{ attendance_records : "is marked in"
+    profiles ||--o| ai_insights : "has trend forecast"
+    
+    timetables ||--o{ attendance_records : "has attendance marked"
     
     kb_articles ||--o{ kb_embeddings : "has vectors"
     
@@ -504,6 +533,23 @@ erDiagram
         time end_time
         text course_name
         text location
+    }
+
+    attendance_records {
+        uuid id PK
+        uuid session_id FK
+        uuid student_id FK
+        text status "Present/Absent"
+        timestamp recorded_at
+    }
+
+    ai_insights {
+        uuid user_id PK
+        text forecast_text
+        text advice_text
+        text tone
+        boolean is_stale
+        timestamp last_updated
     }
 
     reminders {

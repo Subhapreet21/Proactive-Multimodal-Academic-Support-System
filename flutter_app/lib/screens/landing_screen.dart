@@ -204,6 +204,12 @@ class LandingScreen extends StatelessWidget {
                                       color: Color(0xFFFACC15), // Yellow
                                     ),
                                     _FeatureIcon(
+                                      icon: Icons.how_to_reg_outlined,
+                                      label: 'Attendance',
+                                      color: Color(
+                                          0xFF84CC16), // Lime (between Yellow and Green)
+                                    ),
+                                    _FeatureIcon(
                                       icon: Icons.vrpano_outlined,
                                       label: 'Tour',
                                       color: Color(0xFF10B981), // Green

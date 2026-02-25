@@ -24,7 +24,7 @@
 *   **Scene-Specific prompts**: Auto-generates suggested questions based on the current panorama.
 *   **Fallback Robustness**: Works offline using cached scene data if the tour server is unreachable.
 
-### 3. 🖥️ Advanced AI Backend (Multi-Key) [NEW]
+### 4. 🖥️ Advanced AI Backend (Multi-Key) [NEW]
 *   **Load Balancing**: Distributed AI workload across **7 independent Gemini API Keys**.
 *   **Auto-Failover**: Smart retry logic automatically switches keys if one hits a rate limit (429) or error.
 *   **Role-Based Personas**:
@@ -32,20 +32,27 @@
     *   **Faculty**: Professional tone, administrative focus.
     *   **Admin**: System-level operational updates.
 
-### 5. 📱 Mobile-First Experience (Flutter)
+### 5. 📈 AI Attendance Analytics [NEW]
+*   **Smart Stale-While-Revalidate Caching**: Highly optimized AI insight engine. Instantly loads cached forecasts from the database and silently revalidates via background workers *only* when a student's attendance drops, saving massive amounts of API tokens.
+*   **Student Insight Dashboard**: Beautiful circular progress indicators paired with proactive, persistent AI trend nudges (e.g., "You're doing great" vs "Warning: Drop in attendance detected").
+*   **Faculty Quick-Mark**: Frictionless UI for batch-submitting class attendance with dynamic sorting (e.g., sort by absent first).
+*   **Admin Global Audit**: Department-wide AI anomaly detection to instantly identify at-risk students who need intervention.
+*   **Offline Reliability**: Attendance records and the latest AI forecasts are strictly cached via Hive for instant access on bad networks.
+
+### 6. 📱 Mobile-First Experience (Flutter)
 *   **Cross-Platform**: Built with **Flutter** for Android & iOS.
 *   **Glassmorphism UI**: Modern aesthetic with dark mode, blur effects, and smooth transitions.
 *   **Optimized Rendering**: Multi-layered backgrounds and Impeller-ready UI for 60FPS performance.
 *   **Offline First**: Critical data (Notes, Timetable) is cached for access without internet.
 
-### 6. 🛡️ Role-Based Access Control (RBAC)
-*   **Students**: Read-only access to their specific Class Schedule (`Dept-Year-Section`).
-*   **Faculty**: Write access to their Department's Timetable and Notices.
-*   **Admins**: Full system control ("God Mode") to manage all data.
+### 7. 🛡️ Role-Based Access Control (RBAC)
+*   **Students**: Read-only access to their specific Class Schedule (`Dept-Year-Section`) and their personal Attendance metrics.
+*   **Faculty**: Write access to their Department's Timetable, Notices, and the ability to mark real-time Attendance for their active class sessions.
+*   **Admins**: Full system control ("God Mode") to manage all data and perform global attendance audits.
 *   **Secure Auth**: Powered by **Supabase Auth** & Google Sign-In with JWT sessions.
 *   **Invitation System**: Dynamic, database-backed access codes for Faculty/Admin role promotion (Single-use or Bulk).
 
-### 6. 📅 Smart Scheduling & Tasks
+### 8. 📅 Smart Scheduling & Tasks
 *   **Dynamic Timetable**: Real-time updates for the entire class when faculty changes a slot.
 *   **Master PDF Export**: Admin/Faculty can generate and download full department schedules.
 *   **Personal Reminders**: Private To-Do list with completion tracking.
@@ -87,6 +94,7 @@ graph TD
                 Tour[🎥 Virtual Tour]:::flutter
                 KB[📚 Knowledge Base]:::flutter
                 Events[📢 Notices]:::flutter
+                Attendance[📊 Attendance]:::flutter
             end
 
             subgraph RoleSpecific [🎯 Role-Based Modules]
@@ -109,12 +117,13 @@ graph TD
 
         subgraph Intelligence [🧠 AI Core]
             Gemini[✨ Google Gemini]:::cloud
-            Gemini_x7[🗝️ 7x API Keys]:::cloud
+            Gemini_x7[🗝️ 14x API Keys]:::cloud
         end
 
         subgraph DataLayer [💾 Persistence]
             Supabase[(Supabase DB)]:::db
             Vector[(pgvector Store)]:::db
+            Insights[(AI Insights Cache)]:::db
         end
     end
 
@@ -131,6 +140,7 @@ graph TD
     Dash --> Tour
     Dash --> KB
     Dash --> Events
+    Dash --> Attendance
 
     %% Role Specific Logic
     Dash -. Student .-> Study
@@ -142,6 +152,7 @@ graph TD
     CoPilot <==> Server
     Study <==> Server
     Tour <==> Server
+    Attendance <==> Server
 
     %% Internal Backend Flow
     Server --> LB
@@ -151,6 +162,7 @@ graph TD
     
     Server <--> Supabase
     Server <--> Vector
+    Server -.-> Insights
 
     %% Keep Alive Logic
     Keeper -. Ping .-> Supabase
@@ -203,6 +215,7 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 *   **Virtual Tour**: Full access to interactive campus tour and AI location assistant.
 *   **Daily Tasks**: Create, edit, and complete personal reminders/to-dos.
 *   **Timetable**: **Read-only** access to their specific class schedule (filtered by Dept/Year/Section).
+*   **Attendance**: Track cumulative metrics, view daily history, and read personalized AI forecast nudges.
 *   **Chat**: Private 1-on-1 AI conversations (history is private but deletable by admin).
 
 ### **2. Faculty** 👨‍🏫
@@ -214,6 +227,7 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 *   **Timetable Management**:
     *   **Edit Access**: Can modify schedule slots for their specific Department.
     *   **Reschedule**: Can move classes or assign new faculty to slots.
+*   **Attendance Management**: Quick-mark batch attendance for current/past classes they taught.
 *   **Public Notices**: Can post "Events" or "Notices" visible to all students on the Dashboard.
 *   **Knowledge Base**: Can contribute articles to the university wiki.
 *   **Restrictions**: Cannot view or modify data outside their own Department.
@@ -226,6 +240,7 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
     *   **Bulk Actions**: Delete users, change departments, or migrate students to new sections/years in bulk.
     *   **Safety Lock**: The current admin cannot accidental delete or demote themselves (UI Lock 🔒).
 *   **System-Wide Edits**: Can edit timetables for **ANY** department.
+*   **Attendance Audit**: Run complete departmental audits with AI anomaly detection highlighting at-risk populations.
 *   **Content Moderation**: Can delete any Knowledge Base article or Event.
 *   **Data Integrity**: Special deletion logic preserves institutional knowledge (e.g., articles) even if the admin account is removed.
 
@@ -240,6 +255,7 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 | **Dashboard** | `/app/dashboard` | **All** | Central hub showing upcoming classes, tasks, and notices. |
 | **Timetable** | `/app/timetable` | **Student** (Read)<br>**Faculty** (Read Dept)<br>**Admin** (Edit All) | **Student**: View personal class schedule.<br>**Faculty**: View department class schedule.<br>**Admin**: Edit slots, drag-and-drop rescheduling. <br>*(Landscape Mode Supported)* |
 | **Virtual Tour** | `/app/virtual-tour` | **All** | 360° Panorama navigation with AI location assistant. |
+| **Attendance** | `/app/attendance` | **Student** (View)<br>**Faculty** (Mark)<br>**Admin** (Audit) | Real-time class attendance, batch-marking tools, and Smart AI Progress Forecasts. |
 | **Knowledge Base** | `/app/knowledge-base` | **All** (Read)<br>**Fac/Admin** (Write) | University Wiki for rules, labs, and FAQs. |
 | **AI Chat** | `/app/chat` | **All** | Private 1-on-1 conversations with Gemini AI. |
 | **Study Planner** | `/app/study-planner` | **Student** | Generate AI study schedules based on syllabus/exams. |
@@ -312,7 +328,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 GEMINI_API_KEY_1=AIzaSy...
 GEMINI_API_KEY_2=AIzaSy...
 GEMINI_API_KEY_3=AIzaSy...
-# ... up to GEMINI_API_KEY_7
+# ... up to GEMINI_API_KEY_14
 
 # Security Secrets
 # NOTE: Static secrets (ADMIN_SECRET) are DEPRECATED.
