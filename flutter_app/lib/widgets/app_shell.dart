@@ -102,6 +102,23 @@ class _AppShellState extends State<AppShell> {
       effectiveItems.add(coPilotItem);
     }
 
+    // Add Attendance
+    final attendanceItem = NavigationItem(
+      label: 'Attendance',
+      selectedIcon: Icons.how_to_reg_rounded,
+      unselectedIcon: Icons.how_to_reg_outlined,
+      path: isFaculty
+          ? '/app/faculty/attendance'
+          : (authProvider.userRole == 'admin'
+              ? '/app/admin/attendance'
+              : '/app/student/attendance'),
+    );
+
+    if (!effectiveItems.any((i) => i.label == 'Attendance')) {
+      // Insert next to Dashboard (index 1)
+      effectiveItems.insert(1, attendanceItem);
+    }
+
     // Update current index based on path
     _currentIndex =
         effectiveItems.indexWhere((item) => item.path == currentPath);
@@ -365,6 +382,7 @@ class _AppShellState extends State<AppShell> {
     if (path.contains('/app/knowledge-base')) return 'Knowledge Base';
     if (path.contains('/app/chat')) return 'Chat Assistant';
     if (path.contains('/app/faculty/daily-prep')) return 'AI Lecture Co-Pilot';
+    if (path.contains('/attendance')) return 'Attendance';
 
     if (path.contains('/app/virtual-tour')) return 'Campus 360° Tour';
 

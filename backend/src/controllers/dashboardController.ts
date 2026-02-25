@@ -108,10 +108,37 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
             .order('created_at', { ascending: false })
             .limit(3);
 
+        // 4. Student Attendance Percentage
+        let attendancePercentage: number | null = null;
+        if (profile.role === 'student') {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const { data: records } = await supabase
+                .from('attendance_records')
+                .select(`
+                    status,
+                    attendance_sessions ( date )
+                `)
+                .eq('student_id', userId);
+
+            if (records && records.length > 0) {
+                const validRecords = records.filter((r: any) => {
+                    const sessionDate = r.attendance_sessions?.date;
+                    return sessionDate && sessionDate <= todayStr;
+                });
+
+                if (validRecords.length > 0) {
+                    const totalClasses = validRecords.length;
+                    const totalPresent = validRecords.filter((r: any) => r.status === 'present').length;
+                    attendancePercentage = Math.round((totalPresent / totalClasses) * 100);
+                }
+            }
+        }
+
         res.json({
             nextClass,
             reminders: reminders || [],
-            events: events || []
+            events: events || [],
+            attendancePercentage
         });
 
     } catch (error: any) {

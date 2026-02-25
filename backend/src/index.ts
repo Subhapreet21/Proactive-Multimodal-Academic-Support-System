@@ -51,6 +51,7 @@ import authRoutes from './routes/authRoutes';
 import studyRoutes from './routes/studyRoutes';
 import tourAssistantRoutes from './routes/tourAssistantRoutes';
 import adminRoutes from './routes/adminRoutes';
+import attendanceRoutes from './routes/attendanceRoutes';
 
 app.use('/api/chat', chatRoutes);
 app.use('/api/timetable', timetableRoutes);
@@ -65,6 +66,7 @@ app.use('/api/virtual-tour', tourAssistantRoutes);
 app.use('/api/admin', adminRoutes);
 import lectureRoutes from './routes/lectureRoutes';
 app.use('/api/lectures', lectureRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Fallback 404 handler
 app.use((req, res) => {

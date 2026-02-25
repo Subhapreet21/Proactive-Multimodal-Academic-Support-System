@@ -124,6 +124,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                           if (!permissions.isAdmin &&
                               !permissions.isFaculty) ...[
+                            _buildStudentAttendanceCard(),
+                            const SizedBox(height: 24),
                             _buildStudyPlanCard(),
                             const SizedBox(height: 24),
                           ],
@@ -846,6 +848,114 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: Colors.white54, size: 16),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudentAttendanceCard() {
+    final attendanceStr = _dashboardData?['attendancePercentage']?.toString();
+    final percentage = double.tryParse(attendanceStr ?? '') ?? -1.0;
+
+    Color statusColor = Colors.white54;
+    Color bgColor = Colors.white.withOpacity(0.05);
+
+    if (percentage >= 0) {
+      if (percentage < 75) {
+        statusColor = AppTheme.errorColor;
+        bgColor = AppTheme.errorColor.withOpacity(0.1);
+      } else if (percentage < 85) {
+        statusColor = AppTheme.warningColor;
+        bgColor = AppTheme.warningColor.withOpacity(0.1);
+      } else {
+        statusColor = AppTheme.successColor;
+        bgColor = AppTheme.successColor.withOpacity(0.1);
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Overall Attendance',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'View full subject breakdown',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: percentage >= 0 ? percentage / 100 : 0,
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        color: statusColor,
+                        strokeWidth: 6,
+                      ),
+                      Center(
+                        child: Text(
+                          percentage >= 0 ? '${percentage.toInt()}%' : 'N/A',
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.go('/app/student/attendance'),
+                icon: const Icon(Icons.analytics_outlined, size: 20),
+                label: const Text('View Detailed Attendance'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: statusColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

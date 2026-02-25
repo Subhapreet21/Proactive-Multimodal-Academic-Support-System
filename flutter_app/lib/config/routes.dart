@@ -19,6 +19,9 @@ import '../screens/profile_screen.dart';
 import '../screens/virtual_tour_screen.dart';
 import '../screens/admin_users_screen.dart';
 import '../screens/daily_lecture_prep_screen.dart';
+import '../screens/faculty_attendance_screen.dart';
+import '../screens/student_attendance_screen.dart';
+import '../screens/admin_attendance_screen.dart';
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
 
@@ -157,8 +160,20 @@ class AppRouter {
               builder: (context, state) => const AdminUsersScreen(),
             ),
             GoRoute(
+              path: '/app/admin/attendance',
+              builder: (context, state) => const AdminAttendanceScreen(),
+            ),
+            GoRoute(
               path: '/app/faculty/daily-prep',
               builder: (context, state) => const DailyLecturePrepScreen(),
+            ),
+            GoRoute(
+              path: '/app/faculty/attendance',
+              builder: (context, state) => const FacultyAttendanceScreen(),
+            ),
+            GoRoute(
+              path: '/app/student/attendance',
+              builder: (context, state) => const StudentAttendanceScreen(),
             ),
           ],
         ),
