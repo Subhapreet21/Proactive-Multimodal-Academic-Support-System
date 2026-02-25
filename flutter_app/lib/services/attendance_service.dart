@@ -64,6 +64,31 @@ class AttendanceService {
     }
   }
 
+  /// Fetch paginated recent history for a student
+  Future<Map<String, dynamic>> getStudentHistory({
+    String? studentId,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final params = <String, String>{
+        'page': page.toString(),
+        'limit': limit.toString(),
+      };
+      if (studentId != null) {
+        params['student_id'] = studentId;
+      }
+
+      final response = await _api.get(
+        '/api/attendance/student/history',
+        params: params,
+      );
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to load student history: $e');
+    }
+  }
+
   /// Alias for fetching student attendance stats including subject breakdown.
   Future<Map<String, dynamic>> getStudentStats(
       {required String studentId}) async {

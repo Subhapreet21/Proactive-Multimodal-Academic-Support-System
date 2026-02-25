@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../services/attendance_service.dart';
 import '../config/theme.dart';
 
@@ -15,6 +16,11 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _attendanceData;
 
+  List<dynamic> _paginatedHistory = [];
+  int _currentPage = 1;
+  bool _hasMoreHistory = true;
+  bool _isLoadingHistory = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +35,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
           _attendanceData = data;
           _isLoading = false;
         });
+        _fetchHistory(refresh: true);
       }
     } catch (e) {
       if (mounted) {
@@ -36,6 +43,39 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
           SnackBar(content: Text('Error loading attendance: $e')),
         );
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _fetchHistory({bool refresh = false}) async {
+    if (_isLoadingHistory) return;
+    if (refresh) {
+      _currentPage = 1;
+      _hasMoreHistory = true;
+      _paginatedHistory.clear();
+    }
+
+    if (!_hasMoreHistory) return;
+
+    if (mounted) {
+      setState(() => _isLoadingHistory = true);
+    }
+
+    try {
+      final data = await _attendanceService.getStudentHistory(
+          page: _currentPage, limit: 10);
+      if (mounted) {
+        setState(() {
+          final records = data['records'] as List? ?? [];
+          _paginatedHistory.addAll(records);
+          _hasMoreHistory = data['hasMore'] ?? false;
+          _currentPage++;
+          _isLoadingHistory = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingHistory = false);
       }
     }
   }
@@ -134,6 +174,73 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodayIndicators() {
+    final todayClasses = _attendanceData?['todayClasses'] as List? ?? [];
+    if (todayClasses.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Today's Classes",
+              style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: todayClasses.map((cls) {
+              final status = cls['status']?.toString() ?? 'unknown';
+              Color sColor = AppTheme.successColor;
+              if (status == 'absent') sColor = AppTheme.errorColor;
+              if (status == 'late') sColor = AppTheme.warningColor;
+
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: sColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: sColor.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: sColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      cls['course'] ?? 'Class',
+                      style: TextStyle(
+                        color: sColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -241,10 +348,45 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                   fontSize: 14,
                 ),
               ),
+              if (_attendanceData?['dailyHistory'] != null) ...[
+                const SizedBox(height: 24),
+                _buildTrendGraph(_attendanceData!['dailyHistory'] as List),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTrendGraph(List dailyHistory) {
+    if (dailyHistory.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 120,
+      child: LineChart(
+        LineChartData(
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: dailyHistory.asMap().entries.map((e) {
+                return FlSpot(e.key.toDouble(),
+                    (e.value['percentage'] as num).toDouble());
+              }).toList(),
+              isCurved: true,
+              color: const Color(0xFFA855F7),
+              barWidth: 3,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: const Color(0xFFA855F7).withOpacity(0.1),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -327,10 +469,10 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     );
   }
 
-  Widget _buildRecentHistory() {
-    final history = _attendanceData?['recentHistory'] as List? ?? [];
-
-    if (history.isEmpty) return const SizedBox.shrink();
+  Widget _buildPaginatedHistory() {
+    if (_paginatedHistory.isEmpty && !_isLoadingHistory) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,7 +485,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        ...history.map((record) {
+        ..._paginatedHistory.map((record) {
           final isPresent = record['status'] == 'present';
           final isLate = record['status'] == 'late';
           Color sColor = isPresent
@@ -390,6 +532,26 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             ),
           );
         }).toList(),
+        if (_hasMoreHistory)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: _isLoadingHistory
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryColor, strokeWidth: 2),
+                    )
+                  : TextButton(
+                      onPressed: () => _fetchHistory(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                      ),
+                      child: const Text('Load More'),
+                    ),
+            ),
+          ),
       ],
     );
   }
@@ -411,13 +573,14 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildOverviewCard(),
+                    _buildTodayIndicators(),
                     if (_attendanceData != null &&
                         _attendanceData!['studentId'] != null)
                       _buildAIForecast(_attendanceData!['studentId']),
                     const SizedBox(height: 16),
-                    _buildRecentHistory(),
-                    const SizedBox(height: 16),
                     _buildSubjectBreakdown(),
+                    const SizedBox(height: 16),
+                    _buildPaginatedHistory(),
                   ],
                 ),
               ),

@@ -472,7 +472,7 @@ class _OverallAttendanceTabState extends State<OverallAttendanceTab> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (widget.isFaculty && dailyHistory.isNotEmpty)
+                              if (dailyHistory.isNotEmpty)
                                 _buildStudentTrendChart(dailyHistory),
                               ListView.builder(
                                 shrinkWrap: true,

@@ -203,12 +203,19 @@ export const getStudentAttendance = async (req: Request, res: Response): Promise
 
         if (error) throw error;
 
-        // Filter out future dates (useful since seed script may add records into the future)
         const todayStr = new Date().toISOString().split('T')[0];
         const validRecords = records.filter((r: any) => {
             const sessionDate = r.attendance_sessions?.date;
             return sessionDate && sessionDate <= todayStr;
         });
+
+        // Extract today's classes specifically
+        const todayClasses = records
+            .filter((r: any) => r.attendance_sessions?.date === todayStr)
+            .map((r: any) => ({
+                course: r.attendance_sessions?.timetables?.course_name || 'Unknown',
+                status: r.status
+            }));
 
         // Calculate stats
         let totalClasses = 0;
@@ -280,16 +287,69 @@ export const getStudentAttendance = async (req: Request, res: Response): Promise
         }));
 
         res.json({
+            studentId: targetStudentId,
             overallPercentage,
             totalClasses,
             totalPresent,
             subjectBreakdown,
             recentHistory,
-            dailyHistory
+            dailyHistory,
+            todayClasses
         });
 
     } catch (error: any) {
         console.error('[getStudentAttendance] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// GET /api/attendance/student/history?student_id=UUID&page=1&limit=10
+export const getStudentHistory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const requestingUserId = (req as WithAuthProp<Request>).auth.userId;
+        let targetStudentId = req.query.student_id as string;
+
+        if (!targetStudentId) {
+            const { data: profile } = await supabase.from('profiles').select('role').eq('id', requestingUserId).single();
+            if (profile?.role !== 'student') {
+                res.status(400).json({ error: 'student_id is required.' });
+                return;
+            }
+            targetStudentId = requestingUserId as string;
+        }
+
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        const { data: records, error, count } = await supabase
+            .from('attendance_records')
+            .select(`
+                status,
+                attendance_sessions!inner(date, timetables(course_name))
+            `, { count: 'exact' })
+            .eq('student_id', targetStudentId)
+            .lte('attendance_sessions.date', new Date().toISOString().split('T')[0])
+            .order('date', { referencedTable: 'attendance_sessions', ascending: false })
+            .range(from, to);
+
+        if (error) throw error;
+
+        const history = (records || []).map((r: any) => ({
+            date: r.attendance_sessions?.date,
+            course: r.attendance_sessions?.timetables?.course_name || 'Unknown',
+            status: r.status
+        }));
+
+        res.json({
+            records: history,
+            hasMore: count !== null && to < count - 1,
+            total: count
+        });
+
+    } catch (error: any) {
+        console.error('[getStudentHistory] Error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };
