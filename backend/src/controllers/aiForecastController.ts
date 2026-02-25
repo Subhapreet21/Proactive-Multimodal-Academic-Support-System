@@ -5,11 +5,31 @@ import { GoogleGenAI } from '@google/genai';
 
 const AI_MODEL = 'gemini-2.5-flash';
 
-const getAI = () => {
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY environment variable is not set.");
+const apiKeys = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEY_4,
+    process.env.GEMINI_API_KEY_5,
+    process.env.GEMINI_API_KEY_6,
+    process.env.GEMINI_API_KEY_7
+].filter(k => k) as string[];
+
+const executeWithRetry = async <T>(operation: (ai: GoogleGenAI) => Promise<T>): Promise<T> => {
+    let lastError: any;
+    const shuffledKeys = [...apiKeys].sort(() => Math.random() - 0.5);
+
+    for (const key of shuffledKeys) {
+        try {
+            const ai = new GoogleGenAI({ apiKey: key });
+            return await operation(ai);
+        } catch (error: any) {
+            console.warn(`⚠️  Error with key ...${key.substring(key.length - 4)}: ${error.message}`);
+            lastError = error;
+        }
     }
-    return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    throw lastError || new Error("All API keys failed or no API keys configured");
 };
 
 // GET /api/attendance/ai/forecast-student/:id
@@ -75,22 +95,21 @@ export const getStudentForecast = async (req: Request, res: Response): Promise<v
         `;
 
         // 4. Call Gemini API
-        const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: AI_MODEL,
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json'
+        const responseText = await executeWithRetry(async (ai) => {
+            const response = await ai.models.generateContent({
+                model: AI_MODEL,
+                contents: prompt,
+                config: {
+                    responseMimeType: 'application/json'
+                }
+            });
+            if (!response.text) {
+                throw new Error("AI returned empty response");
             }
+            return response.text;
         });
 
-        const aiText = response.text;
-
-        if (!aiText) {
-            throw new Error("AI returned empty response");
-        }
-
-        const aiData = JSON.parse(aiText);
+        const aiData = JSON.parse(responseText);
 
         res.json({
             currentPercentage,
@@ -155,21 +174,21 @@ export const getDepartmentForecast = async (req: Request, res: Response): Promis
         }
         `;
 
-        const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: AI_MODEL,
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json'
+        const responseText = await executeWithRetry(async (ai) => {
+            const response = await ai.models.generateContent({
+                model: AI_MODEL,
+                contents: prompt,
+                config: {
+                    responseMimeType: 'application/json'
+                }
+            });
+            if (!response.text) {
+                throw new Error("AI returned empty response");
             }
+            return response.text;
         });
 
-        const aiText = response.text;
-        if (!aiText) {
-            throw new Error("AI returned empty response");
-        }
-
-        const aiData = JSON.parse(aiText);
+        const aiData = JSON.parse(responseText);
 
         res.json({
             auditMessage: aiData.auditMessage,
