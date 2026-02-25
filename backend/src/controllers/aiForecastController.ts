@@ -3,8 +3,14 @@ import { supabase } from '../services/supabaseClient';
 import { WithAuthProp } from '@clerk/clerk-sdk-node';
 import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const AI_MODEL = 'gemini-2.5-flash';
+
+const getAI = () => {
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY environment variable is not set.");
+    }
+    return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+};
 
 // GET /api/attendance/ai/forecast-student/:id
 export const getStudentForecast = async (req: Request, res: Response): Promise<void> => {
@@ -69,6 +75,7 @@ export const getStudentForecast = async (req: Request, res: Response): Promise<v
         `;
 
         // 4. Call Gemini API
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: AI_MODEL,
             contents: prompt,
@@ -148,6 +155,7 @@ export const getDepartmentForecast = async (req: Request, res: Response): Promis
         }
         `;
 
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: AI_MODEL,
             contents: prompt,
