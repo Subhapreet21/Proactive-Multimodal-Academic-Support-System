@@ -68,6 +68,7 @@ app.use('/api/admin', adminRoutes);
 import lectureRoutes from './routes/lectureRoutes';
 app.use('/api/lectures', lectureRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/quizzes', quizRoutes);
 
 // Fallback 404 handler
 app.use((req, res) => {

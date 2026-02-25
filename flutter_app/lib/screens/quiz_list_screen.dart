@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -38,37 +39,33 @@ class _QuizListScreenState extends State<QuizListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Quizzes & Assessments',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  Expanded(
+                    child: Text(
+                      'Test your knowledge and get real-time AI feedback',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
                     ),
                   ),
                   if (quizProvider.isLoading)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            AppTheme.primaryColor),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16.0),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppTheme.primaryColor),
+                        ),
                       ),
                     ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Test your knowledge and get real-time AI feedback',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
-                ),
               ),
               const SizedBox(height: 24),
               if (quizProvider.error != null)
@@ -162,125 +159,140 @@ class _QuizListScreenState extends State<QuizListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B), // Dark slate
-        borderRadius: BorderRadius.circular(16),
+        color: AppTheme.primaryColor.withOpacity(0.05), // Subtle tint
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            context.go('/app/quizzes/active', extra: quiz);
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Glassmorphism
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                context.go('/app/quizzes/active', extra: quiz);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        color: AppTheme.primaryLight,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            quiz.title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            quiz.description.isNotEmpty
-                                ? quiz.description
-                                : 'Test your knowledge on this topic.',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(color: Colors.white12, height: 1),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.format_list_numbered,
-                            size: 16, color: Colors.white.withOpacity(0.5)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${quiz.content.length} Questions',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.5)),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.primaryGradient,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.school_rounded,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(Icons.schedule,
-                            size: 16, color: Colors.white.withOpacity(0.5)),
-                        const SizedBox(width: 4),
-                        Text(
-                          timeago.format(quiz.createdAt),
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.5)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                quiz.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                quiz.description.isNotEmpty
+                                    ? quiz.description
+                                    : 'Test your knowledge on this topic.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    if (quiz.kbArticleId != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981)
-                              .withOpacity(0.2), // Emerald green
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
+                    const SizedBox(height: 16),
+                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
                           children: [
-                            const Icon(Icons.auto_awesome,
-                                size: 12, color: Color(0xFF10B981)),
-                            const SizedBox(width: 4),
-                            const Text('AI Generated',
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFF10B981),
-                                    fontWeight: FontWeight.bold)),
+                            Icon(Icons.format_list_numbered,
+                                size: 16, color: Colors.white.withOpacity(0.5)),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${quiz.content.length} Questions',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(width: 16),
+                            Icon(Icons.schedule,
+                                size: 16, color: Colors.white.withOpacity(0.5)),
+                            const SizedBox(width: 6),
+                            Text(
+                              timeago.format(quiz.createdAt),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.6)),
+                            ),
                           ],
                         ),
-                      )
+                        if (quiz.kbArticleId != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondaryColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color:
+                                      AppTheme.secondaryColor.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.auto_awesome,
+                                    size: 14, color: AppTheme.secondaryColor),
+                                const SizedBox(width: 4),
+                                const Text('AI Gen',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppTheme.secondaryColor,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          )
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
