@@ -10,16 +10,10 @@ const TTL_STUDENT = 4 * 60 * 60 * 1000;    // 4 hours
 const TTL_DEPT = 12 * 60 * 60 * 1000;   // 12 hours
 
 // ─── API Key rotation ───────────────────────────────────────────────────────
-const apiKeys = [
-    process.env.GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_1,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3,
-    process.env.GEMINI_API_KEY_4,
-    process.env.GEMINI_API_KEY_5,
-    process.env.GEMINI_API_KEY_6,
-    process.env.GEMINI_API_KEY_7
-].filter(k => k) as string[];
+const apiKeys = Object.keys(process.env)
+    .filter(key => key.startsWith('GEMINI_API_KEY'))
+    .map(key => process.env[key])
+    .filter(Boolean) as string[];
 
 const executeWithRetry = async <T>(operation: (ai: GoogleGenAI) => Promise<T>): Promise<T> => {
     let lastError: any;

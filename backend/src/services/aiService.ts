@@ -7,16 +7,10 @@ import path from 'path';
 const envPath = path.resolve(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
-const apiKeys = [
-    process.env.GEMINI_API_KEY, // Fallback/Legacy
-    process.env.GEMINI_API_KEY_1,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3,
-    process.env.GEMINI_API_KEY_4,
-    process.env.GEMINI_API_KEY_5,
-    process.env.GEMINI_API_KEY_6,
-    process.env.GEMINI_API_KEY_7
-].filter(k => k) as string[];
+const apiKeys = Object.keys(process.env)
+    .filter(key => key.startsWith('GEMINI_API_KEY'))
+    .map(key => process.env[key])
+    .filter(Boolean) as string[];
 
 if (apiKeys.length === 0) {
     console.warn(`⚠️  No GEMINI_API_KEYS found. Looked in: ${envPath}`);
