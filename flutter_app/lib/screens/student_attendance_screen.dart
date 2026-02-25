@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/attendance_service.dart';
@@ -86,96 +87,111 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final totalPresent = _attendanceData?['totalPresent'] ?? 0;
 
     Color statusColor = AppTheme.successColor;
-    if (totalClasses == 0)
+    if (totalClasses == 0) {
       statusColor = Colors.white54;
-    else if (percentage < 75)
+    } else if (percentage < 75) {
       statusColor = AppTheme.errorColor;
-    else if (percentage < 85) statusColor = AppTheme.warningColor;
+    } else if (percentage < 85) {
+      statusColor = AppTheme.warningColor;
+    }
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: statusColor.withOpacity(0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                statusColor.withOpacity(0.15),
+                statusColor.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: statusColor.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: statusColor.withOpacity(0.05),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Overall Attendance',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Text(
-                  totalClasses == 0 ? 'N/A' : '$percentage%',
-                  style: TextStyle(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Overall Attendance',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Text(
+                      totalClasses == 0 ? 'N/A' : '$percentage%',
+                      style: TextStyle(
+                          color: statusColor,
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1.5),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '$totalPresent / $totalClasses classes attended',
+                        style: TextStyle(
+                            color: statusColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: totalClasses == 0 ? 0 : percentage / 100,
+                      backgroundColor: Colors.white.withOpacity(0.1),
                       color: statusColor,
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.5),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$totalPresent / $totalClasses classes attended',
-                    style: TextStyle(
+                      strokeWidth: 8,
+                      strokeCap: StrokeCap.round,
+                    ),
+                    Center(
+                      child: Icon(
+                        totalClasses == 0
+                            ? Icons.horizontal_rule_rounded
+                            : (percentage >= 85
+                                ? Icons.check_circle_rounded
+                                : (percentage >= 75
+                                    ? Icons.warning_rounded
+                                    : Icons.cancel_rounded)),
                         color: statusColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold),
-                  ),
+                        size: 32,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          SizedBox(
-            width: 80,
-            height: 80,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                CircularProgressIndicator(
-                  value: totalClasses == 0 ? 0 : percentage / 100,
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  color: statusColor,
-                  strokeWidth: 8,
-                  strokeCap: StrokeCap.round,
-                ),
-                Center(
-                  child: Icon(
-                    totalClasses == 0
-                        ? Icons.horizontal_rule_rounded
-                        : (percentage >= 85
-                            ? Icons.check_circle_rounded
-                            : (percentage >= 75
-                                ? Icons.warning_rounded
-                                : Icons.cancel_rounded)),
-                    color: statusColor,
-                    size: 32,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -184,65 +200,84 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final todayClasses = _attendanceData?['todayClasses'] as List? ?? [];
     if (todayClasses.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Today's Classes",
-              style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: todayClasses.map((cls) {
-              final status = cls['status']?.toString() ?? 'unknown';
-              Color sColor = AppTheme.successColor;
-              if (status == 'absent') sColor = AppTheme.errorColor;
-              if (status == 'late') sColor = AppTheme.warningColor;
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF6366F1).withOpacity(0.1),
+                  const Color(0xFFA855F7).withOpacity(0.02),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Today's Classes",
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: todayClasses.map((cls) {
+                    final status = cls['status']?.toString() ?? 'unknown';
+                    Color sColor = AppTheme.successColor;
+                    if (status == 'absent') sColor = AppTheme.errorColor;
+                    if (status == 'late') sColor = AppTheme.warningColor;
 
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: sColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: sColor.withOpacity(0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: sColor,
-                        shape: BoxShape.circle,
+                        color: sColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: sColor.withOpacity(0.3)),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      cls['course'] ?? 'Class',
-                      style: TextStyle(
-                        color: sColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: sColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            cls['course'] ?? 'Class',
+                            style: TextStyle(
+                              color: sColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -273,86 +308,149 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
         final projectedPercentage = data['projectedPercentage'] ?? 0;
         final studentNudge =
             data['studentNudge'] ?? "Maintain your current attendance.";
-
+        final meta = data['_meta'] as Map<String, dynamic>?;
+        final isStale = meta?['isStale'] == true;
+        final lastUpdatedRaw = meta?['lastUpdated'] as String?;
+        String lastUpdatedLabel = '';
+        if (lastUpdatedRaw != null) {
+          final dt = DateTime.tryParse(lastUpdatedRaw)?.toLocal();
+          if (dt != null) {
+            final diff = DateTime.now().difference(dt);
+            if (diff.inMinutes < 1) {
+              lastUpdatedLabel = 'Just now';
+            } else if (diff.inHours < 1) {
+              lastUpdatedLabel = '${diff.inMinutes} min ago';
+            } else {
+              lastUpdatedLabel = '${diff.inHours}h ago';
+            }
+          }
+        }
         Color sColor = AppTheme.successColor;
-        if (projectedPercentage < 75)
+        if (projectedPercentage < 75) {
           sColor = AppTheme.errorColor;
-        else if (projectedPercentage < 85) sColor = AppTheme.warningColor;
+        } else if (projectedPercentage < 85) {
+          sColor = AppTheme.warningColor;
+        }
 
-        return Container(
-          margin: const EdgeInsets.only(top: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF6366F1).withOpacity(0.15),
-                const Color(0xFFA855F7).withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome_rounded,
-                      color: Color(0xFFA855F7)),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'AI Projected Path',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6366F1).withOpacity(0.25),
+                      const Color(0xFFA855F7).withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: sColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withOpacity(0.4),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: Text(
-                      '$projectedPercentage% Projected',
-                      style: TextStyle(
-                        color: sColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.auto_awesome_rounded,
+                            color: Color(0xFFA855F7)),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'AI Projected Path',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: sColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$projectedPercentage% Projected',
+                            style: TextStyle(
+                              color: sColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      studentNudge,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        height: 1.4,
+                        fontSize: 14,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                studentNudge,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.4,
-                  fontSize: 14,
+                    if (_attendanceData?['dailyHistory'] != null) ...[
+                      const SizedBox(height: 24),
+                      _buildTrendGraph(
+                          _attendanceData!['dailyHistory'] as List),
+                    ],
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (lastUpdatedLabel.isNotEmpty)
+                          Text(
+                            'Updated $lastUpdatedLabel',
+                            style: const TextStyle(
+                              color: Colors.white38,
+                              fontSize: 11,
+                            ),
+                          ),
+                        if (isStale)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: Colors.orange.withOpacity(0.3)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.sync_rounded,
+                                    size: 10, color: Colors.orange),
+                                SizedBox(width: 4),
+                                Text('Refreshing…',
+                                    style: TextStyle(
+                                        color: Colors.orange, fontSize: 10)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              if (_attendanceData?['dailyHistory'] != null) ...[
-                const SizedBox(height: 24),
-                _buildTrendGraph(_attendanceData!['dailyHistory'] as List),
-              ],
-            ],
+            ),
           ),
         );
       },
@@ -423,45 +521,60 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
 
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.08),
+                        Colors.white.withOpacity(0.03),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Row(
                     children: [
-                      Text(subject['course'] ?? 'Unknown',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text(
-                          '${subject['present']} / ${subject['total']} classes',
-                          style: const TextStyle(
-                              color: Colors.white54, fontSize: 13)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(subject['course'] ?? 'Unknown',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16)),
+                            const SizedBox(height: 4),
+                            Text(
+                                '${subject['present']} / ${subject['total']} classes',
+                                style: const TextStyle(
+                                    color: Colors.white54, fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: sColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$pct%',
+                          style: TextStyle(
+                              color: sColor, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: sColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$pct%',
-                    style:
-                        TextStyle(color: sColor, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         }).toList(),
@@ -559,32 +672,36 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
-          : RefreshIndicator(
-              onRefresh: _fetchAttendance,
-              color: AppTheme.primaryColor,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildOverviewCard(),
-                    _buildTodayIndicators(),
-                    if (_attendanceData != null &&
-                        _attendanceData!['studentId'] != null)
-                      _buildAIForecast(_attendanceData!['studentId']),
-                    const SizedBox(height: 16),
-                    _buildSubjectBreakdown(),
-                    const SizedBox(height: 16),
-                    _buildPaginatedHistory(),
-                  ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.backgroundGradient,
+        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryColor))
+            : RefreshIndicator(
+                onRefresh: _fetchAttendance,
+                color: AppTheme.primaryColor,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildOverviewCard(),
+                      _buildTodayIndicators(),
+                      if (_attendanceData != null &&
+                          _attendanceData!['studentId'] != null)
+                        _buildAIForecast(_attendanceData!['studentId']),
+                      const SizedBox(height: 16),
+                      _buildSubjectBreakdown(),
+                      const SizedBox(height: 16),
+                      _buildPaginatedHistory(),
+                    ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 }

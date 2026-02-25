@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../services/supabaseClient';
 import { WithAuthProp } from '@clerk/clerk-sdk-node';
-import { generateDepartmentAuditInternal } from './aiForecastController';
+import { generateDepartmentAuditInternal, markStudentInsightsStale, markDeptAuditStale } from './aiForecastController';
 
 
 // GET /api/attendance/class?timetable_id=UUID&date=YYYY-MM-DD
@@ -168,6 +168,18 @@ export const markAttendance = async (req: Request, res: Response): Promise<void>
             .insert(recordsToInsert);
 
         if (recordsInsertError) throw recordsInsertError;
+
+        // ── Phase 2: Fire-and-forget stale flagging ──────────────────────
+        // After writing attendance, mark the affected students' AI forecasts
+        // as stale so the next read triggers a background Gemini refresh.
+        const affectedStudentIds: string[] = records.map((r: any) => r.student_id).filter(Boolean);
+        setImmediate(() => {
+            markStudentInsightsStale(affectedStudentIds)
+                .catch(err => console.error('[markAttendance] stale flag error:', err.message));
+            markDeptAuditStale()
+                .catch(err => console.error('[markAttendance] dept stale flag error:', err.message));
+        });
+        // ─────────────────────────────────────────────────────────────────
 
         res.json({ message: 'Attendance marked successfully', sessionId });
     } catch (error: any) {
