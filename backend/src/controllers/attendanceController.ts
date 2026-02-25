@@ -253,12 +253,39 @@ export const getStudentAttendance = async (req: Request, res: Response): Promise
             status: r.status
         }));
 
+        // Calculate dailyHistory (running cumulative percentage for trend chart)
+        const chronologicalRecords = [...validRecords].sort((a: any, b: any) => {
+            const dateA = new Date(a.attendance_sessions?.date || 0).getTime();
+            const dateB = new Date(b.attendance_sessions?.date || 0).getTime();
+            return dateA - dateB;
+        });
+
+        let runningTotalClasses = 0;
+        let runningTotalPresent = 0;
+        const historyMap = new Map<string, number>(); // date -> percentage
+
+        chronologicalRecords.forEach((r: any) => {
+            const date = r.attendance_sessions?.date;
+            if (!date) return;
+            runningTotalClasses++;
+            if (r.status === 'present') {
+                runningTotalPresent++;
+            }
+            historyMap.set(date, Math.round((runningTotalPresent / runningTotalClasses) * 100));
+        });
+
+        const dailyHistory = Array.from(historyMap.entries()).map(([date, percentage]) => ({
+            date,
+            percentage
+        }));
+
         res.json({
             overallPercentage,
             totalClasses,
             totalPresent,
             subjectBreakdown,
-            recentHistory
+            recentHistory,
+            dailyHistory
         });
 
     } catch (error: any) {

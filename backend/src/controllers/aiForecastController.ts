@@ -9,6 +9,10 @@ const AI_MODEL = 'gemini-2.5-flash';
 let departmentAuditCache: { message: string, timestamp: number } | null = null;
 const CACHE_DURATION = 2 * 60 * 60 * 1000;
 
+// 4-hour cache for individual student forecasts
+const studentForecastCache = new Map<string, { data: any, timestamp: number }>();
+const STUDENT_CACHE_DURATION = 4 * 60 * 60 * 1000;
+
 
 const apiKeys = [
     process.env.GEMINI_API_KEY,
@@ -41,6 +45,13 @@ const executeWithRetry = async <T>(operation: (ai: GoogleGenAI) => Promise<T>): 
 export const getStudentForecast = async (req: Request, res: Response): Promise<void> => {
     try {
         const studentId = req.params.id;
+
+        const now = Date.now();
+        const cached = studentForecastCache.get(studentId);
+        if (cached && (now - cached.timestamp < STUDENT_CACHE_DURATION)) {
+            res.json(cached.data);
+            return;
+        }
 
         // 1. Fetch student profile
         const { data: profile } = await supabase.from('profiles').select('full_name, department, year, section').eq('id', studentId).single();
@@ -116,12 +127,17 @@ export const getStudentForecast = async (req: Request, res: Response): Promise<v
 
         const aiData = JSON.parse(responseText);
 
-        res.json({
+        const responseData = {
             currentPercentage,
             projectedPercentage: aiData.projectedPercentage,
             studentNudge: aiData.studentNudge,
             facultyInsight: aiData.facultyInsight
-        });
+        };
+
+        // Save to cache
+        studentForecastCache.set(studentId, { data: responseData, timestamp: now });
+
+        res.json(responseData);
 
     } catch (error: any) {
         console.error('[getStudentForecast] Error:', error.message);

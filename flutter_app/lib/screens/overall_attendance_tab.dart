@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../services/attendance_service.dart';
 import '../config/theme.dart';
 
@@ -458,6 +459,8 @@ class _OverallAttendanceTabState extends State<OverallAttendanceTab> {
                           final data = snapshot.data;
                           final breakdown =
                               data?['subjectBreakdown'] as List? ?? [];
+                          final dailyHistory =
+                              data?['dailyHistory'] as List? ?? [];
 
                           if (breakdown.isEmpty) {
                             return const Center(
@@ -466,94 +469,109 @@ class _OverallAttendanceTabState extends State<OverallAttendanceTab> {
                                     style: TextStyle(color: Colors.white54)));
                           }
 
-                          return ListView.builder(
-                            padding: const EdgeInsets.all(20),
-                            itemCount: breakdown.length,
-                            itemBuilder: (context, index) {
-                              final subject = breakdown[index];
-                              final pct = subject['percentage'] ?? 0;
-                              Color sColor = AppTheme.successColor;
-                              if (pct < 75)
-                                sColor = AppTheme.errorColor;
-                              else if (pct < 85) sColor = AppTheme.warningColor;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.isFaculty && dailyHistory.isNotEmpty)
+                                _buildStudentTrendChart(dailyHistory),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding: const EdgeInsets.all(20),
+                                itemCount: breakdown.length,
+                                itemBuilder: (context, index) {
+                                  final subject = breakdown[index];
+                                  final pct = subject['percentage'] ?? 0;
+                                  Color sColor = AppTheme.successColor;
+                                  if (pct < 75)
+                                    sColor = AppTheme.errorColor;
+                                  else if (pct < 85)
+                                    sColor = AppTheme.warningColor;
 
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF1E293B).withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                    width: 1,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: sColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: sColor.withOpacity(0.3)),
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E293B)
+                                          .withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.1),
+                                        width: 1,
                                       ),
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.subject_rounded,
-                                          color: sColor,
-                                          size: 24,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(subject['course'] ?? 'Unknown',
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15)),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                              '${subject['present']} / ${subject['total']} classes',
-                                              style: const TextStyle(
-                                                  color: Colors.white54,
-                                                  fontSize: 13)),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: sColor.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: sColor.withOpacity(0.3)),
-                                      ),
-                                      child: Text('$pct%',
-                                          style: TextStyle(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: sColor.withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                                color: sColor.withOpacity(0.3)),
+                                          ),
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.subject_rounded,
                                               color: sColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16)),
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  subject['course'] ??
+                                                      'Unknown',
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15)),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                  '${subject['present']} / ${subject['total']} classes',
+                                                  style: const TextStyle(
+                                                      color: Colors.white54,
+                                                      fontSize: 13)),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: sColor.withOpacity(0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                                color: sColor.withOpacity(0.3)),
+                                          ),
+                                          child: Text('$pct%',
+                                              style: TextStyle(
+                                                  color: sColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16)),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
+                                  );
+                                },
+                              ),
+                            ],
                           );
                         },
                       ),
@@ -565,6 +583,59 @@ class _OverallAttendanceTabState extends State<OverallAttendanceTab> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStudentTrendChart(List dailyHistory) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16, left: 20, right: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Attendance Trend',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 150,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: dailyHistory.asMap().entries.map((e) {
+                      return FlSpot(e.key.toDouble(),
+                          (e.value['percentage'] as num).toDouble());
+                    }).toList(),
+                    isCurved: true,
+                    color: AppTheme.primaryLight,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: AppTheme.primaryLight.withOpacity(0.1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
