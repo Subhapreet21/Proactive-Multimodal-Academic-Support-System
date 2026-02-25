@@ -90,4 +90,25 @@ class AttendanceService {
       throw Exception('Failed to load filtered students: $e');
     }
   }
+
+  /// Fetch AI-driven forecast and insights for a specific student.
+  Future<Map<String, dynamic>> getStudentAIForecast(String studentId) async {
+    try {
+      final response =
+          await _api.get('/api/attendance/ai/forecast-student/$studentId');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to load student AI forecast: $e');
+    }
+  }
+
+  /// Fetch AI-driven systemic risk audit for the admin dashbaord.
+  Future<Map<String, dynamic>> getDepartmentAIForecast() async {
+    try {
+      final response = await _api.get('/api/attendance/ai/forecast-department');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to load department AI forecast: $e');
+    }
+  }
 }

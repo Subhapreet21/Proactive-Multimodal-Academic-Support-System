@@ -434,119 +434,230 @@ class _OverallAttendanceTabState extends State<OverallAttendanceTab> {
               ),
               const Divider(color: Colors.white12),
               Expanded(
-                child: FutureBuilder<Map<String, dynamic>>(
-                  future: _attendanceService.getStudentStats(
-                      studentId: student['id']),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator(
-                              color: AppTheme.primaryColor));
-                    }
-                    if (snapshot.hasError) {
-                      return Center(
-                          child: Text('Error loading details.',
-                              style: TextStyle(color: AppTheme.errorColor)));
-                    }
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildAIFacultyInsight(student['id']),
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: _attendanceService.getStudentStats(
+                            studentId: student['id']),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppTheme.primaryColor));
+                          }
+                          if (snapshot.hasError) {
+                            return Center(
+                                child: Text('Error loading details.',
+                                    style:
+                                        TextStyle(color: AppTheme.errorColor)));
+                          }
 
-                    final data = snapshot.data;
-                    final breakdown = data?['subjectBreakdown'] as List? ?? [];
+                          final data = snapshot.data;
+                          final breakdown =
+                              data?['subjectBreakdown'] as List? ?? [];
 
-                    if (breakdown.isEmpty) {
-                      return const Center(
-                          child: Text(
-                              'No attendance records found for this student.',
-                              style: TextStyle(color: Colors.white54)));
-                    }
+                          if (breakdown.isEmpty) {
+                            return const Center(
+                                child: Text(
+                                    'No attendance records found for this student.',
+                                    style: TextStyle(color: Colors.white54)));
+                          }
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: breakdown.length,
-                      itemBuilder: (context, index) {
-                        final subject = breakdown[index];
-                        final pct = subject['percentage'] ?? 0;
-                        Color sColor = AppTheme.successColor;
-                        if (pct < 75)
-                          sColor = AppTheme.errorColor;
-                        else if (pct < 85) sColor = AppTheme.warningColor;
+                          return ListView.builder(
+                            padding: const EdgeInsets.all(20),
+                            itemCount: breakdown.length,
+                            itemBuilder: (context, index) {
+                              final subject = breakdown[index];
+                              final pct = subject['percentage'] ?? 0;
+                              Color sColor = AppTheme.successColor;
+                              if (pct < 75)
+                                sColor = AppTheme.errorColor;
+                              else if (pct < 85) sColor = AppTheme.warningColor;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: sColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
+                                  color:
+                                      const Color(0xFF1E293B).withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                      color: sColor.withOpacity(0.3)),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.subject_rounded,
-                                    color: sColor,
-                                    size: 24,
+                                    color: Colors.white.withOpacity(0.1),
+                                    width: 1,
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(subject['course'] ?? 'Unknown',
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15)),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                        '${subject['present']} / ${subject['total']} classes',
-                                        style: const TextStyle(
-                                            color: Colors.white54,
-                                            fontSize: 13)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: sColor.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      color: sColor.withOpacity(0.3)),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: sColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                            color: sColor.withOpacity(0.3)),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.subject_rounded,
+                                          color: sColor,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(subject['course'] ?? 'Unknown',
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15)),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                              '${subject['present']} / ${subject['total']} classes',
+                                              style: const TextStyle(
+                                                  color: Colors.white54,
+                                                  fontSize: 13)),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: sColor.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                            color: sColor.withOpacity(0.3)),
+                                      ),
+                                      child: Text('$pct%',
+                                          style: TextStyle(
+                                              color: sColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16)),
+                                    ),
+                                  ],
                                 ),
-                                child: Text('$pct%',
-                                    style: TextStyle(
-                                        color: sColor,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16)),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAIFacultyInsight(String studentId) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _attendanceService.getStudentAIForecast(studentId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            margin: const EdgeInsets.only(top: 16, left: 20, right: 20),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const SizedBox.shrink(); // Hide silently on error
+        }
+
+        final data = snapshot.data!;
+        final insight = data['facultyInsight'] ?? "No insights available.";
+        final projectedPercentage = data['projectedPercentage'] ?? 0;
+
+        Color sColor = AppTheme.successColor;
+        if (projectedPercentage < 75)
+          sColor = AppTheme.errorColor;
+        else if (projectedPercentage < 85) sColor = AppTheme.warningColor;
+
+        return Container(
+          margin: const EdgeInsets.only(top: 16, left: 20, right: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF6366F1).withOpacity(0.1),
+                const Color(0xFFA855F7).withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF6366F1).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.psychology_alt_rounded,
+                      color: Color(0xFFA855F7), size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'AI Intervention Insight',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: sColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: sColor.withOpacity(0.5),
+                          blurRadius: 4,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                insight,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  height: 1.4,
+                  fontSize: 13,
                 ),
               ),
             ],
