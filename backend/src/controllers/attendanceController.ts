@@ -347,7 +347,7 @@ export const getFilteredStudentAttendance = async (req: Request, res: Response):
         }
 
         // 1. Fetch all students matching filters
-        let usersQuery = supabase.from('profiles').select('id, full_name, email').eq('role', 'student');
+        let usersQuery = supabase.from('profiles').select('id, full_name, email, avatar_url').eq('role', 'student');
 
         if (queryDept && queryDept !== 'All') {
             usersQuery = usersQuery.eq('department', queryDept);

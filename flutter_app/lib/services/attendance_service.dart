@@ -64,6 +64,12 @@ class AttendanceService {
     }
   }
 
+  /// Alias for fetching student attendance stats including subject breakdown.
+  Future<Map<String, dynamic>> getStudentStats(
+      {required String studentId}) async {
+    return getStudentAttendance(studentId);
+  }
+
   /// Fetch overall percentage of all students filtered by department, year, section
   Future<List<dynamic>> getFilteredStudents({
     required String department,
