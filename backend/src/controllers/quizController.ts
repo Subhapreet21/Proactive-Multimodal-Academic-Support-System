@@ -13,7 +13,7 @@ interface QuizQuestion {
 
 export const generateQuizFromKB = async (req: Request, res: Response) => {
     try {
-        const { kb_article_id } = req.body;
+        const { kb_article_id, num_questions = 5 } = req.body;
         const user = (req as any).user; // From authMiddleware
 
         if (!kb_article_id) {
@@ -35,14 +35,14 @@ export const generateQuizFromKB = async (req: Request, res: Response) => {
         // 2. Construct the Prompt for Gemini
         const systemPrompt = `
 You are an expert university professor creating an adaptive assessment.
-Your task is to generate a 5-question multiple choice quiz based strictly on the provided text.
+Your task is to generate a ${num_questions}-question multiple choice quiz based strictly on the provided text.
 
 The quiz must be research-worthy and adaptive:
 1. Do NOT just make simple "What is X?" questions. Test applied understanding.
 2. Dynamic Distractor Generation: The wrong Options MUST be plausible misconceptions that a student might actually believe. Do not use obvious throwaway fake answers.
 3. Every question must have an explanation for WHY the correct answer is right and why the distractors are wrong based on the text.
 
-Output exactly a JSON array of 5 objects, with NO markdown formatting, NO backticks. Follow this exact schema:
+Output exactly a JSON array of ${num_questions} objects, with NO markdown formatting, NO backticks. Follow this exact schema:
 [
   {
     "id": "q1",

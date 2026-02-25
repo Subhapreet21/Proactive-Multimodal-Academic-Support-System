@@ -16,11 +16,14 @@ class QuizService {
   }
 
   /// Generate a new quiz from a Knowledge Base article
-  Future<Quiz> generateQuizFromKB(String kbArticleId) async {
+  Future<Quiz> generateQuizFromKB(String kbArticleId, int numQuestions) async {
     try {
       final response = await _api.post(
         '/api/quizzes/generate',
-        {'kb_article_id': kbArticleId},
+        {
+          'kb_article_id': kbArticleId,
+          'num_questions': numQuestions,
+        },
         requireAuth: true,
       );
 

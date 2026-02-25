@@ -30,99 +30,105 @@ class _QuizListScreenState extends State<QuizListScreen> {
     final isFaculty = context.read<AuthProvider>().userRole == 'faculty' ||
         context.read<AuthProvider>().userRole == 'admin';
 
-    return Scaffold(
-      backgroundColor:
-          Colors.transparent, // Background set by AppShell gradient
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Test your knowledge and get real-time AI feedback',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                    ),
-                  ),
-                  if (quizProvider.isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 16.0),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              AppTheme.primaryColor),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: AppTheme.backgroundGradient,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Test your knowledge and get real-time AI feedback',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white.withOpacity(0.7),
                         ),
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              if (quizProvider.error != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.errorColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: AppTheme.errorColor.withOpacity(0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: AppTheme.errorColor),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          quizProvider.error!,
-                          style: const TextStyle(color: Colors.white),
+                    if (quizProvider.isLoading)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 16.0),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryColor),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-              Expanded(
-                child: quizProvider.quizzes.isEmpty && !quizProvider.isLoading
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: () async =>
-                            context.read<QuizProvider>().loadQuizzes(),
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: quizProvider.quizzes.length,
-                          itemBuilder: (context, index) {
-                            final quiz = quizProvider.quizzes[index];
-                            return _buildQuizCard(quiz, isFaculty, context);
-                          },
+                const SizedBox(height: 24),
+                if (quizProvider.error != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppTheme.errorColor.withOpacity(0.5)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: AppTheme.errorColor),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            quizProvider.error!,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
-                      ),
-              ),
-            ],
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: quizProvider.quizzes.isEmpty && !quizProvider.isLoading
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: () async =>
+                              context.read<QuizProvider>().loadQuizzes(),
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: quizProvider.quizzes.length,
+                            itemBuilder: (context, index) {
+                              final quiz = quizProvider.quizzes[index];
+                              return _buildQuizCard(quiz, isFaculty, context);
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
+        floatingActionButton: isFaculty
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  context.push('/app/quizzes/manage');
+                },
+                backgroundColor: AppTheme.primaryColor,
+                icon: const Icon(Icons.add_task),
+                label: const Text('Create Quiz',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              )
+            : null,
       ),
-      floatingActionButton: isFaculty
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                context.push('/app/quizzes/manage');
-              },
-              backgroundColor: AppTheme.primaryColor,
-              icon: const Icon(Icons.add_task),
-              label: const Text('Create Quiz',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            )
-          : null,
     );
   }
 

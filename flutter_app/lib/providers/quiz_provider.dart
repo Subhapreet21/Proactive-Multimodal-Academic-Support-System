@@ -28,12 +28,14 @@ class QuizProvider extends ChangeNotifier {
   }
 
   /// Trigger generation of a new Quiz from the KB
-  Future<Quiz?> generateQuizFromKB(String kbArticleId) async {
+  Future<Quiz?> generateQuizFromKB(String kbArticleId,
+      {int numQuestions = 5}) async {
     _setLoading(true);
     _clearError();
 
     try {
-      final newQuiz = await _quizService.generateQuizFromKB(kbArticleId);
+      final newQuiz =
+          await _quizService.generateQuizFromKB(kbArticleId, numQuestions);
       // Insert to the top of the list so it appears immediately
       _quizzes.insert(0, newQuiz);
       notifyListeners();
