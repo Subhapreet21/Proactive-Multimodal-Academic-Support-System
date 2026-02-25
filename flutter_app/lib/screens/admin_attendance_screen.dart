@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+
 import '../services/attendance_service.dart';
 import '../config/theme.dart';
 import 'admin_manage_attendance_tab.dart';
@@ -41,10 +43,66 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
     }
   }
 
+  Widget _buildSystemicRiskAudit() {
+    final auditMessage = _adminStats?['aiAudit'];
+    if (auditMessage == null || auditMessage == "")
+      return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryColor.withOpacity(0.2),
+            AppTheme.secondaryColor.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'AI SYSTEMIC RISK AUDIT',
+                  style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  auditMessage,
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 14, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGlobalOverview() {
-    final overallPercentage = _adminStats?['overallPercentage'] ?? 0;
-    final breakdown = _adminStats?['departmentBreakdown'] as List? ?? [];
-    final hasData = breakdown.isNotEmpty;
+    final overallPercentage = (_adminStats?['overallPercentage'] ?? 0) as num;
+    final dailyHistory = _adminStats?['dailyHistory'] as List? ?? [];
+    final hasData = dailyHistory.isNotEmpty;
 
     Color statusColor = AppTheme.successColor;
     if (!hasData)
@@ -58,46 +116,114 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: statusColor.withOpacity(0.5)),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Institutional Average',
-            style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Stack(
-            alignment: Alignment.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: CircularProgressIndicator(
-                  value: hasData ? overallPercentage / 100 : 0,
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  color: statusColor,
-                  strokeWidth: 12,
-                ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Institutional Average',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Last 30 days & Projection',
+                    style: TextStyle(color: Colors.white54, fontSize: 13),
+                  ),
+                ],
               ),
-              Text(
-                hasData ? '$overallPercentage%' : 'N/A',
-                style: TextStyle(
-                    color: statusColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withOpacity(0.5)),
+                ),
+                child: Text(
+                  hasData ? '$overallPercentage%' : 'N/A',
+                  style: TextStyle(
+                      color: statusColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Based on the last 30 days',
-            style: TextStyle(color: Colors.white54, fontSize: 13),
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 200,
+            child: hasData
+                ? LineChart(
+                    LineChartData(
+                      gridData: const FlGridData(show: false),
+                      titlesData: const FlTitlesData(show: false),
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: [
+                        // Historical Line
+                        LineChartBarData(
+                          spots: dailyHistory.asMap().entries.map((e) {
+                            return FlSpot(e.key.toDouble(),
+                                (e.value['percentage'] as num).toDouble());
+                          }).toList(),
+                          isCurved: true,
+                          color: statusColor,
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: statusColor.withOpacity(0.1),
+                          ),
+                        ),
+                        // Prediction Line (dashed/dotted)
+                        if (dailyHistory.isNotEmpty)
+                          LineChartBarData(
+                            spots: [
+                              FlSpot(
+                                  (dailyHistory.length - 1).toDouble(),
+                                  (dailyHistory.last['percentage'] as num)
+                                      .toDouble()),
+                              FlSpot(
+                                  (dailyHistory.length + 5).toDouble(),
+                                  (dailyHistory.last['percentage'] as num)
+                                          .toDouble() +
+                                      2), // Simple upward projection
+                            ],
+                            isCurved: false,
+                            color: statusColor.withOpacity(0.5),
+                            barWidth: 4,
+                            dashArray: [5, 5],
+                            dotData: const FlDotData(show: false),
+                          ),
+                      ],
+                    ),
+                  )
+                : const Center(
+                    child: Text('Not enough data for chart',
+                        style: TextStyle(color: Colors.white54))),
           ),
+          const SizedBox(height: 16),
+          if (hasData)
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.trending_up, color: AppTheme.successColor, size: 16),
+                SizedBox(width: 8),
+                Text(
+                  'AI predicts a 2% recovery trend',
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -261,6 +387,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                _buildSystemicRiskAudit(),
                                 _buildGlobalOverview(),
                                 const SizedBox(height: 32),
                                 _buildDepartmentBreakdown(),

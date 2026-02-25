@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { supabase } from '../services/supabaseClient';
-import { WithAuthProp } from '@clerk/clerk-sdk-node'; // Using this as type, though auth might be supabase. Let's stick to existing project patterns.
+import { WithAuthProp } from '@clerk/clerk-sdk-node';
+import { generateDepartmentAuditInternal } from './aiForecastController';
+
 
 // GET /api/attendance/class?timetable_id=UUID&date=YYYY-MM-DD
 export const getClassAttendance = async (req: Request, res: Response): Promise<void> => {
@@ -315,9 +317,29 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             percentage: Math.round((deptStats[dept].present / deptStats[dept].total) * 100)
         }));
 
+        // CALCULATE DAILY STATS for the line chart
+        const dailyStats: Record<string, { present: number, total: number }> = {};
+        records.forEach((r: any) => {
+            const date = r.attendance_sessions?.date;
+            if (!date) return;
+            if (!dailyStats[date]) dailyStats[date] = { present: 0, total: 0 };
+            dailyStats[date].total++;
+            if (r.status === 'present') dailyStats[date].present++;
+        });
+
+        const dailyPercentages = Object.keys(dailyStats).map(date => ({
+            date,
+            percentage: Math.round((dailyStats[date].present / dailyStats[date].total) * 100)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Proactive AI audit (using internal cache)
+        const aiAudit = await generateDepartmentAuditInternal();
+
         res.json({
             overallPercentage,
-            departmentBreakdown
+            departmentBreakdown,
+            dailyHistory: dailyPercentages,
+            aiAudit
         });
 
     } catch (error: any) {

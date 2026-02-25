@@ -5,6 +5,11 @@ import { GoogleGenAI } from '@google/genai';
 
 const AI_MODEL = 'gemini-2.5-flash';
 
+// 2-hour cache for department audit to reduce resource consumption
+let departmentAuditCache: { message: string, timestamp: number } | null = null;
+const CACHE_DURATION = 2 * 60 * 60 * 1000;
+
+
 const apiKeys = [
     process.env.GEMINI_API_KEY,
     process.env.GEMINI_API_KEY_1,
@@ -124,10 +129,14 @@ export const getStudentForecast = async (req: Request, res: Response): Promise<v
     }
 };
 
-// GET /api/attendance/ai/forecast-department
-export const getDepartmentForecast = async (req: Request, res: Response): Promise<void> => {
+// Internal helper for proactive computation
+export const generateDepartmentAuditInternal = async (): Promise<string> => {
     try {
-        // We will fetch the same base stats as getAdminStats, but feed to AI
+        const now = Date.now();
+        if (departmentAuditCache && (now - departmentAuditCache.timestamp < CACHE_DURATION)) {
+            return departmentAuditCache.message;
+        }
+
         const { data: records, error } = await supabase
             .from('attendance_records')
             .select(`
@@ -138,65 +147,61 @@ export const getDepartmentForecast = async (req: Request, res: Response): Promis
         if (error) throw error;
 
         const deptStats: Record<string, { total: number, present: number }> = {};
-
         (records || []).forEach((r: any) => {
             const dept = r.profiles?.department;
             if (!dept) return;
-
             if (!deptStats[dept]) {
                 deptStats[dept] = { total: 0, present: 0 };
             }
-
             deptStats[dept].total++;
-            if (r.status === 'present') {
-                deptStats[dept].present++;
-            }
+            if (r.status === 'present') deptStats[dept].present++;
         });
 
         const deptSummary = Object.keys(deptStats).map(dept => {
             const pct = deptStats[dept].total === 0 ? 0 : Math.round((deptStats[dept].present / deptStats[dept].total) * 100);
-            return `${dept}: ${pct}% (out of ${deptStats[dept].total} total class records)`;
+            return `${dept}: ${pct}% (${deptStats[dept].total} records)`;
         }).join('\n');
 
         const prompt = `
-        You are an institutional academic auditor providing a macro-level risk analysis.
-        Here is the current attendance data across all university departments:
-
+        Institutional academic auditor risk analysis.
+        Departments:
         ${deptSummary}
 
         Task:
-        Analyze this data. Identify any departments that are significantly below the 75% institutional requirement, or note if the entire institution is healthy.
-        Write a 2-sentence "Systemic Risk Audit" summarizing the health of the institution and identifying the most at-risk department (if any) or praising the strongest one.
+        1. Identify any departments significantly below the 75% institutional requirement.
+        2. Write a 2-sentence "Systemic Risk Audit" summarizing the health and identifying the most at-risk department or praising the strongest.
         
-        Return ONLY a JSON object exactly matching this structure, with no formatting blocks:
-        {
-            "auditMessage": "String"
-        }
+        Return ONLY JSON: {"auditMessage": "String"}
         `;
 
         const responseText = await executeWithRetry(async (ai) => {
             const response = await ai.models.generateContent({
                 model: AI_MODEL,
                 contents: prompt,
-                config: {
-                    responseMimeType: 'application/json'
-                }
+                config: { responseMimeType: 'application/json' }
             });
-            if (!response.text) {
-                throw new Error("AI returned empty response");
-            }
-            return response.text;
+            return response.text || "";
         });
 
         const aiData = JSON.parse(responseText);
+        const message = aiData.auditMessage || "No audit message generated.";
 
-        res.json({
-            auditMessage: aiData.auditMessage,
-            departmentBreakdown: deptStats
-        });
+        // Save to cache
+        departmentAuditCache = { message, timestamp: now };
+        return message;
 
     } catch (error: any) {
-        console.error('[getDepartmentForecast] Error:', error.message);
+        console.error('[generateDepartmentAuditInternal] Error:', error.message);
+        return departmentAuditCache?.message || "Audit service temporarily unavailable.";
+    }
+};
+
+// GET /api/attendance/ai/forecast-department
+export const getDepartmentForecast = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const auditMessage = await generateDepartmentAuditInternal();
+        res.json({ auditMessage });
+    } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
 };

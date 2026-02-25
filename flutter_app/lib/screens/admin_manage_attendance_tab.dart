@@ -606,90 +606,6 @@ class _AdminManageAttendanceTabState extends State<AdminManageAttendanceTab> {
     );
   }
 
-  Widget _buildSystemicRiskAudit() {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _attendanceService.getDepartmentAIForecast(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor),
-            ),
-          );
-        }
-
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink(); // Hide silently on error
-        }
-
-        final data = snapshot.data!;
-        final auditMessage = data['auditMessage'] ?? "No audit data available.";
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF6366F1).withOpacity(0.15),
-                const Color(0xFFA855F7).withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.analytics_rounded,
-                      color: Color(0xFFA855F7), size: 24),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Systemic Risk Audit',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                auditMessage,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.4,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -698,7 +614,6 @@ class _AdminManageAttendanceTabState extends State<AdminManageAttendanceTab> {
           ? _buildMarkingView()
           : Column(
               children: [
-                _buildSystemicRiskAudit(),
                 _buildContextSelector(),
                 const SizedBox(height: 16),
                 Expanded(child: SingleChildScrollView(child: _buildSlotList())),
