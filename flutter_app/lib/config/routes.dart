@@ -22,6 +22,11 @@ import '../screens/daily_lecture_prep_screen.dart';
 import '../screens/faculty_attendance_screen.dart';
 import '../screens/student_attendance_screen.dart';
 import '../screens/admin_attendance_screen.dart';
+import '../screens/quiz_list_screen.dart';
+import '../screens/quiz_active_screen.dart';
+import '../screens/quiz_result_screen.dart';
+import '../screens/faculty_quiz_mgmt_screen.dart';
+import '../models/quiz_model.dart';
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
 
@@ -145,6 +150,30 @@ class AppRouter {
             GoRoute(
               path: '/app/study-planner',
               builder: (context, state) => const StudyScreen(),
+            ),
+            GoRoute(
+              path: '/app/quizzes',
+              builder: (context, state) => const QuizListScreen(),
+              routes: [
+                GoRoute(
+                  path: 'active',
+                  builder: (context, state) {
+                    final quiz = state.extra as Quiz;
+                    return QuizActiveScreen(quiz: quiz);
+                  },
+                ),
+                GoRoute(
+                  path: 'result',
+                  builder: (context, state) {
+                    final resultData = state.extra as Map<String, dynamic>;
+                    return QuizResultScreen(resultData: resultData);
+                  },
+                ),
+                GoRoute(
+                  path: 'manage',
+                  builder: (context, state) => const FacultyQuizMgmtScreen(),
+                ),
+              ],
             ),
             GoRoute(
               path: '/app/profile',

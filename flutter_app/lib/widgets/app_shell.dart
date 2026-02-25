@@ -89,6 +89,13 @@ class _AppShellState extends State<AppShell> {
       path: '/app/faculty/daily-prep',
     );
 
+    final quizzesItem = NavigationItem(
+      label: 'Quizzes',
+      selectedIcon: Icons.quiz_rounded,
+      unselectedIcon: Icons.quiz_outlined,
+      path: '/app/quizzes',
+    );
+
     // Create the effective list of items to display
     final effectiveItems = List<NavigationItem>.from(_navItems);
 
@@ -117,6 +124,11 @@ class _AppShellState extends State<AppShell> {
     if (!effectiveItems.any((i) => i.label == 'Attendance')) {
       // Insert next to Dashboard (index 1)
       effectiveItems.insert(1, attendanceItem);
+    }
+
+    if ((isStudent || isFaculty) &&
+        !effectiveItems.any((i) => i.path == quizzesItem.path)) {
+      effectiveItems.insert(2, quizzesItem);
     }
 
     // Update current index based on path
@@ -383,6 +395,7 @@ class _AppShellState extends State<AppShell> {
     if (path.contains('/app/chat')) return 'Chat Assistant';
     if (path.contains('/app/faculty/daily-prep')) return 'AI Lecture Co-Pilot';
     if (path.contains('/attendance')) return 'Attendance';
+    if (path.contains('/app/quizzes')) return 'Quizzes & Assessments';
 
     if (path.contains('/app/virtual-tour')) return 'Campus 360° Tour';
 

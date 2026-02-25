@@ -52,6 +52,7 @@ import studyRoutes from './routes/studyRoutes';
 import tourAssistantRoutes from './routes/tourAssistantRoutes';
 import adminRoutes from './routes/adminRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
+import quizRoutes from './routes/quizRoutes';
 
 app.use('/api/chat', chatRoutes);
 app.use('/api/timetable', timetableRoutes);
