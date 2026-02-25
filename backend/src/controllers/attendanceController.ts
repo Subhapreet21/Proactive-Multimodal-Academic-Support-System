@@ -170,12 +170,23 @@ export const markAttendance = async (req: Request, res: Response): Promise<void>
         if (recordsInsertError) throw recordsInsertError;
 
         // ── Phase 2: Fire-and-forget stale flagging ──────────────────────
-        // After writing attendance, mark the affected students' AI forecasts
-        // as stale so the next read triggers a background Gemini refresh.
-        const affectedStudentIds: string[] = records.map((r: any) => r.student_id).filter(Boolean);
+        // SMART TRIGGER: To save Gemini API tokens, we only force a 
+        // re-computation for students who were just marked 'Absent'.
+        // If a student is 'Present', their previous AI forecast 
+        // ("You're doing great") remains valid and cached.
+        const absentStudentIds: string[] = records
+            .filter((r: any) => r.status === 'Absent')
+            .map((r: any) => r.student_id)
+            .filter(Boolean);
+
         setImmediate(() => {
-            markStudentInsightsStale(affectedStudentIds)
-                .catch(err => console.error('[markAttendance] stale flag error:', err.message));
+            if (absentStudentIds.length > 0) {
+                markStudentInsightsStale(absentStudentIds)
+                    .catch(err => console.error('[markAttendance] stale flag error:', err.message));
+            }
+
+            // We always update the department audit because any 
+            // attendance entry (present or absent) affects global stats.
             markDeptAuditStale()
                 .catch(err => console.error('[markAttendance] dept stale flag error:', err.message));
         });
