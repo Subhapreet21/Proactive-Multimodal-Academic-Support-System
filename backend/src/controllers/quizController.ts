@@ -21,6 +21,7 @@ export const generateQuizFromKB = async (req: Request, res: Response) => {
             valid_until,
             time_limit_mins,
             target_year,
+            max_attempts,
             is_active
         } = req.body;
         const userId = (req as any).auth.userId; // From authMiddleware
@@ -107,6 +108,7 @@ ${kbArticle.content}
         if (valid_until) uploadData.valid_until = valid_until;
         if (time_limit_mins !== undefined) uploadData.time_limit_mins = time_limit_mins;
         if (target_year) uploadData.target_year = target_year;
+        if (max_attempts !== undefined) uploadData.max_attempts = max_attempts;
         if (is_active !== undefined) uploadData.is_active = is_active;
 
         const { data: newQuiz, error: insertError } = await supabase
@@ -250,7 +252,7 @@ export const manualQuizCreation = async (req: Request, res: Response) => {
 export const updateQuiz = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { valid_from, valid_until, time_limit_mins, target_year, is_active } = req.body;
+        const { valid_from, valid_until, time_limit_mins, target_year, max_attempts, is_active } = req.body;
         const userId = (req as any).auth.userId;
 
         if (!id) return res.status(400).json({ error: 'Quiz ID is required' });
@@ -260,6 +262,7 @@ export const updateQuiz = async (req: Request, res: Response) => {
         if (valid_until !== undefined) updateData.valid_until = valid_until;
         if (time_limit_mins !== undefined) updateData.time_limit_mins = time_limit_mins;
         if (target_year !== undefined) updateData.target_year = target_year;
+        if (max_attempts !== undefined) updateData.max_attempts = max_attempts;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         const { data, error } = await supabase

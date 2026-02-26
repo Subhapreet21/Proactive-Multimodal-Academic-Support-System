@@ -5,6 +5,7 @@ ADD COLUMN valid_from timestamp with time zone,
 ADD COLUMN valid_until timestamp with time zone,
 ADD COLUMN time_limit_mins integer,
 ADD COLUMN target_year text,
+ADD COLUMN max_attempts integer,
 ADD COLUMN is_active boolean DEFAULT true;
 
 -- Update RLS if necessary to handle is_active flag.

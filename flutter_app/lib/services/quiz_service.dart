@@ -23,6 +23,7 @@ class QuizService {
     DateTime? validUntil,
     int? timeLimitMins,
     String? targetYear,
+    int? maxAttempts,
     bool isActive = true,
   }) async {
     try {
@@ -33,6 +34,7 @@ class QuizService {
         if (validUntil != null) 'valid_until': validUntil.toIso8601String(),
         if (timeLimitMins != null) 'time_limit_mins': timeLimitMins,
         if (targetYear != null) 'target_year': targetYear,
+        if (maxAttempts != null) 'max_attempts': maxAttempts,
         'is_active': isActive,
       };
 

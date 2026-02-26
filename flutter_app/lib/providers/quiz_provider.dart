@@ -35,6 +35,7 @@ class QuizProvider extends ChangeNotifier {
     DateTime? validUntil,
     int? timeLimitMins,
     String? targetYear,
+    int? maxAttempts,
     bool isActive = true,
   }) async {
     _setLoading(true);
@@ -48,6 +49,7 @@ class QuizProvider extends ChangeNotifier {
         validUntil: validUntil,
         timeLimitMins: timeLimitMins,
         targetYear: targetYear,
+        maxAttempts: maxAttempts,
         isActive: isActive,
       );
       // Insert to the top of the list so it appears immediately

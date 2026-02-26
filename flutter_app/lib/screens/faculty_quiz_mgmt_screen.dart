@@ -22,6 +22,7 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
   DateTime? _validUntil;
   int? _timeLimitMins;
   String? _targetYear;
+  int? _maxAttempts;
   bool _isActive = true;
 
   @override
@@ -67,6 +68,7 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
         validUntil: _validUntil,
         timeLimitMins: _timeLimitMins,
         targetYear: _targetYear,
+        maxAttempts: _maxAttempts,
         isActive: _isActive,
       );
 
@@ -116,275 +118,303 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
               color: Color(0xFF1E293B),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.auto_awesome,
-                            color: Color(0xFF10B981)),
-                      ),
-                      const SizedBox(width: 16),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Generate AI Quiz',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
-                            Text(
-                              'Create an adaptive assessment from a Knowledge Base article.',
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  FutureBuilder<List<dynamic>>(
-                    future: _kbArticlesFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Failed to load Knowledge Base articles.',
-                              style: TextStyle(
-                                  color: AppTheme.errorColor.withOpacity(0.8)),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                setModalState(() {
-                                  _kbArticlesFuture = _fetchKbArticles();
-                                });
-                              },
-                              icon: const Icon(Icons.refresh, size: 16),
-                              label: const Text('Retry'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white.withOpacity(0.1),
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                      final articles = snapshot.data ?? [];
-                      if (articles.isEmpty) {
-                        return const Text(
-                          'No KB articles found. Please create one first.',
-                          style: TextStyle(color: AppTheme.errorColor),
-                        );
-                      }
-
-                      return DropdownButtonFormField<String>(
-                        value: _selectedKbArticleId,
-                        dropdownColor: const Color(0xFF1E293B),
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          labelText: 'Select KB Article',
-                          labelStyle:
-                              TextStyle(color: Colors.white.withOpacity(0.5)),
-                          filled: true,
-                          fillColor: Colors.black.withOpacity(0.2),
-                          border: OutlineInputBorder(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                          ),
+                          child: const Icon(Icons.auto_awesome,
+                              color: Color(0xFF10B981)),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Generate AI Quiz',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                              Text(
+                                'Create an adaptive assessment from a Knowledge Base article.',
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.white70),
+                              ),
+                            ],
                           ),
                         ),
-                        items: articles.map((article) {
-                          return DropdownMenuItem<String>(
-                            value: article['id'].toString(),
-                            child: Text(
-                              article['title'] ?? 'Untitled',
-                              style: const TextStyle(color: Colors.white),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    FutureBuilder<List<dynamic>>(
+                      future: _kbArticlesFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Failed to load Knowledge Base articles.',
+                                style: TextStyle(
+                                    color:
+                                        AppTheme.errorColor.withOpacity(0.8)),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  setModalState(() {
+                                    _kbArticlesFuture = _fetchKbArticles();
+                                  });
+                                },
+                                icon: const Icon(Icons.refresh, size: 16),
+                                label: const Text('Retry'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.1),
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ],
                           );
-                        }).toList(),
-                        onChanged: (val) {
-                          setModalState(() {
-                            _selectedKbArticleId = val;
-                          });
-                          setState(() {
-                            _selectedKbArticleId = val;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Number of Questions: ${_numQuestions.toInt()}',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Slider(
-                    value: _numQuestions,
-                    min: 5,
-                    max: 10,
-                    divisions: 5,
-                    activeColor: const Color(0xFF10B981),
-                    inactiveColor: Colors.white.withOpacity(0.1),
-                    onChanged: (val) {
-                      setModalState(() {
-                        _numQuestions = val;
-                      });
-                      setState(() {
-                        _numQuestions = val;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                        }
+                        final articles = snapshot.data ?? [];
+                        if (articles.isEmpty) {
+                          return const Text(
+                            'No KB articles found. Please create one first.',
+                            style: TextStyle(color: AppTheme.errorColor),
+                          );
+                        }
 
-                  // Valid Dates
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Valid Dates: ${_validFrom != null && _validUntil != null ? "${_validFrom!.day}/${_validFrom!.month}/${_validFrom!.year} - ${_validUntil!.day}/${_validUntil!.month}/${_validUntil!.year}" : "Not Set"}',
-                          style:
-                              TextStyle(color: Colors.white.withOpacity(0.8)),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          final picked = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 365)),
-                          );
-                          if (picked != null) {
+                        return DropdownButtonFormField<String>(
+                          value: _selectedKbArticleId,
+                          dropdownColor: const Color(0xFF1E293B),
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Select KB Article',
+                            labelStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
+                            filled: true,
+                            fillColor: Colors.black.withOpacity(0.2),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          items: articles.map((article) {
+                            return DropdownMenuItem<String>(
+                              value: article['id'].toString(),
+                              child: Text(
+                                article['title'] ?? 'Untitled',
+                                style: const TextStyle(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
                             setModalState(() {
-                              _validFrom = picked.start;
-                              _validUntil = picked.end;
+                              _selectedKbArticleId = val;
                             });
                             setState(() {
-                              _validFrom = picked.start;
-                              _validUntil = picked.end;
+                              _selectedKbArticleId = val;
                             });
-                          }
-                        },
-                        child: const Text('Set Dates',
-                            style: TextStyle(color: Color(0xFF10B981))),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Time Limit and Year
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Duration (mins)',
-                            labelStyle:
-                                TextStyle(color: Colors.white.withOpacity(0.5)),
-                            filled: true,
-                            fillColor: Colors.black.withOpacity(0.2),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none),
-                          ),
-                          onChanged: (val) {
-                            final parsed = int.tryParse(val);
-                            setModalState(() => _timeLimitMins = parsed);
-                            setState(() => _timeLimitMins = parsed);
                           },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Number of Questions: ${_numQuestions.toInt()}',
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.bold),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _targetYear,
-                          dropdownColor: const Color(0xFF1E293B),
-                          decoration: InputDecoration(
-                            labelText: 'Target Year',
-                            labelStyle:
-                                TextStyle(color: Colors.white.withOpacity(0.5)),
-                            filled: true,
-                            fillColor: Colors.black.withOpacity(0.2),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none),
-                          ),
-                          items: ['All', '1', '2', '3', '4']
-                              .map((y) => DropdownMenuItem(
-                                  value: y,
-                                  child: Text(
-                                      y == 'All' ? 'All Years' : 'Year $y',
-                                      style: const TextStyle(
-                                          color: Colors.white))))
-                              .toList(),
-                          onChanged: (val) {
-                            setModalState(() => _targetYear = val);
-                            setState(() => _targetYear = val);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                      ],
+                    ),
+                    Slider(
+                      value: _numQuestions,
+                      min: 5,
+                      max: 10,
+                      divisions: 5,
+                      activeColor: const Color(0xFF10B981),
+                      inactiveColor: Colors.white.withOpacity(0.1),
+                      onChanged: (val) {
+                        setModalState(() {
+                          _numQuestions = val;
+                        });
+                        setState(() {
+                          _numQuestions = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                  // Is Active Switch
-                  SwitchListTile(
-                    title: Text('Active / Visible to Students',
-                        style: TextStyle(color: Colors.white.withOpacity(0.8))),
-                    value: _isActive,
-                    activeColor: const Color(0xFF10B981),
-                    contentPadding: EdgeInsets.zero,
-                    onChanged: (val) {
-                      setModalState(() => _isActive = val);
-                      setState(() => _isActive = val);
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _generateQuiz,
-                      icon: const Icon(Icons.psychology),
-                      label: const Text('Generate and Save Quiz'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                    // Valid Dates
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Valid Dates: ${_validFrom != null && _validUntil != null ? "${_validFrom!.day}/${_validFrom!.month}/${_validFrom!.year} - ${_validUntil!.day}/${_validUntil!.month}/${_validUntil!.year}" : "Not Set"}',
+                            style:
+                                TextStyle(color: Colors.white.withOpacity(0.8)),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final picked = await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime.now(),
+                              lastDate:
+                                  DateTime.now().add(const Duration(days: 365)),
+                            );
+                            if (picked != null) {
+                              setModalState(() {
+                                _validFrom = picked.start;
+                                _validUntil = picked.end;
+                              });
+                              setState(() {
+                                _validFrom = picked.start;
+                                _validUntil = picked.end;
+                              });
+                            }
+                          },
+                          child: const Text('Set Dates',
+                              style: TextStyle(color: Color(0xFF10B981))),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Time Limit and Year
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Duration (mins)',
+                              labelStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.5)),
+                              filled: true,
+                              fillColor: Colors.black.withOpacity(0.2),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none),
+                            ),
+                            onChanged: (val) {
+                              final parsed = int.tryParse(val);
+                              setModalState(() => _timeLimitMins = parsed);
+                              setState(() => _timeLimitMins = parsed);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _targetYear,
+                            dropdownColor: const Color(0xFF1E293B),
+                            decoration: InputDecoration(
+                              labelText: 'Target Year',
+                              labelStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.5)),
+                              filled: true,
+                              fillColor: Colors.black.withOpacity(0.2),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none),
+                            ),
+                            items: ['All', '1', '2', '3', '4']
+                                .map((y) => DropdownMenuItem(
+                                    value: y,
+                                    child: Text(
+                                        y == 'All' ? 'All Years' : 'Year $y',
+                                        style: const TextStyle(
+                                            color: Colors.white))))
+                                .toList(),
+                            onChanged: (val) {
+                              setModalState(() => _targetYear = val);
+                              setState(() => _targetYear = val);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Max Attempts
+                    TextFormField(
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Max Attempts (Leave blank for unlimited)',
+                        labelStyle:
+                            TextStyle(color: Colors.white.withOpacity(0.5)),
+                        filled: true,
+                        fillColor: Colors.black.withOpacity(0.2),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none),
+                      ),
+                      onChanged: (val) {
+                        final parsed = int.tryParse(val);
+                        setModalState(() => _maxAttempts = parsed);
+                        setState(() => _maxAttempts = parsed);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Is Active Switch
+                    SwitchListTile(
+                      title: Text('Active / Visible to Students',
+                          style:
+                              TextStyle(color: Colors.white.withOpacity(0.8))),
+                      value: _isActive,
+                      activeColor: const Color(0xFF10B981),
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        setModalState(() => _isActive = val);
+                        setState(() => _isActive = val);
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _generateQuiz,
+                        icon: const Icon(Icons.psychology),
+                        label: const Text('Generate and Save Quiz'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

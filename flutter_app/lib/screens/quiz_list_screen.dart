@@ -285,6 +285,20 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                   fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(width: 16),
+                            if (quiz.maxAttempts != null) ...[
+                              Icon(Icons.replay,
+                                  size: 16,
+                                  color: Colors.white.withOpacity(0.5)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Max ${quiz.maxAttempts}',
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(width: 16),
+                            ],
                             Icon(Icons.schedule,
                                 size: 16, color: Colors.white.withOpacity(0.5)),
                             const SizedBox(width: 6),
@@ -364,6 +378,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
     DateTime? validUntil = quiz.validUntil;
     int? timeLimitMins = quiz.timeLimitMins;
     String? targetYear = quiz.targetYear;
+    int? maxAttempts = quiz.maxAttempts;
     bool isActive = quiz.isActive;
 
     showModalBottomSheet(
@@ -508,6 +523,26 @@ class _QuizListScreenState extends State<QuizListScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // Max Attempts
+                TextFormField(
+                  initialValue: maxAttempts?.toString() ?? '',
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Max Attempts (Leave blank for unlimited)',
+                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    filled: true,
+                    fillColor: Colors.black.withOpacity(0.2),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
+                  ),
+                  onChanged: (val) {
+                    setModalState(() => maxAttempts = int.tryParse(val));
+                  },
+                ),
+                const SizedBox(height: 16),
+
                 // Is Active Switch
                 SwitchListTile(
                   title: Text('Active / Visible to Students',
@@ -529,6 +564,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                         'valid_until': validUntil?.toIso8601String(),
                         'time_limit_mins': timeLimitMins,
                         'target_year': targetYear,
+                        'max_attempts': maxAttempts,
                         'is_active': isActive,
                       });
                       Navigator.pop(context);

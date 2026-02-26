@@ -10,6 +10,7 @@ class Quiz {
   final DateTime? validUntil;
   final int? timeLimitMins;
   final String? targetYear;
+  final int? maxAttempts;
   final bool isActive;
 
   Quiz({
@@ -24,6 +25,7 @@ class Quiz {
     this.validUntil,
     this.timeLimitMins,
     this.targetYear,
+    this.maxAttempts,
     this.isActive = true,
   });
 
@@ -45,6 +47,7 @@ class Quiz {
           : null,
       timeLimitMins: json['time_limit_mins'],
       targetYear: json['target_year'],
+      maxAttempts: json['max_attempts'],
       isActive: json['is_active'] ?? true,
     );
   }
