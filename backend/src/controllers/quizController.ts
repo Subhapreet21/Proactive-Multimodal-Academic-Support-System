@@ -87,6 +87,16 @@ ${kbArticle.content}
             // Clean up backticks in case Gemini ignores instructions
             const cleanedText = geminiResponseText.replace(/```json/g, '').replace(/```/g, '').trim();
             quizJson = JSON.parse(cleanedText);
+
+            // Randomize the options for each question so correct answer isn't typically first
+            quizJson.forEach((q: any) => {
+                if (q.options && Array.isArray(q.options)) {
+                    for (let i = q.options.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+                    }
+                }
+            });
         } catch (e) {
             console.error('[generateQuizFromKB] Failed to parse JSON from AI:', geminiResponseText);
             return res.status(500).json({ error: 'AI failed to generate a valid quiz format.' });
@@ -158,15 +168,28 @@ export const getQuizzes = async (req: Request, res: Response) => {
 
         // Map over data to count attempts specifically for this student
         // and for non-faculty users, filter out inactive or expired quizzes (RLS backup)
+        // Also fetch user's profile to enforce year and department matches in-memory
+        const userRole = (req as any).auth?.role;
+        const isStudent = userRole === 'student';
+
+        let studentProfile: any = null;
+        if (isStudent) {
+            const { data } = await supabase.from('profiles').select('year, department').eq('id', userId).single();
+            studentProfile = data;
+        }
+
         const now = new Date();
         const formattedData = (data as any[]).flatMap(q => {
-            const userRole = (req as any).auth?.role;
-            const isStudent = userRole === 'student';
-
-            // Guard: hide expired or inactive quizzes for students
+            // Guard: hide expired, inactive, or un-targeted quizzes for students
             if (isStudent) {
                 if (!q.is_active) return [];
                 if (q.valid_until && new Date(q.valid_until) < now) return [];
+
+                // Fallback targeted filtering 
+                if (studentProfile) {
+                    if (q.target_year && q.target_year !== 'All' && q.target_year !== studentProfile.year) return [];
+                    if (q.target_department && q.target_department !== 'All' && q.target_department !== studentProfile.department) return [];
+                }
             }
 
             let userAttempts = q.quiz_attempts

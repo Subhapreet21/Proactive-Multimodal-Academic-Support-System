@@ -21,7 +21,7 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
   DateTime? _validFrom;
   DateTime? _validUntil;
   int? _timeLimitMins;
-  String? _targetYear;
+  String? _targetYear = 'All';
   int? _maxAttempts;
   bool _isActive = true;
 
