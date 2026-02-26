@@ -338,6 +338,9 @@ class _QuizListScreenState extends State<QuizListScreen> {
                               onSelected: (value) {
                                 if (value == 'edit') {
                                   _showEditQuizModal(context, quiz);
+                                } else if (value == 'edit_content') {
+                                  context.push('/app/quizzes/manage/create',
+                                      extra: quiz);
                                 } else if (value == 'delete') {
                                   _deleteQuizConfirm(context, quiz);
                                 }
@@ -346,6 +349,11 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                 const PopupMenuItem(
                                   value: 'edit',
                                   child: Text('Edit Settings',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'edit_content',
+                                  child: Text('Edit Quiz Content',
                                       style: TextStyle(color: Colors.white)),
                                 ),
                                 const PopupMenuItem(
@@ -563,6 +571,40 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                       style: TextStyle(
                                           fontSize: 11,
                                           color: Color(0xFF4FC3F7),
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          if (quiz.description != null &&
+                              quiz.description!.contains(
+                                  'Manually created quiz by faculty.'))
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              margin: const EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.orangeAccent.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color:
+                                        Colors.orangeAccent.withOpacity(0.4)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.orangeAccent.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.assignment_rounded,
+                                      size: 14, color: Colors.orangeAccent),
+                                  const SizedBox(width: 4),
+                                  const Text('Form',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.orangeAccent,
                                           fontWeight: FontWeight.bold)),
                                 ],
                               ),

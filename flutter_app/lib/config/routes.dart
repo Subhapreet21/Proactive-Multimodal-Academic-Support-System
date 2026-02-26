@@ -183,8 +183,9 @@ class AppRouter {
                   routes: [
                     GoRoute(
                       path: 'create',
-                      builder: (context, state) =>
-                          const ManualQuizBuilderScreen(),
+                      builder: (context, state) => ManualQuizBuilderScreen(
+                        quiz: state.extra as Quiz?,
+                      ),
                     ),
                   ],
                 ),

@@ -489,18 +489,44 @@ export const manualQuizCreation = async (req: Request, res: Response) => {
 export const updateQuiz = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { valid_from, valid_until, time_limit_mins, target_year, max_attempts, is_active } = req.body;
+        const {
+            title,
+            description,
+            valid_from,
+            valid_until,
+            time_limit_mins,
+            target_year,
+            max_attempts,
+            is_active,
+            content
+        } = req.body;
         const userId = (req as any).auth.userId;
 
         if (!id) return res.status(400).json({ error: 'Quiz ID is required' });
 
-        const updateData: any = {};
+        const updateData: any = {
+            updated_at: new Date().toISOString()
+        };
+
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
         if (valid_from !== undefined) updateData.valid_from = valid_from;
         if (valid_until !== undefined) updateData.valid_until = valid_until;
         if (time_limit_mins !== undefined) updateData.time_limit_mins = time_limit_mins;
         if (target_year !== undefined) updateData.target_year = target_year;
         if (max_attempts !== undefined) updateData.max_attempts = max_attempts;
         if (is_active !== undefined) updateData.is_active = is_active;
+
+        if (content !== undefined && Array.isArray(content)) {
+            // Ensure each question has a UUID
+            updateData.content = content.map((q: any) => ({
+                id: q.id || uuidv4(),
+                text: q.text,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+                explanation: q.explanation || '',
+            }));
+        }
 
         const { data, error } = await supabase
             .from('quizzes')

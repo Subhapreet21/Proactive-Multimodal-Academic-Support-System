@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../models/quiz_model.dart';
 import '../providers/quiz_provider.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
@@ -13,13 +14,28 @@ import '../services/auth_service.dart';
 // A small data class for holding a single question's form state
 // ─────────────────────────────────────────────
 class _QuestionFormData {
-  final TextEditingController questionText = TextEditingController();
-  final TextEditingController optionA = TextEditingController();
-  final TextEditingController optionB = TextEditingController();
-  final TextEditingController optionC = TextEditingController();
-  final TextEditingController optionD = TextEditingController();
-  final TextEditingController explanation = TextEditingController();
-  String? correctAnswer; // will be set by dropdown
+  final TextEditingController questionText;
+  final TextEditingController optionA;
+  final TextEditingController optionB;
+  final TextEditingController optionC;
+  final TextEditingController optionD;
+  final TextEditingController explanation;
+  String? correctAnswer; // Key like 'A', 'B', 'C', 'D'
+
+  _QuestionFormData({
+    String? question,
+    String? qA,
+    String? qB,
+    String? qC,
+    String? qD,
+    String? qExpl,
+    this.correctAnswer,
+  })  : questionText = TextEditingController(text: question),
+        optionA = TextEditingController(text: qA),
+        optionB = TextEditingController(text: qB),
+        optionC = TextEditingController(text: qC),
+        optionD = TextEditingController(text: qD),
+        explanation = TextEditingController(text: qExpl);
 
   void dispose() {
     questionText.dispose();
@@ -35,7 +51,8 @@ class _QuestionFormData {
 // Main Screen
 // ─────────────────────────────────────────────
 class ManualQuizBuilderScreen extends StatefulWidget {
-  const ManualQuizBuilderScreen({super.key});
+  final Quiz? quiz;
+  const ManualQuizBuilderScreen({super.key, this.quiz});
 
   @override
   State<ManualQuizBuilderScreen> createState() =>
@@ -75,7 +92,44 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
   @override
   void initState() {
     super.initState();
-    _addQuestion(); // start with one blank question
+    if (widget.quiz != null) {
+      final q = widget.quiz!;
+      // Strip "Quiz: " prefix if present
+      String title = q.title;
+      if (title.startsWith('Quiz: ')) {
+        title = title.replaceFirst('Quiz: ', '');
+      }
+      _titleController.text = title;
+      _timeLimitController.text = (q.timeLimitMins ?? 15).toString();
+      _maxAttemptsController.text = (q.maxAttempts ?? 3).toString();
+      _validFrom = q.validFrom;
+      _validUntil = q.validUntil;
+      _targetYear = q.targetYear ?? 'All';
+      _targetDepartment = q.targetDepartment ?? 'CSE';
+
+      for (var item in q.content) {
+        final opts = item['options'] as List<dynamic>? ?? [];
+        final correctText = item['correctAnswer'] as String? ?? '';
+
+        String? correctKey;
+        if (opts.isNotEmpty && opts[0] == correctText) correctKey = 'A';
+        if (opts.length > 1 && opts[1] == correctText) correctKey = 'B';
+        if (opts.length > 2 && opts[2] == correctText) correctKey = 'C';
+        if (opts.length > 3 && opts[3] == correctText) correctKey = 'D';
+
+        _questions.add(_QuestionFormData(
+          question: item['text'] ?? '',
+          qA: opts.isNotEmpty ? opts[0] : '',
+          qB: opts.length > 1 ? opts[1] : '',
+          qC: opts.length > 2 ? opts[2] : '',
+          qD: opts.length > 3 ? opts[3] : '',
+          qExpl: item['explanation'] ?? '',
+          correctAnswer: correctKey,
+        ));
+      }
+    } else {
+      _addQuestion(); // start with one blank question
+    }
   }
 
   @override
@@ -152,10 +206,30 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
         if (q.optionC.text.trim().isNotEmpty) q.optionC.text.trim(),
         if (q.optionD.text.trim().isNotEmpty) q.optionD.text.trim(),
       ];
+
+      // Resolve the actual text for the correct answer based on choice
+      String resolvedCorrect;
+      switch (q.correctAnswer) {
+        case 'A':
+          resolvedCorrect = q.optionA.text.trim();
+          break;
+        case 'B':
+          resolvedCorrect = q.optionB.text.trim();
+          break;
+        case 'C':
+          resolvedCorrect = q.optionC.text.trim();
+          break;
+        case 'D':
+          resolvedCorrect = q.optionD.text.trim();
+          break;
+        default:
+          resolvedCorrect = q.optionA.text.trim();
+      }
+
       return {
         'text': q.questionText.text.trim(),
         'options': options,
-        'correctAnswer': q.correctAnswer ?? q.optionA.text.trim(),
+        'correctAnswer': resolvedCorrect,
         'explanation': q.explanation.text.trim(),
       };
     }).toList();
@@ -177,24 +251,42 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
 
     try {
       final token = await AuthService().getToken();
-      final response = await http.post(
-        Uri.parse('${ApiService().baseUrl}/api/quizzes/manual'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Bypass-Tunnel-Reminder': 'true',
-          'ngrok-skip-browser-warning': 'true',
-        },
-        body: jsonEncode(payload),
-      );
+      final isUpdate = widget.quiz != null;
+      final url = isUpdate
+          ? '${ApiService().baseUrl}/api/quizzes/${widget.quiz!.id}'
+          : '${ApiService().baseUrl}/api/quizzes/manual';
 
-      if (response.statusCode == 201) {
+      final response = await (isUpdate
+          ? http.put(
+              Uri.parse(url),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+                'Bypass-Tunnel-Reminder': 'true',
+                'ngrok-skip-browser-warning': 'true',
+              },
+              body: jsonEncode(payload),
+            )
+          : http.post(
+              Uri.parse(url),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+                'Bypass-Tunnel-Reminder': 'true',
+                'ngrok-skip-browser-warning': 'true',
+              },
+              body: jsonEncode(payload),
+            ));
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
         if (mounted) {
           Provider.of<QuizProvider>(context, listen: false).loadQuizzes();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(publish
-                ? 'Quiz published successfully!'
-                : 'Quiz saved as draft (Inactive).'),
+            content: Text(isUpdate
+                ? 'Quiz updated successfully!'
+                : (publish
+                    ? 'Quiz published successfully!'
+                    : 'Quiz saved as draft (Inactive).')),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ));
@@ -299,8 +391,10 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text('Manual Quiz Builder',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          title: Text(
+              widget.quiz != null ? 'Edit Quiz Content' : 'Manual Quiz Builder',
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -609,21 +703,17 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
                             : null,
                         items: [
                           if (q.optionA.text.trim().isNotEmpty)
-                            DropdownMenuItem(
-                                value: q.optionA.text.trim(),
-                                child: Text('A: ${q.optionA.text.trim()}')),
+                            const DropdownMenuItem(
+                                value: 'A', child: Text('Option A')),
                           if (q.optionB.text.trim().isNotEmpty)
-                            DropdownMenuItem(
-                                value: q.optionB.text.trim(),
-                                child: Text('B: ${q.optionB.text.trim()}')),
+                            const DropdownMenuItem(
+                                value: 'B', child: Text('Option B')),
                           if (q.optionC.text.trim().isNotEmpty)
-                            DropdownMenuItem(
-                                value: q.optionC.text.trim(),
-                                child: Text('C: ${q.optionC.text.trim()}')),
+                            const DropdownMenuItem(
+                                value: 'C', child: Text('Option C')),
                           if (q.optionD.text.trim().isNotEmpty)
-                            DropdownMenuItem(
-                                value: q.optionD.text.trim(),
-                                child: Text('D: ${q.optionD.text.trim()}')),
+                            const DropdownMenuItem(
+                                value: 'D', child: Text('Option D')),
                         ],
                         onChanged: (v) => setState(() => q.correctAnswer = v),
                       ),
