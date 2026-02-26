@@ -45,41 +45,11 @@ class _QuizListScreenState extends State<QuizListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Test your knowledge and get real-time AI feedback',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white.withOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                      if (quizProvider.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 16.0),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppTheme.primaryColor),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
                 if (quizProvider.error != null)
                   Container(
                     padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(
+                        bottom: 16, left: 20, right: 20, top: 12),
                     decoration: BoxDecoration(
                       color: AppTheme.errorColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -100,17 +70,40 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 24),
 
                 // --- TAB BAR ---
-                const TabBar(
-                  indicatorColor: AppTheme.primaryColor,
-                  labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: Colors.white54,
-                  tabs: [
-                    Tab(icon: Icon(Icons.school), text: 'Assessments'),
-                    Tab(icon: Icon(Icons.auto_graph), text: 'AI Insights'),
-                  ],
+                Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  ),
+                  child: TabBar(
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white60,
+                    dividerColor: Colors.transparent,
+                    labelStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
+                    tabs: const [
+                      Tab(text: 'Quizzes'),
+                      Tab(text: 'AI Insights'),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: TabBarView(
@@ -235,242 +228,231 @@ class _QuizListScreenState extends State<QuizListScreen> {
 
   Widget _buildQuizCard(dynamic quiz, bool isFaculty, BuildContext context) {
     final now = DateTime.now();
-    final isExpired = !isFaculty &&
-        quiz.validUntil != null &&
-        (quiz.validUntil as DateTime).isBefore(now);
-    final isInactive = !isFaculty && !(quiz.isActive as bool);
+    final isQuizExpired =
+        quiz.validUntil != null && (quiz.validUntil as DateTime).isBefore(now);
+    final isQuizInactive = !(quiz.isActive as bool? ?? false);
+
+    final isExpired = !isFaculty && isQuizExpired;
+    final isInactive = !isFaculty && isQuizInactive;
     final isDisabled = isExpired || isInactive;
 
     return Opacity(
       opacity: isDisabled ? 0.5 : 1.0,
       child: Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.05), // Subtle tint
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: isDisabled
-                ? Colors.white.withOpacity(0.05)
-                : Colors.white.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Glassmorphism
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                // Block expired or inactive quizzes for students
-                if (isDisabled) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        isExpired
-                            ? 'This quiz has expired and is no longer available.'
-                            : 'This quiz has been deactivated by your instructor.',
-                        style: const TextStyle(color: Colors.white)),
-                    backgroundColor: AppTheme.errorColor,
-                  ));
-                  return;
-                }
-                // If they maxed attempts, they can't retake it
-                if (!isFaculty &&
-                    quiz.maxAttempts != null &&
-                    quiz.attemptsCount >= quiz.maxAttempts) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Maximum attempts reached.',
-                        style: TextStyle(color: Colors.white)),
-                    backgroundColor: AppTheme.errorColor,
-                  ));
-                  return;
-                }
-                context.go('/app/quizzes/active', extra: quiz);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.school_rounded,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                quiz.title,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor.withOpacity(0.05), // Subtle tint
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: isDisabled
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.white.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Glassmorphism
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  // Block expired or inactive quizzes for students
+                  if (isDisabled) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          isExpired
+                              ? 'This quiz has expired and is no longer available.'
+                              : 'This quiz has been deactivated by your instructor.',
+                          style: const TextStyle(color: Colors.white)),
+                      backgroundColor: AppTheme.errorColor,
+                    ));
+                    return;
+                  }
+                  // If they maxed attempts, they can't retake it
+                  if (!isFaculty &&
+                      quiz.maxAttempts != null &&
+                      quiz.attemptsCount >= quiz.maxAttempts) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Maximum attempts reached.',
+                          style: TextStyle(color: Colors.white)),
+                      backgroundColor: AppTheme.errorColor,
+                    ));
+                    return;
+                  }
+                  context.go('/app/quizzes/active', extra: quiz);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.primaryGradient,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                quiz.description.isNotEmpty
-                                    ? quiz.description
-                                    : 'Test your knowledge on this topic.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white.withOpacity(0.7),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.school_rounded,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        if (isFaculty)
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert,
-                                color: Colors.white70),
-                            color: const Color(0xFF1E293B),
-                            onSelected: (value) {
-                              if (value == 'edit') {
-                                _showEditQuizModal(context, quiz);
-                              } else if (value == 'delete') {
-                                _deleteQuizConfirm(context, quiz);
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Text('Edit Settings',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Text('Delete Quiz',
-                                    style:
-                                        TextStyle(color: AppTheme.errorColor)),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Wrap(
-                            spacing: 12, // Horizontal spacing between items
-                            runSpacing:
-                                8, // Vertical spacing if it wraps to next line
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              // Questions
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.format_list_numbered,
-                                      size: 16,
-                                      color: Colors.white.withOpacity(0.5)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${quiz.content.length} Questions',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.white.withOpacity(0.6),
-                                        fontWeight: FontWeight.w500),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  quiz.title,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isFaculty)
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert,
+                                  color: Colors.white70),
+                              color: const Color(0xFF1E293B),
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  _showEditQuizModal(context, quiz);
+                                } else if (value == 'delete') {
+                                  _deleteQuizConfirm(context, quiz);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit Settings',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Delete Quiz',
+                                      style: TextStyle(
+                                          color: AppTheme.errorColor)),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Builder(builder: (context) {
+                              Widget buildMetaBadge({
+                                required IconData icon,
+                                required String text,
+                                required Color color,
+                              }) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: color.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: color.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(icon,
+                                          size: 14,
+                                          color: color.withOpacity(0.9)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        text,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: color.withOpacity(0.9),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
 
-                              // Attempts — show as fraction for students, "Max X" for faculty
-                              if (quiz.maxAttempts != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.replay,
-                                        size: 16,
-                                        color: isFaculty
-                                            ? Colors.white.withOpacity(0.5)
-                                            : (quiz.attemptsCount >=
-                                                    quiz.maxAttempts!
-                                                ? Colors.redAccent
-                                                : Colors.amberAccent
-                                                    .withOpacity(0.8))),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      isFaculty
+                              return Wrap(
+                                spacing: 12, // Horizontal spacing between items
+                                runSpacing:
+                                    10, // Vertical spacing if it wraps to next line
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  // Questions
+                                  buildMetaBadge(
+                                    icon: Icons.format_list_numbered,
+                                    text: '${quiz.content.length} Questions',
+                                    color: Colors.white,
+                                  ),
+
+                                  // Attempts — show as fraction for students, "Max X" for faculty
+                                  if (quiz.maxAttempts != null)
+                                    buildMetaBadge(
+                                      icon: Icons.replay,
+                                      text: isFaculty
                                           ? 'Max ${quiz.maxAttempts} attempts'
                                           : '${quiz.attemptsCount}/${quiz.maxAttempts} attempts',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: isFaculty
-                                            ? Colors.white.withOpacity(0.6)
-                                            : (quiz.attemptsCount >=
-                                                    quiz.maxAttempts!
-                                                ? Colors.redAccent
-                                                : Colors.amberAccent
-                                                    .withOpacity(0.9)),
-                                      ),
+                                      color: isFaculty
+                                          ? Colors.white
+                                          : (quiz.attemptsCount >=
+                                                  quiz.maxAttempts!
+                                              ? Colors.redAccent
+                                              : Colors.amberAccent),
                                     ),
-                                  ],
-                                ),
 
-                              // Time
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.schedule,
-                                      size: 16,
-                                      color: Colors.white.withOpacity(0.5)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    timeago.format(quiz.createdAt),
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.white.withOpacity(0.6)),
+                                  // Time
+                                  buildMetaBadge(
+                                    icon: Icons.schedule,
+                                    text: timeago.format(quiz.createdAt),
+                                    color: Colors.white,
                                   ),
-                                ],
-                              ),
 
-                              // Valid date range chip
-                              if (quiz.validFrom != null || quiz.validUntil != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      isExpired
+                                  // Year Badge (Faculty Only)
+                                  if (isFaculty && quiz.targetYear != null)
+                                    buildMetaBadge(
+                                      icon: Icons.people_alt,
+                                      text: quiz.targetYear == 'All'
+                                          ? 'All Years'
+                                          : 'Year ${quiz.targetYear}',
+                                      color: Colors.purpleAccent,
+                                    ),
+
+                                  // Valid date range chip
+                                  if (quiz.validFrom != null ||
+                                      quiz.validUntil != null)
+                                    buildMetaBadge(
+                                      icon: isQuizExpired
                                           ? Icons.event_busy
                                           : Icons.date_range,
-                                      size: 14,
-                                      color: isExpired
-                                          ? Colors.redAccent
-                                          : Colors.tealAccent.withOpacity(0.8)),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      () {
+                                      text: () {
                                         String fmt(DateTime d) =>
                                             '${d.day}/${d.month}/${d.year}';
                                         if (quiz.validFrom != null &&
@@ -482,194 +464,252 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                           return 'Until ${fmt(quiz.validUntil)}';
                                         }
                                       }(),
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: isExpired
-                                              ? Colors.redAccent
-                                              : Colors.tealAccent.withOpacity(0.8)),
+                                      color: isQuizExpired
+                                          ? Colors.redAccent
+                                          : Colors.cyanAccent,
                                     ),
 
-                                    // Expired badge
-                                    if (isExpired) ...[
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.redAccent.withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Text('Expired',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.redAccent)),
-                                      ),
-                                    ],
+                                  // Expired badge
+                                  if (isQuizExpired)
+                                    buildMetaBadge(
+                                      icon: Icons.block,
+                                      text: 'Expired',
+                                      color: Colors.redAccent,
+                                    ),
 
-                                    // Inactive badge
-                                    if (isInactive && !isExpired) ...[
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange.withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Text('Inactive',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.orange)),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                            ],
+                                  // Active/Inactive badge
+                                  if (isFaculty)
+                                    buildMetaBadge(
+                                      icon: isQuizInactive
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      text: isQuizInactive
+                                          ? 'Inactive'
+                                          : 'Active',
+                                      color: isQuizInactive
+                                          ? Colors.orange
+                                          : Colors.green,
+                                    )
+                                  else if (isQuizInactive && !isQuizExpired)
+                                    buildMetaBadge(
+                                      icon: Icons.visibility_off,
+                                      text: 'Inactive',
+                                      color: Colors.orange,
+                                    ),
+                                ],
+                              );
+                            }),
                           ),
-                        ),
-                        if (quiz.kbArticleId != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.secondaryColor.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color:
-                                      AppTheme.secondaryColor.withOpacity(0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.auto_awesome,
-                                    size: 14, color: AppTheme.secondaryColor),
-                                const SizedBox(width: 4),
-                                const Text('AI Gen',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: AppTheme.secondaryColor,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          )
-                      ],
-                    ),
-                    // BOTTOM BUTTONS (for Students)
-                    if (!isFaculty && quiz.attemptsCount > 0) ...[
-                      const SizedBox(height: 16),
-                      // -- Row 1: Reattempt + Review --
-                      Row(
-                        children: [
-                          // Reattempt button — only if attempts remaining
-                          if (quiz.maxAttempts == null ||
-                              quiz.attemptsCount < quiz.maxAttempts!) ...[
-                            Expanded(
-                              flex: 1,
-                              child: ElevatedButton.icon(
-                                onPressed: () => context
-                                    .go('/app/quizzes/active', extra: quiz),
-                                icon: const Icon(Icons.refresh_rounded,
-                                    size: 16, color: Colors.white),
-                                label: Text(
-                                  quiz.maxAttempts != null
-                                      ? 'Retry (${quiz.attemptsCount}/${quiz.maxAttempts})'
-                                      : 'Retry',
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      AppTheme.primaryColor.withOpacity(0.85),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
+                          if (quiz.kbArticleId != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              margin: const EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppTheme.secondaryColor.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: AppTheme.secondaryColor
+                                        .withOpacity(0.4)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.secondaryColor
+                                        .withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          // Review button — always visible after an attempt
-                          if (quiz.lastAttempt != null)
-                            Expanded(
-                              flex: 1,
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  context.push('/app/quizzes/active', extra: {
-                                    'quiz': quiz,
-                                    'reviewAttempt': quiz.lastAttempt,
-                                  });
-                                },
-                                icon: const Icon(Icons.history,
-                                    size: 16, color: Colors.white),
-                                label: const Text('Review',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold)),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                      color: Colors.white.withOpacity(0.3)),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.auto_awesome,
+                                      size: 14, color: AppTheme.secondaryColor),
+                                  const SizedBox(width: 4),
+                                  const Text('AI Gen',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.secondaryColor,
+                                          fontWeight: FontWeight.bold)),
+                                ],
                               ),
-                            ),
+                            )
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      // -- Row 2: New AI Insight (full width) --
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final success = await context
-                                .read<QuizProvider>()
-                                .generateOverview(quiz.id);
-                            if (success != null && context.mounted) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: const Row(children: [
-                                  Icon(Icons.auto_awesome,
-                                      color: Colors.amber, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                      "AI Insight Generated! Check the 'AI Insights' tab.",
-                                      style: TextStyle(color: Colors.white))
-                                ]),
-                                backgroundColor:
-                                    AppTheme.primaryColor.withOpacity(0.9),
-                                behavior: SnackBarBehavior.floating,
-                              ));
-                            }
-                          },
-                          icon: const Icon(Icons.auto_awesome,
-                              size: 16, color: Colors.white),
-                          label: const Text('Generate Latest AI Insight',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  AppTheme.secondaryColor.withOpacity(0.8),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12))),
+                      // BOTTOM BUTTONS (for Students)
+                      if (!isFaculty && quiz.attemptsCount > 0) ...[
+                        const SizedBox(height: 16),
+                        // -- Row 1: Reattempt + Review --
+                        Row(
+                          children: [
+                            // Reattempt button — only if attempts remaining
+                            if (quiz.maxAttempts == null ||
+                                quiz.attemptsCount < quiz.maxAttempts!) ...[
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: AppTheme.primaryGradient,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primaryColor
+                                            .withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () => context.go(
+                                          '/app/quizzes/active',
+                                          extra: quiz),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 12),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.refresh_rounded,
+                                                size: 16, color: Colors.white),
+                                            const SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                quiz.maxAttempts != null
+                                                    ? 'Retry (${quiz.attemptsCount}/${quiz.maxAttempts})'
+                                                    : 'Retry',
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            // Review button — always visible after an attempt
+                            if (quiz.lastAttempt != null)
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Colors.white.withOpacity(0.1)),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () {
+                                        context.push('/app/quizzes/active',
+                                            extra: {
+                                              'quiz': quiz,
+                                              'reviewAttempt': quiz.lastAttempt,
+                                            });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 12),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.history,
+                                                size: 16,
+                                                color: Colors.white70),
+                                            SizedBox(width: 8),
+                                            Text('Review',
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ),
-                    ]
-                  ],
+                        const SizedBox(height: 12),
+                        // -- Row 2: New AI Insight (full width) --
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color:
+                                    AppTheme.secondaryColor.withOpacity(0.3)),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () async {
+                                final success = await context
+                                    .read<QuizProvider>()
+                                    .generateOverview(quiz.id);
+                                if (success != null && context.mounted) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Row(children: [
+                                      Icon(Icons.auto_awesome,
+                                          color: Colors.amber, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                          "AI Insight Generated! Check the 'AI Insights' tab.",
+                                          style: TextStyle(color: Colors.white))
+                                    ]),
+                                    backgroundColor:
+                                        AppTheme.primaryColor.withOpacity(0.9),
+                                    behavior: SnackBarBehavior.floating,
+                                  ));
+                                }
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.auto_awesome,
+                                        size: 16,
+                                        color: AppTheme.secondaryColor),
+                                    SizedBox(width: 8),
+                                    Text('Generate Latest AI Insight',
+                                        style: TextStyle(
+                                            color: AppTheme.secondaryColor,
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -930,9 +970,9 @@ class _QuizListScreenState extends State<QuizListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.secondaryColor.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.secondaryColor.withOpacity(0.2)),
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -942,7 +982,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Padding(
@@ -956,14 +996,18 @@ class _QuizListScreenState extends State<QuizListScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Colors.purple, Colors.deepPurpleAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        gradient: AppTheme.primaryGradient,
                         borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.auto_graph, color: Colors.white),
+                      child:
+                          const Icon(Icons.auto_awesome, color: Colors.white),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -1001,28 +1045,30 @@ class _QuizListScreenState extends State<QuizListScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.white.withOpacity(0.05)),
                   ),
                   child: Text(
                     isFaculty
                         ? overview.facultySummary
                         : overview.studentSummary,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: Colors.white,
-                      height: 1.5,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.6,
                     ),
                   ),
                 ),
-                // Score tile (faculty only, when score data is available)
-                if (isFaculty &&
-                    overview.latestScore != null &&
+                // Score tile (when score data is available)
+                if (overview.latestScore != null &&
                     overview.totalQuestions != null)
                   Builder(builder: (context) {
                     final pct = overview.totalQuestions! > 0
-                        ? (overview.latestScore! / overview.totalQuestions! * 100).round()
+                        ? (overview.latestScore! /
+                                overview.totalQuestions! *
+                                100)
+                            .round()
                         : 0;
                     final scoreColor = pct >= 70
                         ? Colors.greenAccent

@@ -12,6 +12,10 @@ import {
 } from '../controllers/quizController';
 import { requireAuth } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
+import multer from 'multer';
+
+// Setup multer to process multipart/form-data into memory
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -39,8 +43,7 @@ router.post('/:id/generate-overview', requireAuth, generateAIOverview);
 router.post('/generate', requireAuth, requireRole(['faculty', 'admin']), generateQuizFromKB);
 
 // POST /api/quizzes/import -> Bulk Excel Upload
-// Note: In a real app this would use multer for file parsing before hitting the controller
-router.post('/import', requireAuth, requireRole(['faculty', 'admin']), importQuizFromExcel);
+router.post('/import', requireAuth, requireRole(['faculty', 'admin']), upload.single('file'), importQuizFromExcel);
 
 // POST /api/quizzes/manual -> Standard Creation
 router.post('/manual', requireAuth, requireRole(['faculty', 'admin']), manualQuizCreation);

@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { supabase } from '../services/supabaseClient';
 import { generateText } from '../services/aiService';
 import { SchemaType, GenerationConfig } from '@google/generative-ai';
+import { v4 as uuidv4 } from 'uuid';
+import * as xlsx from 'xlsx';
 
 // Interfaces for our JSONB structure
 interface QuizQuestion {
@@ -300,7 +302,112 @@ export const submitAttempt = async (req: Request, res: Response) => {
 
 // Excel Bulk Import & Manual Creation are stubbed for now.
 export const importQuizFromExcel = async (req: Request, res: Response) => {
-    res.status(501).json({ message: "Excel import parsing logic goes here." });
+    try {
+        const userId = (req as any).auth.userId;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ error: 'No Excel file provided' });
+        }
+
+        // 1. Read Excel File
+        const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        // 2. Parse to JSON
+        const rawData: any[] = xlsx.utils.sheet_to_json(sheet);
+
+        if (rawData.length === 0) {
+            return res.status(400).json({ error: 'The uploaded file is empty' });
+        }
+
+        // 3. Auto-populate Target Department
+        const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('department')
+            .eq('id', userId)
+            .single();
+
+        const defaultDepartment = creatorProfile?.department || 'General';
+
+        // 4. Group rows by `quiz_title`
+        const groupedQuizzes: Record<string, any> = {};
+
+        for (const row of rawData) {
+            const title = row['quiz_title'];
+            if (!title) continue; // Skip strictly empty rows
+
+            if (!groupedQuizzes[title]) {
+                // Initialize the Quiz object for this unique title
+                groupedQuizzes[title] = {
+                    id: uuidv4(),
+                    title: title,
+                    description: 'Imported via bulk Excel upload',
+                    kb_article_id: null,
+                    created_by: userId,
+                    is_active: false, // Default to inactive for faculty review
+                    time_limit_mins: row['time_limit_mins'] ? parseInt(row['time_limit_mins']) : 15,
+                    max_attempts: row['max_attempts'] ? parseInt(row['max_attempts']) : 3,
+                    valid_from: row['valid_from (YYYY-MM-DD)'] ? new Date(row['valid_from (YYYY-MM-DD)']).toISOString() : new Date().toISOString(),
+                    valid_until: row['valid_until (YYYY-MM-DD)'] ? new Date(row['valid_until (YYYY-MM-DD)']).toISOString() : null,
+                    target_year: row['target_year'] ? String(row['target_year']) : 'All',
+                    target_department: row['target_department'] || defaultDepartment,
+                    content: [] // Store questions here
+                };
+            }
+
+            // Parse individual question text and options
+            const questionText = row['question_text'];
+            const option_a = row['option_a'];
+            const option_b = row['option_b'];
+            const option_c = row['option_c'];
+            const option_d = row['option_d'];
+            const correctAnswer = row['correct_answer'];
+            const explanation = row['explanation'] || '';
+
+            if (questionText && option_a && option_b && correctAnswer) {
+                // Valid question row
+                const options = [option_a, option_b];
+                if (option_c) options.push(option_c);
+                if (option_d) options.push(option_d);
+
+                groupedQuizzes[title].content.push({
+                    id: uuidv4(),
+                    text: questionText,
+                    options: options,
+                    explanation: explanation,
+                    correctAnswer: correctAnswer
+                });
+            }
+        }
+
+        const formattedQuizzesArray = Object.values(groupedQuizzes);
+
+        if (formattedQuizzesArray.length === 0) {
+            return res.status(400).json({ error: 'Could not parse any valid quizzes from the file. Please ensure you are strictly following the provided template schema.' });
+        }
+
+        // 5. Bulk Insert into Supabase
+        const { data, error } = await supabase
+            .from('quizzes')
+            .insert(formattedQuizzesArray)
+            .select();
+
+        if (error) {
+            console.error('[importQuizFromExcel] Supabase Insertion Error:', error);
+            return res.status(500).json({ error: 'Failed to insert parsed quizzes into the database.' });
+        }
+
+        return res.status(201).json({
+            message: `Successfully imported ${formattedQuizzesArray.length} quizzes. They are currently drafted as Inactive.`,
+            quizzes: data
+        });
+
+    } catch (error: any) {
+        console.error('[importQuizFromExcel] Parsing general error:', error.message);
+        res.status(500).json({ error: 'Failed to process Excel file. Please check file format.' });
+    }
 }
 
 export const manualQuizCreation = async (req: Request, res: Response) => {
