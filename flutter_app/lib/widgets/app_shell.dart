@@ -140,102 +140,111 @@ class _AppShellState extends State<AppShell> {
     // If path not found (maybe viewing study plan but role changed? unlikely), default to dashboard
     if (_currentIndex == -1) _currentIndex = 0;
 
+    // Full-screen mode for quiz taking (student & review & faculty preview)
+    final isQuizActive = currentPath.contains('/app/quizzes/active');
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_getTitle(currentPath)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_rounded),
-            onPressed: () => context.go('/app/profile'),
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(context, authProvider),
-      body: widget.child,
-      bottomNavigationBar: RepaintBoundary(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: AppTheme.backgroundGradient,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: SafeArea(
-            // Ensuring safe area for gesture pill
-            top: false,
-            bottom: true, // Respect system navigation bar
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: MediaQuery.of(context).size.width - 16,
+      appBar: isQuizActive
+          ? null
+          : AppBar(
+              title: Text(_getTitle(currentPath)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.person_rounded),
+                  onPressed: () => context.go('/app/profile'),
                 ),
-                child: Row(
-                  mainAxisAlignment: effectiveItems.length > 5
-                      ? MainAxisAlignment.start
-                      : MainAxisAlignment.spaceBetween,
-                  children: effectiveItems.map((item) {
-                    final isSelected =
-                        effectiveItems.indexOf(item) == _currentIndex;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: GestureDetector(
-                        onTap: () => context.go(item.path),
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8), // Touch target padding
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 400),
-                                curve: Curves.easeInOutCubic,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppTheme.primaryColor.withOpacity(0.2)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: PulseIcon(
-                                  isSelected: isSelected,
-                                  child: Icon(
-                                    isSelected
-                                        ? item.selectedIcon
-                                        : item.unselectedIcon,
-                                    color: isSelected
-                                        ? AppTheme.primaryLight
-                                        : Colors.white.withOpacity(0.5),
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.label,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+              ],
+            ),
+      drawer: isQuizActive ? null : _buildDrawer(context, authProvider),
+      body: widget.child,
+      bottomNavigationBar: isQuizActive
+          ? null
+          : RepaintBoundary(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: AppTheme.backgroundGradient,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: SafeArea(
+                  // Ensuring safe area for gesture pill
+                  top: false,
+                  bottom: true, // Respect system navigation bar
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: MediaQuery.of(context).size.width - 16,
                       ),
-                    );
-                  }).toList(),
+                      child: Row(
+                        mainAxisAlignment: effectiveItems.length > 5
+                            ? MainAxisAlignment.start
+                            : MainAxisAlignment.spaceBetween,
+                        children: effectiveItems.map((item) {
+                          final isSelected =
+                              effectiveItems.indexOf(item) == _currentIndex;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: GestureDetector(
+                              onTap: () => context.go(item.path),
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8), // Touch target padding
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 400),
+                                      curve: Curves.easeInOutCubic,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppTheme.primaryColor
+                                                .withOpacity(0.2)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: PulseIcon(
+                                        isSelected: isSelected,
+                                        child: Icon(
+                                          isSelected
+                                              ? item.selectedIcon
+                                              : item.unselectedIcon,
+                                          color: isSelected
+                                              ? AppTheme.primaryLight
+                                              : Colors.white.withOpacity(0.5),
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.label,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.white.withOpacity(0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

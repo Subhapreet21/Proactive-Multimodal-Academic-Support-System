@@ -127,8 +127,9 @@ class QuizProvider extends ChangeNotifier {
       final index = _quizzes.indexWhere((q) => q.id == quizId);
       if (index != -1) {
         final existingQuiz = _quizzes[index];
-        final newAttempt = result['attempt'] != null
-            ? QuizAttempt.fromJson(result['attempt'] as Map<String, dynamic>)
+        // quiz_service already deserializes 'attempt' into a QuizAttempt object
+        final newAttempt = result['attempt'] is QuizAttempt
+            ? result['attempt'] as QuizAttempt
             : null;
         _quizzes[index] = Quiz(
           id: existingQuiz.id,

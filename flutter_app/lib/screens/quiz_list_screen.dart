@@ -380,21 +380,36 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                 ],
                               ),
 
-                              // Attempts
+                              // Attempts — show as fraction for students, "Max X" for faculty
                               if (quiz.maxAttempts != null)
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.replay,
                                         size: 16,
-                                        color: Colors.white.withOpacity(0.5)),
+                                        color: isFaculty
+                                            ? Colors.white.withOpacity(0.5)
+                                            : (quiz.attemptsCount >=
+                                                    quiz.maxAttempts!
+                                                ? Colors.redAccent
+                                                : Colors.amberAccent
+                                                    .withOpacity(0.8))),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'Max ${quiz.maxAttempts}',
+                                      isFaculty
+                                          ? 'Max ${quiz.maxAttempts} attempts'
+                                          : '${quiz.attemptsCount}/${quiz.maxAttempts} attempts',
                                       style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white.withOpacity(0.6),
-                                          fontWeight: FontWeight.w500),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: isFaculty
+                                            ? Colors.white.withOpacity(0.6)
+                                            : (quiz.attemptsCount >=
+                                                    quiz.maxAttempts!
+                                                ? Colors.redAccent
+                                                : Colors.amberAccent
+                                                    .withOpacity(0.9)),
+                                      ),
                                     ),
                                   ],
                                 ),

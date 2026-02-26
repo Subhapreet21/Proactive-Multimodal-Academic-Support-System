@@ -139,7 +139,7 @@ export const getQuizzes = async (req: Request, res: Response) => {
             .select(`
                 *,
                 kb_articles ( title ),
-                quiz_attempts!left ( id, student_id )
+                quiz_attempts!left ( id, student_id, quiz_id, score, total_questions, answers, feedback, created_at )
             `)
             .order('created_at', { ascending: false });
 

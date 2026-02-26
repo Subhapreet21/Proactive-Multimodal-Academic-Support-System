@@ -82,12 +82,14 @@ class QuizAttempt {
 
   factory QuizAttempt.fromJson(Map<String, dynamic> json) {
     return QuizAttempt(
-      id: json['id'],
-      quizId: json['quiz_id'],
-      score: json['score'] ?? 0,
-      totalQuestions: json['total_questions'] ?? 0,
+      id: json['id'] as String? ?? '',
+      quizId: json['quiz_id'] as String? ?? '',
+      score: json['score'] as int? ?? 0,
+      totalQuestions: json['total_questions'] as int? ?? 0,
       feedback: json['feedback'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String).toLocal()
+          : DateTime.fromMillisecondsSinceEpoch(0),
       answers: json['answers'] as List<dynamic>?,
     );
   }
