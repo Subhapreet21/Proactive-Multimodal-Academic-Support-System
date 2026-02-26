@@ -59,9 +59,11 @@ class _QuizActiveScreenState extends State<QuizActiveScreen> {
         timer.cancel();
         return;
       }
-      if (_remainingSeconds > 0) {
-        setState(() => _remainingSeconds--);
-      } else {
+      setState(() {
+        if (_remainingSeconds > 0) _remainingSeconds--;
+      });
+      // Auto-submit the moment the clock hits zero
+      if (_remainingSeconds == 0) {
         timer.cancel();
         _submitQuiz(forceSubmit: true);
       }
@@ -312,27 +314,92 @@ class _QuizActiveScreenState extends State<QuizActiveScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Question number pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              AppTheme.primaryColor,
-                              AppTheme.primaryLight
-                            ],
+                      // Question number + attempts chip + submit button — one row
+                      Row(
+                        children: [
+                          // Question pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppTheme.primaryColor,
+                                  AppTheme.primaryLight
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Question ${_currentQuestionIndex + 1} of ${questions.length}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'Question ${_currentQuestionIndex + 1} of ${questions.length}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                          const Spacer(),
+
+                          // Attempts chip (students only)
+                          if (!_isFaculty &&
+                              !_isReviewMode &&
+                              widget.quiz.maxAttempts != null)
+                            Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.15)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.replay,
+                                      size: 13, color: Colors.white60),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${widget.quiz.attemptsCount + 1}/${widget.quiz.maxAttempts}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // Submit button (students only)
+                          if (!_isFaculty && !_isReviewMode)
+                            _isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white))
+                                : ElevatedButton.icon(
+                                    onPressed: () => _submitQuiz(),
+                                    icon: const Icon(Icons.check_circle_rounded,
+                                        size: 14, color: Colors.white),
+                                    label: const Text('Submit',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primaryColor,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      elevation: 0,
+                                    ),
+                                  ),
+                        ],
                       ),
                       const SizedBox(height: 16),
 
@@ -556,65 +623,6 @@ class _QuizActiveScreenState extends State<QuizActiveScreen> {
     );
   }
 
-  List<Widget> _buildAppBarActions() {
-    final actions = <Widget>[];
-
-    // Attempt counter pill for students
-    if (!_isFaculty && !_isReviewMode && widget.quiz.maxAttempts != null) {
-      actions.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${widget.quiz.attemptsCount + 1}/${widget.quiz.maxAttempts}',
-                style:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Submit button in AppBar (students only, not in review or faculty)
-    if (!_isFaculty && !_isReviewMode) {
-      actions.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 12.0),
-          child: _isSubmitting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-              : ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : () => _submitQuiz(),
-                  icon: const Icon(Icons.check_circle_rounded,
-                      size: 16, color: Colors.white),
-                  label: const Text('Submit',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    elevation: 0,
-                  ),
-                ),
-        ),
-      );
-    }
-
-    return actions;
-  }
+  // Actions now live in the question header row (see body), not the AppBar
+  List<Widget> _buildAppBarActions() => [];
 }

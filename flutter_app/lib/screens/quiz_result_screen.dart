@@ -31,7 +31,7 @@ class QuizResultScreen extends StatelessWidget {
         automaticallyImplyLeading:
             false, // Force them to use the primary action button to leave
         title: const Text('Assessment Results',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         centerTitle: true,
       ),
       body: SafeArea(

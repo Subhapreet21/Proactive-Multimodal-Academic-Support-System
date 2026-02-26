@@ -148,8 +148,8 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                 itemBuilder: (context, index) {
                                   final overview =
                                       quizProvider.overviews[index];
-                                  return _buildOverviewCard(
-                                      overview, isFaculty);
+                                  return _buildOverviewCard(overview, isFaculty,
+                                      quizProvider.quizzes);
                                 },
                               ),
                             ),
@@ -234,12 +234,24 @@ class _QuizListScreenState extends State<QuizListScreen> {
   }
 
   Widget _buildQuizCard(dynamic quiz, bool isFaculty, BuildContext context) {
-    return Container(
+    final now = DateTime.now();
+    final isExpired = !isFaculty &&
+        quiz.validUntil != null &&
+        (quiz.validUntil as DateTime).isBefore(now);
+    final isInactive = !isFaculty && !(quiz.isActive as bool);
+    final isDisabled = isExpired || isInactive;
+
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withOpacity(0.05), // Subtle tint
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(
+            color: isDisabled
+                ? Colors.white.withOpacity(0.05)
+                : Colors.white.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -256,6 +268,18 @@ class _QuizListScreenState extends State<QuizListScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
+                // Block expired or inactive quizzes for students
+                if (isDisabled) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        isExpired
+                            ? 'This quiz has expired and is no longer available.'
+                            : 'This quiz has been deactivated by your instructor.',
+                        style: const TextStyle(color: Colors.white)),
+                    backgroundColor: AppTheme.errorColor,
+                  ));
+                  return;
+                }
                 // If they maxed attempts, they can't retake it
                 if (!isFaculty &&
                     quiz.maxAttempts != null &&
@@ -430,6 +454,78 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                   ),
                                 ],
                               ),
+
+                              // Valid date range chip
+                              if (quiz.validFrom != null || quiz.validUntil != null)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isExpired
+                                          ? Icons.event_busy
+                                          : Icons.date_range,
+                                      size: 14,
+                                      color: isExpired
+                                          ? Colors.redAccent
+                                          : Colors.tealAccent.withOpacity(0.8)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      () {
+                                        String fmt(DateTime d) =>
+                                            '${d.day}/${d.month}/${d.year}';
+                                        if (quiz.validFrom != null &&
+                                            quiz.validUntil != null) {
+                                          return '${fmt(quiz.validFrom)} – ${fmt(quiz.validUntil)}';
+                                        } else if (quiz.validFrom != null) {
+                                          return 'From ${fmt(quiz.validFrom)}';
+                                        } else {
+                                          return 'Until ${fmt(quiz.validUntil)}';
+                                        }
+                                      }(),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: isExpired
+                                              ? Colors.redAccent
+                                              : Colors.tealAccent.withOpacity(0.8)),
+                                    ),
+
+                                    // Expired badge
+                                    if (isExpired) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text('Expired',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.redAccent)),
+                                      ),
+                                    ],
+
+                                    // Inactive badge
+                                    if (isInactive && !isExpired) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text('Inactive',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.orange)),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -573,6 +669,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -819,7 +916,17 @@ class _QuizListScreenState extends State<QuizListScreen> {
     );
   }
 
-  Widget _buildOverviewCard(AIOverview overview, bool isFaculty) {
+  Widget _buildOverviewCard(
+      AIOverview overview, bool isFaculty, List<Quiz> quizzes) {
+    // Resolve quiz title from loaded quizzes when backend join returns null
+    final resolvedTitle = (overview.quizTitle == 'Unknown Quiz' ||
+            overview.quizTitle.isEmpty)
+        ? (quizzes
+                .cast<Quiz?>()
+                .firstWhere((q) => q!.id == overview.quizId, orElse: () => null)
+                ?.title ??
+            'Unknown Quiz')
+        : overview.quizTitle;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -864,7 +971,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            overview.quizTitle,
+                            resolvedTitle,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -909,6 +1016,51 @@ class _QuizListScreenState extends State<QuizListScreen> {
                     ),
                   ),
                 ),
+                // Score tile (faculty only, when score data is available)
+                if (isFaculty &&
+                    overview.latestScore != null &&
+                    overview.totalQuestions != null)
+                  Builder(builder: (context) {
+                    final pct = overview.totalQuestions! > 0
+                        ? (overview.latestScore! / overview.totalQuestions! * 100).round()
+                        : 0;
+                    final scoreColor = pct >= 70
+                        ? Colors.greenAccent
+                        : pct >= 40
+                            ? Colors.amberAccent
+                            : Colors.redAccent;
+                    return Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: scoreColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: scoreColor.withOpacity(0.3)),
+                      ),
+                      child: Row(children: [
+                        Icon(
+                            pct >= 70
+                                ? Icons.emoji_events_rounded
+                                : pct >= 40
+                                    ? Icons.trending_up
+                                    : Icons.warning_amber_rounded,
+                            size: 20,
+                            color: scoreColor),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Latest Score: ${overview.latestScore}/${overview.totalQuestions} ($pct%)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: scoreColor,
+                            ),
+                          ),
+                        ),
+                      ]),
+                    );
+                  }),
               ],
             ),
           ),

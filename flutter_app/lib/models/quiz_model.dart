@@ -10,6 +10,7 @@ class Quiz {
   final DateTime? validUntil;
   final int? timeLimitMins;
   final String? targetYear;
+  final String? targetDepartment;
   final int? maxAttempts;
   final int attemptsCount;
   final bool isActive;
@@ -27,6 +28,7 @@ class Quiz {
     this.validUntil,
     this.timeLimitMins,
     this.targetYear,
+    this.targetDepartment,
     this.maxAttempts,
     this.attemptsCount = 0,
     this.isActive = true,
@@ -51,6 +53,7 @@ class Quiz {
           : null,
       timeLimitMins: json['time_limit_mins'],
       targetYear: json['target_year'] as String?,
+      targetDepartment: json['target_department'] as String?,
       maxAttempts: json['max_attempts'] as int?,
       attemptsCount: json['attempts_count'] ?? 0,
       isActive: json['is_active'] as bool? ?? true,
@@ -103,6 +106,8 @@ class AIOverview {
   final String studentName;
   final String studentSummary;
   final String facultySummary;
+  final int? latestScore;
+  final int? totalQuestions;
   final DateTime updatedAt;
 
   AIOverview({
@@ -113,6 +118,8 @@ class AIOverview {
     required this.studentName,
     required this.studentSummary,
     required this.facultySummary,
+    this.latestScore,
+    this.totalQuestions,
     required this.updatedAt,
   });
 
@@ -125,6 +132,8 @@ class AIOverview {
       studentName: json['profiles']?['full_name'] ?? 'Unknown Student',
       studentSummary: json['student_summary'] as String? ?? '',
       facultySummary: json['faculty_summary'] as String? ?? '',
+      latestScore: json['latest_score'] as int?,
+      totalQuestions: json['total_questions'] as int?,
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }

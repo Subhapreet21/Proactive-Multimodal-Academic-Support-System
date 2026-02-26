@@ -104,12 +104,20 @@ ${kbArticle.content}
             created_by: userId
         };
 
+        // Auto-populate target_department from the creator's profile
+        const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('department')
+            .eq('id', userId)
+            .single();
+
         if (valid_from) uploadData.valid_from = valid_from;
         if (valid_until) uploadData.valid_until = valid_until;
         if (time_limit_mins !== undefined) uploadData.time_limit_mins = time_limit_mins;
         if (target_year) uploadData.target_year = target_year;
         if (max_attempts !== undefined) uploadData.max_attempts = max_attempts;
         if (is_active !== undefined) uploadData.is_active = is_active;
+        if (creatorProfile?.department) uploadData.target_department = creatorProfile.department;
 
         const { data: newQuiz, error: insertError } = await supabase
             .from('quizzes')
@@ -149,16 +157,29 @@ export const getQuizzes = async (req: Request, res: Response) => {
         }
 
         // Map over data to count attempts specifically for this student
-        const formattedData = data.map(q => {
-            let userAttempts = q.quiz_attempts ? (q.quiz_attempts as any).filter((att: any) => att.student_id === userId) : [];
+        // and for non-faculty users, filter out inactive or expired quizzes (RLS backup)
+        const now = new Date();
+        const formattedData = (data as any[]).flatMap(q => {
+            const userRole = (req as any).auth?.role;
+            const isStudent = userRole === 'student';
+
+            // Guard: hide expired or inactive quizzes for students
+            if (isStudent) {
+                if (!q.is_active) return [];
+                if (q.valid_until && new Date(q.valid_until) < now) return [];
+            }
+
+            let userAttempts = q.quiz_attempts
+                ? (q.quiz_attempts as any[]).filter((att: any) => att.student_id === userId)
+                : [];
             userAttempts.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-            return {
+            return [{
                 ...q,
                 attempts_count: userAttempts.length,
                 last_attempt: userAttempts.length > 0 ? userAttempts[0] : null,
                 quiz_attempts: undefined // Clean up the raw join array
-            };
+            }];
         });
 
         res.status(200).json(formattedData);
@@ -411,7 +432,8 @@ Return ONLY a JSON object meeting this schema. DO NOT wrap with markdown blocks.
             return res.status(500).json({ error: 'AI generated invalid insights format.' });
         }
 
-        // 5. Upsert the generated overview
+        // 5. Upsert the generated overview, including the latest attempt's score
+        const latestAttempt = attempts[attempts.length - 1]; // attempts are sorted ascending
         const { data: upsertData, error: upsertError } = await supabase
             .from('quiz_overviews')
             .upsert({
@@ -419,8 +441,10 @@ Return ONLY a JSON object meeting this schema. DO NOT wrap with markdown blocks.
                 student_id,
                 student_summary: resultJson.student_summary,
                 faculty_summary: resultJson.faculty_summary,
+                latest_score: latestAttempt.score,
+                total_questions: latestAttempt.total_questions,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'quiz_id, student_id' } as any) // suppress TS type issue for onConflict syntax in supabase-js
+            }, { onConflict: 'quiz_id, student_id' } as any)
             .select()
             .single();
 
