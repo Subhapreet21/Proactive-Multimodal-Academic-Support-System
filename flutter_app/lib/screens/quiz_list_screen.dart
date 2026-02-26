@@ -231,10 +231,13 @@ class _QuizListScreenState extends State<QuizListScreen> {
     final isQuizExpired =
         quiz.validUntil != null && (quiz.validUntil as DateTime).isBefore(now);
     final isQuizInactive = !(quiz.isActive as bool? ?? false);
+    final isQuizUpcoming =
+        quiz.validFrom != null && (quiz.validFrom as DateTime).isAfter(now);
 
     final isExpired = !isFaculty && isQuizExpired;
     final isInactive = !isFaculty && isQuizInactive;
-    final isDisabled = isExpired || isInactive;
+    final isUpcoming = !isFaculty && isQuizUpcoming;
+    final isDisabled = isExpired || isInactive || isUpcoming;
 
     return Opacity(
       opacity: isDisabled ? 0.5 : 1.0,
@@ -263,15 +266,24 @@ class _QuizListScreenState extends State<QuizListScreen> {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  // Block expired or inactive quizzes for students
+                  // Block upcoming, expired, or inactive quizzes for students
                   if (isDisabled) {
+                    String msg;
+                    if (isUpcoming) {
+                      final df = quiz.validFrom as DateTime;
+                      msg =
+                          'This quiz opens on ${df.day}/${df.month}/${df.year}. Check back then!';
+                    } else if (isExpired) {
+                      msg = 'This quiz has expired and is no longer available.';
+                    } else {
+                      msg =
+                          'This quiz has been deactivated by your instructor.';
+                    }
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          isExpired
-                              ? 'This quiz has expired and is no longer available.'
-                              : 'This quiz has been deactivated by your instructor.',
+                      content: Text(msg,
                           style: const TextStyle(color: Colors.white)),
-                      backgroundColor: AppTheme.errorColor,
+                      backgroundColor:
+                          isUpcoming ? Colors.blueGrey : AppTheme.errorColor,
                     ));
                     return;
                   }
@@ -296,25 +308,28 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ── Enlarged quiz icon ──
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               gradient: AppTheme.primaryGradient,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+                                  color: AppTheme.primaryColor.withOpacity(0.35),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
                             child: const Icon(
                               Icons.school_rounded,
                               color: Colors.white,
+                              size: 28,
                             ),
                           ),
                           const SizedBox(width: 16),
+                          // ── Title + source badge column ──
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,14 +337,76 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                 Text(
                                   quiz.title,
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                // Source badge inline below title
+                                Builder(builder: (context) {
+                                  Widget sourceBadge(
+                                      {required IconData icon,
+                                      required String label,
+                                      required Color color}) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: color.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                            color: color.withOpacity(0.45)),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: color.withOpacity(0.1),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(icon, size: 13, color: color),
+                                          const SizedBox(width: 5),
+                                          Text(label,
+                                              style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: color,
+                                                  fontWeight:
+                                                      FontWeight.bold)),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  if (quiz.kbArticleId != null) {
+                                    return sourceBadge(
+                                        icon: Icons.auto_awesome_rounded,
+                                        label: 'AI Gen',
+                                        color: const Color(0xFF00BFA5));
+                                  } else if (quiz.description != null &&
+                                      quiz.description!
+                                          .contains('Imported via bulk Excel upload')) {
+                                    return sourceBadge(
+                                        icon: Icons.table_view_rounded,
+                                        label: 'Excel',
+                                        color: const Color(0xFF4FC3F7));
+                                  } else if (quiz.description != null &&
+                                      quiz.description!
+                                          .contains('Manually created quiz by faculty.')) {
+                                    return sourceBadge(
+                                        icon: Icons.assignment_rounded,
+                                        label: 'Form',
+                                        color: Colors.orangeAccent);
+                                  }
+                                  return const SizedBox.shrink();
+                                }),
                               ],
                             ),
                           ),
+                          // ── Faculty menu ──
                           if (isFaculty)
                             PopupMenuButton<String>(
                               icon: const Icon(Icons.more_vert,
@@ -459,7 +536,9 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                     buildMetaBadge(
                                       icon: isQuizExpired
                                           ? Icons.event_busy
-                                          : Icons.date_range,
+                                          : isQuizUpcoming
+                                              ? Icons.lock_clock
+                                              : Icons.date_range,
                                       text: () {
                                         String fmt(DateTime d) =>
                                             '${d.day}/${d.month}/${d.year}';
@@ -508,107 +587,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
                               );
                             }),
                           ),
-                          if (quiz.kbArticleId != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              margin: const EdgeInsets.only(left: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.greenAccent.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: Colors.greenAccent.withOpacity(0.4)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.greenAccent.withOpacity(0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.auto_awesome,
-                                      size: 14, color: Colors.greenAccent),
-                                  const SizedBox(width: 4),
-                                  const Text('AI Gen',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.greenAccent,
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          if (quiz.description != null &&
-                              quiz.description!
-                                  .contains('Imported via bulk Excel upload'))
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              margin: const EdgeInsets.only(left: 8),
-                              decoration: BoxDecoration(
-                                color:
-                                    const Color(0xFF4FC3F7).withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: const Color(0xFF4FC3F7)
-                                        .withOpacity(0.4)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF4FC3F7)
-                                        .withOpacity(0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.table_view_rounded,
-                                      size: 14, color: Color(0xFF4FC3F7)),
-                                  const SizedBox(width: 4),
-                                  const Text('Excel',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: Color(0xFF4FC3F7),
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          if (quiz.description != null &&
-                              quiz.description!.contains(
-                                  'Manually created quiz by faculty.'))
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              margin: const EdgeInsets.only(left: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.orangeAccent.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color:
-                                        Colors.orangeAccent.withOpacity(0.4)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.orangeAccent.withOpacity(0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.assignment_rounded,
-                                      size: 14, color: Colors.orangeAccent),
-                                  const SizedBox(width: 4),
-                                  const Text('Form',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.orangeAccent,
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
                         ],
                       ),
                       // BOTTOM BUTTONS (for Students)

@@ -692,12 +692,29 @@ Return ONLY a JSON object meeting this schema. DO NOT wrap with markdown blocks.
 // ==========================================
 export const getOverviews = async (req: Request, res: Response) => {
     try {
+        const userId = (req as any).auth?.userId;
+
+        // 1. Fetch user's profile to understand their role/department
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role, department')
+            .eq('id', userId)
+            .single();
+
+        if (profileError || !profileData) {
+            return res.status(403).json({ error: 'Unauthorized to access overviews.' });
+        }
+
+        const isStudent = profileData.role === 'student';
+        const userDepartment = profileData.department;
+
+        // 2. Fetch overviews and their joined profiles
         const { data, error } = await supabase
             .from('quiz_overviews')
             .select(`
                 *,
                 quizzes ( title ),
-                profiles ( full_name, email, role )
+                profiles ( full_name, email, role, department )
             `)
             .order('updated_at', { ascending: false });
 
@@ -706,7 +723,21 @@ export const getOverviews = async (req: Request, res: Response) => {
             return res.status(500).json({ error: 'Failed to fetch overviews.' });
         }
 
-        res.status(200).json(data);
+        // 3. Filter the overviews based on role
+        const filteredData = (data as any[]).filter(overview => {
+            if (isStudent) {
+                // Students only see their own overviews
+                return overview.student_id === userId;
+            } else {
+                // Faculty only see overviews for students in their own department
+                // Fallback to true if department isn't perfectly mapped, but strictly filter if it exists
+                const studentDept = overview.profiles?.department;
+                if (!userDepartment || userDepartment === 'All') return true; // generic faculty
+                return studentDept === userDepartment;
+            }
+        });
+
+        res.status(200).json(filteredData);
     } catch (error: any) {
         console.error('[getOverviews] General Error:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });

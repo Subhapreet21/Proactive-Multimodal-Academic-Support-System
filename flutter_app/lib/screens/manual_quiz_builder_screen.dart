@@ -236,7 +236,8 @@ class _ManualQuizBuilderScreenState extends State<ManualQuizBuilderScreen> {
 
     final payload = {
       'title': 'Quiz: ${_titleController.text.trim()}',
-      'description': 'Manually created quiz by faculty.',
+      'description':
+          widget.quiz?.description ?? 'Manually created quiz by faculty.',
       'time_limit_mins': int.tryParse(_timeLimitController.text) ?? 15,
       'max_attempts': int.tryParse(_maxAttemptsController.text) ?? 3,
       'valid_from': _validFrom!.toIso8601String(),
