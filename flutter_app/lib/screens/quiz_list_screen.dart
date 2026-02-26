@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../models/quiz_model.dart';
 import '../providers/quiz_provider.dart';
 import '../providers/auth_provider.dart';
 import '../config/theme.dart';
@@ -36,41 +37,43 @@ class _QuizListScreenState extends State<QuizListScreen> {
       decoration: const BoxDecoration(
         gradient: AppTheme.backgroundGradient,
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Test your knowledge and get real-time AI feedback',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                      ),
-                    ),
-                    if (quizProvider.isLoading)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 16.0),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                AppTheme.primaryColor),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Test your knowledge and get real-time AI feedback',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white.withOpacity(0.7),
                           ),
                         ),
                       ),
-                  ],
+                      if (quizProvider.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 16.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppTheme.primaryColor),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 24),
                 if (quizProvider.error != null)
@@ -97,37 +100,77 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       ],
                     ),
                   ),
+                const SizedBox(height: 24),
+
+                // --- TAB BAR ---
+                const TabBar(
+                  indicatorColor: AppTheme.primaryColor,
+                  labelColor: AppTheme.primaryColor,
+                  unselectedLabelColor: Colors.white54,
+                  tabs: [
+                    Tab(icon: Icon(Icons.school), text: 'Assessments'),
+                    Tab(icon: Icon(Icons.auto_graph), text: 'AI Insights'),
+                  ],
+                ),
                 Expanded(
-                  child: quizProvider.quizzes.isEmpty && !quizProvider.isLoading
-                      ? _buildEmptyState()
-                      : RefreshIndicator(
-                          onRefresh: () async =>
-                              context.read<QuizProvider>().loadQuizzes(),
-                          child: ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: quizProvider.quizzes.length,
-                            itemBuilder: (context, index) {
-                              final quiz = quizProvider.quizzes[index];
-                              return _buildQuizCard(quiz, isFaculty, context);
-                            },
-                          ),
-                        ),
+                  child: TabBarView(
+                    children: [
+                      // Tab 1: Assessments
+                      quizProvider.quizzes.isEmpty && !quizProvider.isLoading
+                          ? _buildEmptyState()
+                          : RefreshIndicator(
+                              onRefresh: () async =>
+                                  context.read<QuizProvider>().loadQuizzes(),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: quizProvider.quizzes.length,
+                                itemBuilder: (context, index) {
+                                  final quiz = quizProvider.quizzes[index];
+                                  return _buildQuizCard(
+                                      quiz, isFaculty, context);
+                                },
+                              ),
+                            ),
+
+                      // Tab 2: AI Insights
+                      quizProvider.overviews.isEmpty && !quizProvider.isLoading
+                          ? _buildEmptyInsightsState()
+                          : RefreshIndicator(
+                              onRefresh: () async =>
+                                  context.read<QuizProvider>().loadQuizzes(),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: quizProvider.overviews.length,
+                                itemBuilder: (context, index) {
+                                  final overview =
+                                      quizProvider.overviews[index];
+                                  return _buildOverviewCard(
+                                      overview, isFaculty);
+                                },
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          floatingActionButton: isFaculty
+              ? FloatingActionButton.extended(
+                  onPressed: () {
+                    context.push('/app/quizzes/manage');
+                  },
+                  backgroundColor: AppTheme.primaryColor,
+                  icon: const Icon(Icons.add_task),
+                  label: const Text('Create Quiz',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                )
+              : null,
         ),
-        floatingActionButton: isFaculty
-            ? FloatingActionButton.extended(
-                onPressed: () {
-                  context.push('/app/quizzes/manage');
-                },
-                backgroundColor: AppTheme.primaryColor,
-                icon: const Icon(Icons.add_task),
-                label: const Text('Create Quiz',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              )
-            : null,
       ),
     );
   }
@@ -161,6 +204,35 @@ class _QuizListScreenState extends State<QuizListScreen> {
     );
   }
 
+  Widget _buildEmptyInsightsState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.insights_rounded,
+            size: 64,
+            color: Colors.white.withOpacity(0.2),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No AI Insights Generated',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Complete an assessment to unlock personalized insights.',
+            style: TextStyle(color: Colors.white.withOpacity(0.5)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuizCard(dynamic quiz, bool isFaculty, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -184,6 +256,17 @@ class _QuizListScreenState extends State<QuizListScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
+                // If they maxed attempts, they can't retake it
+                if (!isFaculty &&
+                    quiz.maxAttempts != null &&
+                    quiz.attemptsCount >= quiz.maxAttempts) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Maximum attempts reached.',
+                        style: TextStyle(color: Colors.white)),
+                    backgroundColor: AppTheme.errorColor,
+                  ));
+                  return;
+                }
                 context.go('/app/quizzes/active', extra: quiz);
               },
               child: Padding(
@@ -272,43 +355,68 @@ class _QuizListScreenState extends State<QuizListScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.format_list_numbered,
-                                size: 16, color: Colors.white.withOpacity(0.5)),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${quiz.content.length} Questions',
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white.withOpacity(0.6),
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(width: 16),
-                            if (quiz.maxAttempts != null) ...[
-                              Icon(Icons.replay,
-                                  size: 16,
-                                  color: Colors.white.withOpacity(0.5)),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Max ${quiz.maxAttempts}',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withOpacity(0.6),
-                                    fontWeight: FontWeight.w500),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 12, // Horizontal spacing between items
+                            runSpacing:
+                                8, // Vertical spacing if it wraps to next line
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              // Questions
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.format_list_numbered,
+                                      size: 16,
+                                      color: Colors.white.withOpacity(0.5)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${quiz.content.length} Questions',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.6),
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 16),
+
+                              // Attempts
+                              if (quiz.maxAttempts != null)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.replay,
+                                        size: 16,
+                                        color: Colors.white.withOpacity(0.5)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Max ${quiz.maxAttempts}',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white.withOpacity(0.6),
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+
+                              // Time
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule,
+                                      size: 16,
+                                      color: Colors.white.withOpacity(0.5)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    timeago.format(quiz.createdAt),
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.6)),
+                                  ),
+                                ],
+                              ),
                             ],
-                            Icon(Icons.schedule,
-                                size: 16, color: Colors.white.withOpacity(0.5)),
-                            const SizedBox(width: 6),
-                            Text(
-                              timeago.format(quiz.createdAt),
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white.withOpacity(0.6)),
-                            ),
-                          ],
+                          ),
                         ),
                         if (quiz.kbArticleId != null)
                           Container(
@@ -336,6 +444,114 @@ class _QuizListScreenState extends State<QuizListScreen> {
                           )
                       ],
                     ),
+                    // BOTTOM BUTTONS (for Students)
+                    if (!isFaculty && quiz.attemptsCount > 0) ...[
+                      const SizedBox(height: 16),
+                      // -- Row 1: Reattempt + Review --
+                      Row(
+                        children: [
+                          // Reattempt button — only if attempts remaining
+                          if (quiz.maxAttempts == null ||
+                              quiz.attemptsCount < quiz.maxAttempts!) ...[
+                            Expanded(
+                              flex: 1,
+                              child: ElevatedButton.icon(
+                                onPressed: () => context
+                                    .go('/app/quizzes/active', extra: quiz),
+                                icon: const Icon(Icons.refresh_rounded,
+                                    size: 16, color: Colors.white),
+                                label: Text(
+                                  quiz.maxAttempts != null
+                                      ? 'Retry (${quiz.attemptsCount}/${quiz.maxAttempts})'
+                                      : 'Retry',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      AppTheme.primaryColor.withOpacity(0.85),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          // Review button — always visible after an attempt
+                          if (quiz.lastAttempt != null)
+                            Expanded(
+                              flex: 1,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  context.push('/app/quizzes/active', extra: {
+                                    'quiz': quiz,
+                                    'reviewAttempt': quiz.lastAttempt,
+                                  });
+                                },
+                                icon: const Icon(Icons.history,
+                                    size: 16, color: Colors.white),
+                                label: const Text('Review',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      color: Colors.white.withOpacity(0.3)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // -- Row 2: New AI Insight (full width) --
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final success = await context
+                                .read<QuizProvider>()
+                                .generateOverview(quiz.id);
+                            if (success != null && context.mounted) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Row(children: [
+                                  Icon(Icons.auto_awesome,
+                                      color: Colors.amber, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                      "AI Insight Generated! Check the 'AI Insights' tab.",
+                                      style: TextStyle(color: Colors.white))
+                                ]),
+                                backgroundColor:
+                                    AppTheme.primaryColor.withOpacity(0.9),
+                                behavior: SnackBarBehavior.floating,
+                              ));
+                            }
+                          },
+                          icon: const Icon(Icons.auto_awesome,
+                              size: 16, color: Colors.white),
+                          label: const Text('Generate Latest AI Insight',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  AppTheme.secondaryColor.withOpacity(0.8),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12))),
+                        ),
+                      ),
+                    ]
                   ],
                 ),
               ),
@@ -584,6 +800,104 @@ class _QuizListScreenState extends State<QuizListScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard(AIOverview overview, bool isFaculty) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.secondaryColor.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.purple, Colors.deepPurpleAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.auto_graph, color: Colors.white),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            overview.quizTitle,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isFaculty
+                                ? "Student: ${overview.studentName}"
+                                : "Your Performance Summary",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      timeago.format(overview.updatedAt),
+                      style: TextStyle(fontSize: 12, color: Colors.white54),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  ),
+                  child: Text(
+                    isFaculty
+                        ? overview.facultySummary
+                        : overview.studentSummary,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

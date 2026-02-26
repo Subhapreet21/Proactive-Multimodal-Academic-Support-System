@@ -6,10 +6,12 @@ class QuizProvider extends ChangeNotifier {
   final QuizService _quizService = QuizService();
 
   List<Quiz> _quizzes = [];
+  List<AIOverview> _overviews = [];
   bool _isLoading = false;
   String? _error;
 
   List<Quiz> get quizzes => _quizzes;
+  List<AIOverview> get overviews => _overviews;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -19,7 +21,13 @@ class QuizProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      _quizzes = await _quizService.getQuizzes();
+      // Load both concurrently for efficiency
+      final results = await Future.wait([
+        _quizService.getQuizzes(),
+        _quizService.getOverviews(),
+      ]);
+      _quizzes = results[0] as List<Quiz>;
+      _overviews = results[1] as List<AIOverview>;
     } catch (e) {
       _setError(e.toString());
     } finally {
@@ -109,7 +117,61 @@ class QuizProvider extends ChangeNotifier {
 
     try {
       final result = await _quizService.submitAttempt(quizId, answers);
+
+      // Update local quiz attempt count + lastAttempt for review mode
+      final index = _quizzes.indexWhere((q) => q.id == quizId);
+      if (index != -1) {
+        final existingQuiz = _quizzes[index];
+        final newAttempt = result['attempt'] != null
+            ? QuizAttempt.fromJson(result['attempt'] as Map<String, dynamic>)
+            : null;
+        _quizzes[index] = Quiz(
+          id: existingQuiz.id,
+          title: existingQuiz.title,
+          description: existingQuiz.description,
+          content: existingQuiz.content,
+          createdAt: existingQuiz.createdAt,
+          kbArticleId: existingQuiz.kbArticleId,
+          validFrom: existingQuiz.validFrom,
+          validUntil: existingQuiz.validUntil,
+          timeLimitMins: existingQuiz.timeLimitMins,
+          targetYear: existingQuiz.targetYear,
+          maxAttempts: existingQuiz.maxAttempts,
+          attemptsCount: existingQuiz.attemptsCount + 1,
+          isActive: existingQuiz.isActive,
+          lastAttempt: newAttempt ?? existingQuiz.lastAttempt,
+        );
+        notifyListeners();
+      }
+
       return result;
+    } catch (e) {
+      _setError(e.toString());
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Trigger generation of a personalized AI insight overview
+  Future<AIOverview?> generateOverview(String quizId) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final newOverview = await _quizService.generateOverview(quizId);
+
+      // Update local list (replace if exists for this student/quiz, otherwise add)
+      final existingIndex =
+          _overviews.indexWhere((o) => o.id == newOverview.id);
+      if (existingIndex != -1) {
+        _overviews[existingIndex] = newOverview;
+      } else {
+        _overviews.insert(0, newOverview);
+      }
+
+      notifyListeners();
+      return newOverview;
     } catch (e) {
       _setError(e.toString());
       return null;

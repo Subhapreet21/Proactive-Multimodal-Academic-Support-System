@@ -13,9 +13,15 @@ class QuizResultScreen extends StatelessWidget {
     final attempt = resultData['attempt'] as QuizAttempt;
     final incorrectQuestions =
         resultData['incorrectQuestions'] as List<dynamic>;
+    // The quiz is now passed through so we can offer re-attempt and review
+    final quiz = resultData['quiz'] as Quiz?;
 
     final percentage = (attempt.score / attempt.totalQuestions) * 100;
     final isPassed = percentage >= 60;
+
+    // After submission, attemptsCount is already incremented locally by the provider
+    final bool canReattempt = quiz != null &&
+        (quiz.maxAttempts == null || quiz.attemptsCount < quiz.maxAttempts!);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -217,6 +223,66 @@ class QuizResultScreen extends StatelessWidget {
               ],
 
               const SizedBox(height: 48),
+
+              // Action buttons — only shown if the quiz model is available
+              if (quiz != null) ...[
+                Row(
+                  children: [
+                    // Reattempt — only if attempts remaining
+                    if (canReattempt)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              context.go('/app/quizzes/active', extra: quiz),
+                          icon: const Icon(Icons.refresh_rounded,
+                              color: Colors.white),
+                          label: Text(
+                            quiz.maxAttempts != null
+                                ? 'Retry (${quiz.attemptsCount}/${quiz.maxAttempts})'
+                                : 'Retry',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                AppTheme.primaryColor.withOpacity(0.85),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                          ),
+                        ),
+                      ),
+                    if (canReattempt) const SizedBox(width: 12),
+                    // Review last attempt
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          context.push('/app/quizzes/active', extra: {
+                            'quiz': quiz,
+                            'reviewAttempt': attempt,
+                          });
+                        },
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        label: const Text('Review Attempt',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        style: OutlinedButton.styleFrom(
+                          side:
+                              BorderSide(color: Colors.white.withOpacity(0.3)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
 
               SizedBox(
                 width: double.infinity,

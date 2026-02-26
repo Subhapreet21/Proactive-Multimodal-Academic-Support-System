@@ -6,7 +6,9 @@ import {
     importQuizFromExcel,
     manualQuizCreation,
     updateQuiz,
-    deleteQuiz
+    deleteQuiz,
+    generateAIOverview,
+    getOverviews
 } from '../controllers/quizController';
 import { requireAuth } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
@@ -20,8 +22,14 @@ const router = Router();
 // GET /api/quizzes -> List all quizzes
 router.get('/', requireAuth, getQuizzes);
 
-// POST /api/quizzes/attempt -> Submit a quiz and get AI Feedback
-router.post('/attempt', requireAuth, requireRole(['student']), submitAttempt);
+// --- ATTEMPTS & OVERVIEWS ---
+router.post('/attempts', submitAttempt);
+
+// Get explicitly generated overviews
+router.get('/overviews', getOverviews); // Should be above /:id to not conflict with ID param route
+
+// Generate a personalized summary of a student's attempts on a specific quiz
+router.post('/:id/generate-overview', generateAIOverview);
 
 // ============================================
 // Faculty / Admin Management Routes

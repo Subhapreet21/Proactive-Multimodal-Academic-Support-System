@@ -82,7 +82,7 @@ class QuizService {
       String quizId, List<Map<String, String>> answers) async {
     try {
       final response = await _api.post(
-        '/api/quizzes/attempt',
+        '/api/quizzes/attempts',
         {
           'quiz_id': quizId,
           'answers': answers,
@@ -96,6 +96,33 @@ class QuizService {
       };
     } catch (e) {
       throw Exception('Failed to submit quiz attempt: $e');
+    }
+  }
+
+  /// Get generated AI Overviews
+  Future<List<AIOverview>> getOverviews() async {
+    try {
+      final response =
+          await _api.get('/api/quizzes/overviews', requireAuth: true);
+      return (response as List)
+          .map((json) => AIOverview.fromJson(json))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to load overviews: $e');
+    }
+  }
+
+  /// Trigger generation of a personalized AI overview
+  Future<AIOverview> generateOverview(String quizId) async {
+    try {
+      final response = await _api.post(
+        '/api/quizzes/$quizId/generate-overview',
+        {},
+        requireAuth: true,
+      );
+      return AIOverview.fromJson(response['overview']);
+    } catch (e) {
+      throw Exception('Failed to generate overview: $e');
     }
   }
 }

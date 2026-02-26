@@ -11,7 +11,9 @@ class Quiz {
   final int? timeLimitMins;
   final String? targetYear;
   final int? maxAttempts;
+  final int attemptsCount;
   final bool isActive;
+  final QuizAttempt? lastAttempt;
 
   Quiz({
     required this.id,
@@ -26,7 +28,9 @@ class Quiz {
     this.timeLimitMins,
     this.targetYear,
     this.maxAttempts,
+    this.attemptsCount = 0,
     this.isActive = true,
+    this.lastAttempt,
   });
 
   factory Quiz.fromJson(Map<String, dynamic> json) {
@@ -46,9 +50,13 @@ class Quiz {
           ? DateTime.parse(json['valid_until'])
           : null,
       timeLimitMins: json['time_limit_mins'],
-      targetYear: json['target_year'],
-      maxAttempts: json['max_attempts'],
-      isActive: json['is_active'] ?? true,
+      targetYear: json['target_year'] as String?,
+      maxAttempts: json['max_attempts'] as int?,
+      attemptsCount: json['attempts_count'] ?? 0,
+      isActive: json['is_active'] as bool? ?? true,
+      lastAttempt: json['last_attempt'] != null
+          ? QuizAttempt.fromJson(json['last_attempt'])
+          : null,
     );
   }
 }
@@ -60,6 +68,7 @@ class QuizAttempt {
   final int totalQuestions;
   final String? feedback;
   final DateTime createdAt;
+  final List<dynamic>? answers;
 
   QuizAttempt({
     required this.id,
@@ -68,6 +77,7 @@ class QuizAttempt {
     required this.totalQuestions,
     this.feedback,
     required this.createdAt,
+    this.answers,
   });
 
   factory QuizAttempt.fromJson(Map<String, dynamic> json) {
@@ -76,8 +86,44 @@ class QuizAttempt {
       quizId: json['quiz_id'],
       score: json['score'] ?? 0,
       totalQuestions: json['total_questions'] ?? 0,
-      feedback: json['feedback'],
-      createdAt: DateTime.parse(json['created_at']),
+      feedback: json['feedback'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      answers: json['answers'] as List<dynamic>?,
+    );
+  }
+}
+
+class AIOverview {
+  final String id;
+  final String quizId;
+  final String quizTitle;
+  final String studentId;
+  final String studentName;
+  final String studentSummary;
+  final String facultySummary;
+  final DateTime updatedAt;
+
+  AIOverview({
+    required this.id,
+    required this.quizId,
+    required this.quizTitle,
+    required this.studentId,
+    required this.studentName,
+    required this.studentSummary,
+    required this.facultySummary,
+    required this.updatedAt,
+  });
+
+  factory AIOverview.fromJson(Map<String, dynamic> json) {
+    return AIOverview(
+      id: json['id'] as String,
+      quizId: json['quiz_id'] as String,
+      quizTitle: json['quizzes']?['title'] ?? 'Unknown Quiz',
+      studentId: json['student_id'] as String,
+      studentName: json['profiles']?['full_name'] ?? 'Unknown Student',
+      studentSummary: json['student_summary'] as String? ?? '',
+      facultySummary: json['faculty_summary'] as String? ?? '',
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
 }

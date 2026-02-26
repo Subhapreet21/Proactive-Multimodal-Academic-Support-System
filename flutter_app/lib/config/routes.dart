@@ -158,6 +158,13 @@ class AppRouter {
                 GoRoute(
                   path: 'active',
                   builder: (context, state) {
+                    if (state.extra is Map<String, dynamic>) {
+                      final extra = state.extra as Map<String, dynamic>;
+                      return QuizActiveScreen(
+                        quiz: extra['quiz'] as Quiz,
+                        reviewAttempt: extra['reviewAttempt'] as QuizAttempt?,
+                      );
+                    }
                     final quiz = state.extra as Quiz;
                     return QuizActiveScreen(quiz: quiz);
                   },

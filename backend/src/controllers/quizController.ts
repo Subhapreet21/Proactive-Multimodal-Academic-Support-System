@@ -132,11 +132,14 @@ ${kbArticle.content}
 
 export const getQuizzes = async (req: Request, res: Response) => {
     try {
+        const userId = (req as any).auth?.userId;
+
         const { data, error } = await supabase
             .from('quizzes')
             .select(`
                 *,
-                kb_articles ( title )
+                kb_articles ( title ),
+                quiz_attempts!left ( id, student_id )
             `)
             .order('created_at', { ascending: false });
 
@@ -145,7 +148,20 @@ export const getQuizzes = async (req: Request, res: Response) => {
             return res.status(500).json({ error: 'Failed to fetch quizzes.' });
         }
 
-        res.status(200).json(data);
+        // Map over data to count attempts specifically for this student
+        const formattedData = data.map(q => {
+            let userAttempts = q.quiz_attempts ? (q.quiz_attempts as any).filter((att: any) => att.student_id === userId) : [];
+            userAttempts.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            return {
+                ...q,
+                attempts_count: userAttempts.length,
+                last_attempt: userAttempts.length > 0 ? userAttempts[0] : null,
+                quiz_attempts: undefined // Clean up the raw join array
+            };
+        });
+
+        res.status(200).json(formattedData);
     } catch (error: any) {
         console.error('[getQuizzes] General Error:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -302,6 +318,147 @@ export const deleteQuiz = async (req: Request, res: Response) => {
         return res.status(200).json({ message: 'Quiz deleted successfully' });
     } catch (error: any) {
         console.error('[deleteQuiz] General Error:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// ==========================================
+// 8. Generate Personalized AI Overview
+// ==========================================
+export const generateAIOverview = async (req: Request, res: Response) => {
+    try {
+        const { id: quiz_id } = req.params;
+        const student_id = (req as any).auth.userId;
+
+        // 1. Fetch all attempts by this student for this quiz
+        const { data: attempts, error: attemptsError } = await supabase
+            .from('quiz_attempts')
+            .select('*')
+            .eq('quiz_id', quiz_id)
+            .eq('student_id', student_id)
+            .order('created_at', { ascending: true });
+
+        if (attemptsError || !attempts || attempts.length === 0) {
+            return res.status(404).json({ error: 'No attempts found to generate an overview from.' });
+        }
+
+        // 2. Fetch the Quiz text mapping to understand the context
+        const { data: quiz, error: quizError } = await supabase
+            .from('quizzes')
+            .select('content, title')
+            .eq('id', quiz_id)
+            .single();
+
+        if (quizError || !quiz) {
+            return res.status(404).json({ error: 'Quiz definition not found.' });
+        }
+
+        const questions: QuizQuestion[] = quiz.content;
+
+        // 3. Compile performance record
+        let performanceCompilation = `Quiz Title: ${quiz.title}\nTotal Questions: ${questions.length}\n\n`;
+
+        attempts.forEach((attempt, index) => {
+            performanceCompilation += `--- Attempt ${index + 1} (Score: ${attempt.score}/${attempt.total_questions}) ---\n`;
+
+            let incorrectThisAttempt: string[] = [];
+            attempt.answers.forEach((ans: any) => {
+                const q = questions.find(question => question.id === ans.questionId);
+                if (q && q.correctAnswer !== ans.selectedOption) {
+                    incorrectThisAttempt.push(`Q: "${q.text}". They guessed: "${ans.selectedOption}", but correct is "${q.correctAnswer}". Reason: ${q.explanation}`);
+                }
+            });
+
+            if (incorrectThisAttempt.length === 0) {
+                performanceCompilation += "Perfect Score!\n";
+            } else {
+                performanceCompilation += "Missed Concepts:\n- " + incorrectThisAttempt.join('\n- ') + "\n";
+            }
+        });
+
+        // 4. Prompt Gemini for the Overviews
+        const systemPrompt = `
+You are an expert academic evaluator. You are given a student's history of attempts on a multiple-choice quiz.
+You need to generate TWO distinct summaries based on their performance across ALL attempts:
+1. "student_summary": An encouraging, 2-line direct message to the student summarizing what they eventually learned or the specific concepts they still struggle with.
+2. "faculty_summary": A clinical, actionable, 1-2 sentence report for the professor indicating exact topic gaps the student exhibited.
+
+Return ONLY a JSON object meeting this schema. DO NOT wrap with markdown blocks.`;
+
+        const userPrompt = `Student Performance Log:\n${performanceCompilation}`;
+
+        const config: GenerationConfig = {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    student_summary: { type: SchemaType.STRING },
+                    faculty_summary: { type: SchemaType.STRING }
+                },
+                required: ["student_summary", "faculty_summary"]
+            }
+        };
+
+        const geminiText = await generateText(systemPrompt, userPrompt, config);
+
+        // Ensure robust parsing
+        let resultJson;
+        try {
+            const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            resultJson = JSON.parse(cleaned);
+        } catch (e) {
+            console.error("Failed to parse Gemini overview:", geminiText);
+            return res.status(500).json({ error: 'AI generated invalid insights format.' });
+        }
+
+        // 5. Upsert the generated overview
+        const { data: upsertData, error: upsertError } = await supabase
+            .from('quiz_overviews')
+            .upsert({
+                quiz_id,
+                student_id,
+                student_summary: resultJson.student_summary,
+                faculty_summary: resultJson.faculty_summary,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'quiz_id, student_id' } as any) // suppress TS type issue for onConflict syntax in supabase-js
+            .select()
+            .single();
+
+        if (upsertError) {
+            console.error('[generateAIOverview] Upsert Error:', upsertError);
+            return res.status(500).json({ error: 'Failed to save generated AI overview.' });
+        }
+
+        res.status(200).json({ message: 'Overview generated successfully.', overview: upsertData });
+
+    } catch (error: any) {
+        console.error('[generateAIOverview] General Error:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// ==========================================
+// 9. Fetch Quiz Overviews
+// ==========================================
+export const getOverviews = async (req: Request, res: Response) => {
+    try {
+        const { data, error } = await supabase
+            .from('quiz_overviews')
+            .select(`
+                *,
+                quizzes ( title ),
+                profiles ( full_name, email, role )
+            `)
+            .order('updated_at', { ascending: false });
+
+        if (error) {
+            console.error('[getOverviews] Fetch Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch overviews.' });
+        }
+
+        res.status(200).json(data);
+    } catch (error: any) {
+        console.error('[getOverviews] General Error:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
