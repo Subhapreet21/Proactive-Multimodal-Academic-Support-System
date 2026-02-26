@@ -58,6 +58,22 @@
 *   **Personal Reminders**: Private To-Do list with completion tracking.
 *   **Event Board**: Centralized digital notice board for campus news and alerts.
 
+### 9. 📝 Quizzes & Assessments [NEW]
+*   **Role-Based Access**:
+    *   **Students**: Browse quizzes assigned to their department, take timed assessments, and review past attempts.
+    *   **Faculty**: Create quizzes manually (with rich multi-choice options), manage active quizzes (edit, activate/deactivate, set deadlines and target year), and view student performance via AI insights.
+*   **Attempt Enforcement**: A server-side guard on every submission prevents students from exceeding `max_attempts` (returns `429 Too Many Requests`). Attempts are tracked **individually per student**.
+*   **Timed Assessments**: Optional countdown timers auto-submit the quiz on expiry, preventing accidental over-time submissions.
+*   **Rich Quiz Builder**: Faculty can write questions with 4 answer options, mark a correct answer, and attach an explanation for each question.
+*   **AI-Powered Insights**:
+    *   **Automated Faculty Overview**: Instantly generated in the background when a student submits — no manual trigger needed.
+    *   **Student Insights**: Students may optionally generate a personalized AI review of their own attempt, with per-question analysis.
+    *   **Restricted Scope**: AI insights for students are scoped to their own data only; faculty see aggregate department-level insights for quizzes **they created**.
+*   **Assessment Results**: Detailed results screen showing score, percentage, per-question breakdown with correct/incorrect highlighting and explanations.
+*   **Review Mode**: Students can replay a past attempt in a read-only "Review" mode that highlights correct vs. chosen answers.
+*   **Faculty Filters**: Faculty quiz list is filtered to show only quizzes **they created**, preventing cross-faculty confusion.
+*   **Premium UI**: All dialogs (Submit Quiz, Leave Quiz, Delete Quiz) follow the app-wide glassmorphic design system — dark gradient, rounded border, icon headers, and proper action buttons.
+
 ---
 
 ## 🏗️ System Architecture
@@ -102,6 +118,7 @@ graph TD
                 CoPilot[AI Lecture Co-Pilot]:::flutter
                 Time[Smart Timetable]:::flutter
                 AdminPanel[Admin Console]:::flutter
+                Quiz[📝 Quizzes & Assessments]:::flutter
             end
         end
     end
@@ -146,6 +163,8 @@ graph TD
     Dash -. Student .-> Study
     Dash -. Faculty .-> CoPilot
     Dash -. Admin .-> AdminPanel
+    Dash -. Student .-> Quiz
+    Dash -. Faculty .-> Quiz
     
     %% Backend Interactions
     Chat <==> Server
@@ -153,6 +172,8 @@ graph TD
     Study <==> Server
     Tour <==> Server
     Attendance <==> Server
+    Quiz <==> Server
+    Quiz -...-> Insights
 
     %% Internal Backend Flow
     Server --> LB
@@ -264,6 +285,11 @@ The system enforces strict Role-Based Access Control (RBAC) to ensure security a
 | **Profile** | `/app/profile` | **All** | View personal details and sign out. |
 | **Lecture Co-Pilot** | `/app/faculty/daily-prep` | **Faculty** | **AI Lesson Planner**: Generate scripts, find resources, and export PDF lesson plans. |
 | **User Mgmt** | `/app/admin/users` | **Admin** | Bulk manage users, promote/demote roles, data cleanup. |
+| **Quizzes** | `/app/quizzes` | **Student & Faculty** | Browse quizzes, view attempts & AI insights. Faculty: manage active quiz list. |
+| **Take Quiz** | `/app/quizzes/active` | **Student** | Live timed quiz session with auto-submit on timer expiry. |
+| **Quiz Results** | `/app/quizzes/result` | **Student** | Detailed score breakdown, per-question review, and AI insight generation. |
+| **Quiz Management** | `/app/quizzes/manage` | **Faculty** | Create/edit/delete quizzes; activate or deactivate; view AI department overviews. |
+| **Quiz Builder** | `/app/quizzes/manage/create` | **Faculty** | Manual multi-choice question builder with correct-answer marking and explanations. |
 
 ---
 
@@ -367,7 +393,8 @@ GEMINI_API_KEY_3=AIzaSy...
 ## 📱 UI & Experience Upgrades [NEW]
 *   **Strict Portrait Mode**: The app is globally locked to Portrait mode to prevent UI congestion.
 *   **Smart Landscape Support**: The **Timetable Screen** automatically unlocks Landscape mode for optimal grid viewing.
-*   **Rainbow Carousel**: The Landing Page features a vibrant implementation of the full ROYGCBIV spectrum.
+*   **Rainbow Carousel**: The Landing Page features a vibrant implementation of the full ROYGCBIV+Pink spectrum. The **Quizzes** feature (`note_alt_outlined`, Pink `#EC4899`) is the final icon in the carousel, completing the color cycle.
+*   **Glassmorphic Dialogs**: All confirmation dialogs (e.g., Leave Quiz, Submit Quiz, Delete Quiz) use a consistent dark gradient dialog system for a unified premium feel.
 
 ---
 

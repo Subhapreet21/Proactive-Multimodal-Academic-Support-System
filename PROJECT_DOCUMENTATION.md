@@ -34,6 +34,8 @@
     *   6.3 Conclusion
     *   6.4 Future Enhancements
 
+> **Quiz & Assessment Module** is documented across all chapters: FR-S-08 to FR-S-10 (Student), FR-F-06 to FR-F-10 (Faculty), DB tables `quizzes`, `quiz_questions`, `quiz_attempts`, `quiz_ai_overviews`, Class Diagram entities, Sequence Diagram 4.2.6, Code Section 5.3.3, and Test Cases TC-11 to TC-16.
+
 ---
 
 # Chapter 1: Introduction
@@ -153,6 +155,9 @@ The project is constructed using a carefully selected stack of modern technologi
 *   **FR-S-05**: Access 3D Virtual Tour.
 *   **FR-S-06**: Receive push notifications for schedule changes.
 *   **FR-S-07**: Track daily attendance, view cumulative percentage, and receive AI-driven trend forecasts.
+*   **FR-S-08**: Browse quizzes assigned to their department/year.
+*   **FR-S-09**: Take a timed quiz; the system auto-submits on timer expiry. A server-side guard enforces `max_attempts` (HTTP 429 on excess).
+*   **FR-S-10**: View detailed results (score, per-question breakdown, explanations). Optionally generate a personalized AI insight on their attempt. Review past attempts in read-only mode.
 
 ### 3.3.2 Faculty Module
 *   **FR-F-01**: View teaching schedule.
@@ -160,6 +165,11 @@ The project is constructed using a carefully selected stack of modern technologi
 *   **FR-F-03**: Post class-specific announcements.
 *   **FR-F-04**: Use AI Co-Pilot to generate Lecture Plans.
 *   **FR-F-05**: Mark batch attendance for assigned teaching slots with dynamic sorting (e.g., absent-first).
+*   **FR-F-06**: Create quizzes using a multi-choice quiz builder (title, description, time limit, max attempts, target year, validity period, active/inactive toggle).
+*   **FR-F-07**: Add, edit, and delete quiz questions with 4 options, a correct answer, and an explanation per question.
+*   **FR-F-08**: View only quizzes they personally created (faculty-scoped filtering).
+*   **FR-F-09**: View aggregated AI overview of student performance per quiz (auto-generated on each submission, or manually refreshed).
+*   **FR-F-10**: Edit quiz metadata (time limit, validity dates, target year, max attempts). Activate/deactivate quizzes.
 
 ### 3.3.3 Admin Module
 *   **FR-A-01**: Manage Users (Create/Delete Accounts).
@@ -214,11 +224,16 @@ graph LR
         UC_MySchedule(View My Timetable)
         UC_Events(View Events & Notices)
         UC_MyAttendance(View My Attendance & AI)
+        UC_TakeQuiz(Take Timed Quiz)
+        UC_ReviewAttempt(Review Past Attempts)
+        UC_StudentInsight(Generate Personal AI Insight)
         
         %% Faculty Specific
         UC_DeptSchedule(View Dept Timetable)
         UC_CreateNotice(Post Articles)
         UC_MarkAttendance(Mark Batch Attendance)
+        UC_CreateQuiz(Create & Manage Quizzes)
+        UC_ViewQuizOverview(View AI Quiz Overview)
         
         %% Admin Specific
         UC_ManageUsers(Manage Users & Roles)
@@ -227,8 +242,8 @@ graph LR
         UC_AuditAttendance(Audit Global Attendance)
     end
 
-    Student --> UC_Login & UC_Dash & UC_Chat & UC_Tour & UC_MySchedule & UC_Events & UC_MyAttendance
-    Faculty --> UC_Login & UC_Dash & UC_Chat & UC_DeptSchedule & UC_CreateNotice & UC_MarkAttendance
+    Student --> UC_Login & UC_Dash & UC_Chat & UC_Tour & UC_MySchedule & UC_Events & UC_MyAttendance & UC_TakeQuiz & UC_ReviewAttempt & UC_StudentInsight
+    Faculty --> UC_Login & UC_Dash & UC_Chat & UC_DeptSchedule & UC_CreateNotice & UC_MarkAttendance & UC_CreateQuiz & UC_ViewQuizOverview
     Admin --> UC_Login & UC_Dash & UC_Chat & UC_ManageUsers & UC_ManageKB & UC_GlobalTimetable & UC_AuditAttendance
 ```
 
@@ -291,6 +306,40 @@ graph TD
     API -- HTTPS --> Gemini
     Postgres <--> Vector
     Supabase -- Manage --> Auth & Storage & Postgres
+```
+
+### 4.2.6 Sequence Diagram (Quiz Submission & AI Auto-Overview)
+```mermaid
+sequenceDiagram
+    participant Student as 🎓 Student App
+    participant API as ⚙️ Express API
+    participant DB as 💾 Supabase
+    participant AI as 🧠 Gemini AI
+    participant Faculty as 👨‍🏫 Faculty App
+
+    Student->>API: POST /quizzes/:id/attempt (answers)
+    API->>DB: COUNT existing attempts for student+quiz
+    DB-->>API: attempt_count
+
+    alt attempt_count >= max_attempts
+        API-->>Student: 429 Too Many Requests
+    else
+        API->>DB: INSERT quiz_attempt (score, answers)
+        DB-->>API: Attempt saved ✓
+        API-->>Student: 200 OK (score, results)
+
+        note right of API: Background (Fire & Forget)
+        API->>DB: Fetch all attempts for this quiz
+        DB-->>API: All student attempts
+        API->>AI: Generate faculty overview prompt
+        AI-->>API: "Class average: 72%. Topic X needs review."
+        API->>DB: UPSERT quiz_ai_overviews
+    end
+
+    Faculty->>API: GET /quizzes/overviews
+    API->>DB: SELECT overview for faculty's quizzes
+    DB-->>API: AI Overview data
+    API-->>Faculty: Display department performance summary
 ```
 
 ### 4.2.4 Activity Diagram (AI Chat Logic)
@@ -477,11 +526,50 @@ classDiagram
         +batchUpdateTimetable(req, res)
     }
 
+    class QuizController {
+        +getQuizzes(req, res)
+        +getQuizById(req, res)
+        +createQuiz(req, res)
+        +updateQuiz(req, res)
+        +deleteQuiz(req, res)
+        +submitAttempt(req, res)
+        +getAttempts(req, res)
+        +getOverviews(req, res)
+        +generateOverview(req, res)
+        +generateStudentInsight(req, res)
+    }
+
+    class Quiz {
+        +UUID id
+        +UUID created_by
+        +String title
+        +String description
+        +int time_limit_mins
+        +int max_attempts
+        +String target_year
+        +boolean is_active
+        +DateTime valid_from
+        +DateTime valid_until
+        +List~QuizQuestion~ content
+    }
+
+    class QuizAttempt {
+        +UUID id
+        +UUID quiz_id
+        +UUID student_id
+        +int score
+        +int total_questions
+        +JSON answers
+        +DateTime submitted_at
+    }
+
     %% Relationships
     Profile "1" -- "0..*" Reminder : has
     Profile "1" -- "0..*" Timetable : manages/has
     Profile "1" -- "0..*" EventNotice : creates
     Profile "1" -- "0..*" KBArticle : authors
+    Profile "1" -- "0..*" Quiz : creates
+    Quiz "1" -- "0..*" QuizAttempt : has
     KBArticle "1" -- "0..*" KBEmbedding : contains
     
     %% Controller Dependencies (Conceptual)
@@ -498,6 +586,9 @@ classDiagram
     AttendanceController ..> Timetable : reads
     AttendanceController ..> Profile : reads
     AIForecastController ..> Profile : reads
+    QuizController ..> Quiz : manages
+    QuizController ..> QuizAttempt : manages
+    QuizController ..> Profile : reads
 ```
 
 ## 4.3 Database Design (Schema)
@@ -587,6 +678,66 @@ erDiagram
         int usage_limit
         int used_count
     }
+
+    quizzes {
+        uuid id PK
+        uuid created_by FK
+        text title
+        text description
+        int time_limit_mins
+        int max_attempts
+        text target_year
+        boolean is_active
+        timestamp valid_from
+        timestamp valid_until
+        timestamp created_at
+    }
+
+    quiz_questions {
+        uuid id PK
+        uuid quiz_id FK
+        text question_text
+        text option_a
+        text option_b
+        text option_c
+        text option_d
+        text correct_option
+        text explanation
+        int order_index
+    }
+
+    quiz_attempts {
+        uuid id PK
+        uuid quiz_id FK
+        uuid student_id FK
+        int score
+        int total_questions
+        jsonb answers
+        timestamp submitted_at
+    }
+
+    quiz_ai_overviews {
+        uuid id PK
+        uuid quiz_id FK
+        uuid faculty_id FK
+        text overview_text
+        timestamp generated_at
+    }
+
+    quiz_student_insights {
+        uuid id PK
+        uuid attempt_id FK
+        uuid student_id FK
+        text insight_text
+        timestamp generated_at
+    }
+
+    profiles ||--o{ quizzes : "creates (faculty)"
+    quizzes ||--o{ quiz_questions : "contains"
+    quizzes ||--o{ quiz_attempts : "has"
+    profiles ||--o{ quiz_attempts : "submits"
+    quizzes ||--o{ quiz_ai_overviews : "generates"
+    quiz_attempts ||--o| quiz_student_insights : "analyzed by"
 ```
 
 # Chapter 5: Implementation & Code
@@ -603,14 +754,26 @@ We adopted the **Agile Methodology** for this project.
 ├── flutter_app/          # Mobile Frontend
 │   ├── lib/
 │   │   ├── main.dart
-│   │   ├── screens/      # Dashboard, Chat, Profile
+│   │   ├── screens/
+│   │   │   ├── quiz_list_screen.dart      # Quiz browse + AI insights tab
+│   │   │   ├── quiz_active_screen.dart    # Live quiz attempt session
+│   │   │   ├── quiz_result_screen.dart    # Score, review, student AI insight
+│   │   │   ├── faculty_quiz_mgmt_screen.dart  # Faculty quiz management
+│   │   │   └── manual_quiz_builder_screen.dart# Multi-choice question builder
+│   │   ├── models/
+│   │   │   └── quiz_model.dart            # Quiz, QuizQuestion, QuizAttempt
+│   │   ├── providers/
+│   │   │   └── quiz_provider.dart         # State management for quiz flow
 │   │   ├── services/     # API, Auth
 │   │   └── widgets/      # UI Components
 │
 └── backend/              # Node.js API
     ├── src/
     │   ├── index.ts
-    │   ├── controllers/  # Logic
+    │   ├── controllers/
+    │   │   └── quizController.ts          # CRUD, submitAttempt, AI overviews
+    │   ├── routes/
+    │   │   └── quizRoutes.ts              # /api/quizzes endpoints
     │   └── services/     # Integrations
 ```
 
@@ -648,7 +811,35 @@ export const handleTextChat = async (req, res) => {
 };
 ```
 
-## 5.4 Algorithm Analysis (RAG)
+### 5.3.3 Quiz Controller (Attempt Enforcement + Auto AI Overview)
+**Analysis**: The quiz submission controller implements two critical server-side safeguards: max-attempt enforcement (preventing replay attacks bypassing the UI) and asynchronous AI overview generation (so faculty get instant insights without delaying student results).
+```typescript
+// backend/src/controllers/quizController.ts
+export const submitAttempt = async (req, res) => {
+    const { quizId } = req.params;
+    const studentId = req.user.id;
+
+    // 1. Enforce max_attempts server-side (can't be bypassed by UI)
+    const { count } = await supabase
+        .from('quiz_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('quiz_id', quizId)
+        .eq('student_id', studentId);
+
+    if (quiz.max_attempts !== null && count >= quiz.max_attempts) {
+        return res.status(429).json({ error: 'Maximum attempts reached.' });
+    }
+
+    // 2. Save the attempt
+    const { data: attempt } = await supabase
+        .from('quiz_attempts').insert({ quiz_id: quizId, student_id: studentId, ...results });
+
+    // 3. Fire-and-forget: auto-generate faculty AI overview
+    generateFacultyOverviewInBackground(quizId, quiz.created_by);
+
+    return res.status(201).json({ attempt, score: results.score });
+};
+```
 The core of the AI assistant uses **Retrieval-Augmented Generation (RAG)**.
 1.  **Vectorization**: User query $Q$ is converted to a vector $V_q$ using `gemini-embedding-001`.
 2.  **Similarity Search**: We calculate the **Cosine Similarity** between $V_q$ and all stored Knowledge Base vectors $V_{kb}$.
@@ -678,6 +869,12 @@ The core of the AI assistant uses **Retrieval-Augmented Generation (RAG)**.
 | **TC-08** | **Security** | Access Admin API as Student | Return 403 Forbidden | **PASS** |
 | **TC-09** | **Profile** | Logout | Clear session token | **PASS** |
 | **TC-10** | **Load** | 50 concurrent requests | API latency < 500ms | **PASS** |
+| **TC-11** | **Quiz (Auth)** | Student accesses quiz outside validity window | Show "Quiz not available" message | **PASS** |
+| **TC-12** | **Quiz (Attempt Guard)** | Student submits after exceeding `max_attempts` | Backend returns `429 Too Many Requests` | **PASS** |
+| **TC-13** | **Quiz (Timer)** | Quiz timer reaches 0:00 | Quiz auto-submits with current answers | **PASS** |
+| **TC-14** | **Quiz (AI Overview)** | Student submits quiz | Faculty AI overview auto-generated in background within 5s | **PASS** |
+| **TC-15** | **Quiz (RBAC)** | Faculty views quiz list | Only quizzes created by that faculty are shown | **PASS** |
+| **TC-16** | **Quiz (Review)** | Student clicks "Review Attempt" | Opens read-only view with correct/incorrect highlighting | **PASS** |
 
 ## 6.3 Conclusion
 The **Proactive Multimodal Academic Support System** successfully demonstrates the transformative potential of combining AI, Mobile Cloud, and 3D technologies in an educational setting. By replacing disjointed legacy systems with a unified, intelligent platform, we have significantly:

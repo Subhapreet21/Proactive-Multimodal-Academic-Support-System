@@ -777,26 +777,119 @@ class _QuizListScreenState extends State<QuizListScreen> {
   void _deleteQuizConfirm(BuildContext context, dynamic quiz) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Delete Quiz', style: TextStyle(color: Colors.white)),
-        content: Text('Are you sure you want to delete "${quiz.title}"?',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white54)),
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<QuizProvider>().deleteQuiz(quiz.id);
-            },
-            child: const Text('Delete',
-                style: TextStyle(color: AppTheme.errorColor)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon + Title row
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.delete_outline_rounded,
+                        color: AppTheme.errorColor, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  const Text(
+                    'Delete Quiz',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Body
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.75),
+                      height: 1.55,
+                      fontSize: 14),
+                  children: [
+                    const TextSpan(text: 'Are you sure you want to delete '),
+                    TextSpan(
+                      text: '"${quiz.title}"',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const TextSpan(
+                        text:
+                            '? This action cannot be undone and all associated attempts will be removed.'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white54,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side:
+                              BorderSide(color: Colors.white.withOpacity(0.12)),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        context.read<QuizProvider>().deleteQuiz(quiz.id);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.errorColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Delete',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

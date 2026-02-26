@@ -91,8 +91,8 @@ class _AppShellState extends State<AppShell> {
 
     final quizzesItem = NavigationItem(
       label: 'Quizzes',
-      selectedIcon: Icons.quiz_rounded,
-      unselectedIcon: Icons.quiz_outlined,
+      selectedIcon: Icons.note_alt_rounded,
+      unselectedIcon: Icons.note_alt_outlined,
       path: '/app/quizzes',
     );
 

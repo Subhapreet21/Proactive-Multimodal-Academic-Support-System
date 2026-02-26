@@ -102,34 +102,121 @@ class _QuizActiveScreenState extends State<QuizActiveScreen> {
 
     final action = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Leave Quiz?',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Text(
-          'You have answered ${_selectedAnswers.length} of ${widget.quiz.content.length} questions.\nDo you want to submit your current answers or leave without recording an attempt?',
-          style: TextStyle(color: Colors.white.withOpacity(0.8), height: 1.5),
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon + Title row
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.exit_to_app_rounded,
+                        color: Colors.orange, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  const Text(
+                    'Leave Quiz?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Body text
+              Text(
+                'You have answered ${_selectedAnswers.length} of ${widget.quiz.content.length} questions. Do you want to submit your current answers or leave without recording an attempt?',
+                style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                    height: 1.55,
+                    fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'leave'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                              color: Colors.redAccent.withOpacity(0.4)),
+                        ),
+                      ),
+                      child: const Text('Leave',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'cancel'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white54,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side:
+                              BorderSide(color: Colors.white.withOpacity(0.12)),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, 'submit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Submit',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'cancel'),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'leave'),
-            child: const Text('Leave Without Submitting',
-                style: TextStyle(color: Colors.redAccent)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, 'submit'),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor),
-            child: const Text('Submit & Leave',
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
 
@@ -149,31 +236,120 @@ class _QuizActiveScreenState extends State<QuizActiveScreen> {
     if (!forceSubmit) {
       final confirm = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1E293B),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Submit Quiz?',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: Text(
-            'You have answered ${_selectedAnswers.length} out of ${widget.quiz.content.length} questions.',
-            style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        barrierColor: Colors.black.withOpacity(0.6),
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon + Title row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.check_circle_outline_rounded,
+                          color: AppTheme.primaryLight, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Text(
+                      'Submit Quiz?',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Body text
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.75),
+                        height: 1.55,
+                        fontSize: 14),
+                    children: [
+                      const TextSpan(text: 'You have answered '),
+                      TextSpan(
+                        text: '${_selectedAnswers.length}',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const TextSpan(text: ' out of '),
+                      TextSpan(
+                        text: '${widget.quiz.content.length}',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const TextSpan(text: ' questions.'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white54,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                                color: Colors.white.withOpacity(0.12)),
+                          ),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        child: const Text('Submit',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child:
-                  const Text('Cancel', style: TextStyle(color: Colors.white54)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor),
-              child:
-                  const Text('Submit', style: TextStyle(color: Colors.white)),
-            ),
-          ],
         ),
       );
       if (confirm != true || !mounted) return;

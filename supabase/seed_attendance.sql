@@ -1,9 +1,9 @@
--- Run this script in your Supabase SQL Editor to populate artificial attendance data for Jan & Feb 2026
+-- Run this script in your Supabase SQL Editor to populate artificial attendance data for Mar–Aug 2026 (excluding Sundays)
 
 DO $$
 DECLARE
     cur_date date;
-    end_date date := '2026-02-28';
+    end_date date := '2026-12-31';
     tt RECORD;
     student RECORD;
     sess_id uuid;
@@ -14,10 +14,16 @@ BEGIN
     -- Get a faculty ID to assign as the 'marked_by' user
     SELECT id INTO faculty_id FROM profiles WHERE role = 'faculty' LIMIT 1;
     
-    -- Start from January 1st, 2026
-    cur_date := '2026-01-01';
+    -- Start from March 1st, 2026
+    cur_date := '2026-03-01';
 
     WHILE cur_date <= end_date LOOP
+        -- Skip Sundays (DOW = 0 in PostgreSQL)
+        IF EXTRACT(DOW FROM cur_date) = 0 THEN
+            cur_date := cur_date + INTERVAL '1 day';
+            CONTINUE;
+        END IF;
+
         -- Get the full English name of the day, e.g., 'Monday', 'Tuesday'
         day_name := trim(to_char(cur_date, 'Day'));
         

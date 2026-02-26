@@ -234,6 +234,11 @@ class LandingScreen extends StatelessWidget {
                                       label: 'Co-Pilot',
                                       color: AppTheme.secondaryColor, // Violet
                                     ),
+                                    const _FeatureIcon(
+                                      icon: Icons.note_alt_outlined,
+                                      label: 'Quizzes',
+                                      color: Color(0xFFEC4899), // Pink
+                                    ),
                                   ],
                                 ),
                               ],
