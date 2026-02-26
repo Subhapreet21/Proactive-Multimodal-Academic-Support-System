@@ -6,6 +6,11 @@ class Quiz {
   final String? kbArticleTitle;
   final List<dynamic> content; // The JSONB questions array
   final DateTime createdAt;
+  final DateTime? validFrom;
+  final DateTime? validUntil;
+  final int? timeLimitMins;
+  final String? targetYear;
+  final bool isActive;
 
   Quiz({
     required this.id,
@@ -15,6 +20,11 @@ class Quiz {
     this.kbArticleTitle,
     required this.content,
     required this.createdAt,
+    this.validFrom,
+    this.validUntil,
+    this.timeLimitMins,
+    this.targetYear,
+    this.isActive = true,
   });
 
   factory Quiz.fromJson(Map<String, dynamic> json) {
@@ -27,6 +37,15 @@ class Quiz {
           json['kb_articles'] != null ? json['kb_articles']['title'] : null,
       content: json['content'] as List<dynamic>? ?? [],
       createdAt: DateTime.parse(json['created_at']),
+      validFrom: json['valid_from'] != null
+          ? DateTime.parse(json['valid_from'])
+          : null,
+      validUntil: json['valid_until'] != null
+          ? DateTime.parse(json['valid_until'])
+          : null,
+      timeLimitMins: json['time_limit_mins'],
+      targetYear: json['target_year'],
+      isActive: json['is_active'] ?? true,
     );
   }
 }

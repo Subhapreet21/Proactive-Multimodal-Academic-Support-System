@@ -238,6 +238,32 @@ class _QuizListScreenState extends State<QuizListScreen> {
                             ],
                           ),
                         ),
+                        if (isFaculty)
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert,
+                                color: Colors.white70),
+                            color: const Color(0xFF1E293B),
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showEditQuizModal(context, quiz);
+                              } else if (value == 'delete') {
+                                _deleteQuizConfirm(context, quiz);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Edit Settings',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Delete Quiz',
+                                    style:
+                                        TextStyle(color: AppTheme.errorColor)),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -302,6 +328,226 @@ class _QuizListScreenState extends State<QuizListScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _deleteQuizConfirm(BuildContext context, dynamic quiz) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text('Delete Quiz', style: TextStyle(color: Colors.white)),
+        content: Text('Are you sure you want to delete "${quiz.title}"?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<QuizProvider>().deleteQuiz(quiz.id);
+            },
+            child: const Text('Delete',
+                style: TextStyle(color: AppTheme.errorColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditQuizModal(BuildContext context, dynamic quiz) {
+    DateTime? validFrom = quiz.validFrom;
+    DateTime? validUntil = quiz.validUntil;
+    int? timeLimitMins = quiz.timeLimitMins;
+    String? targetYear = quiz.targetYear;
+    bool isActive = quiz.isActive;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: 24,
+                left: 24,
+                right: 24),
+            decoration: const BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12)),
+                      child: const Icon(Icons.edit, color: Color(0xFF10B981)),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Edit Quiz Settings',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          Text('Update constraints and metadata.',
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.white70)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Valid Dates
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Dates: ${validFrom != null && validUntil != null ? "${validFrom!.day}/${validFrom!.month} - ${validUntil!.day}/${validUntil!.month}" : "Not Set"}',
+                        style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final picked = await showDateRangePicker(
+                          context: context,
+                          initialDateRange:
+                              validFrom != null && validUntil != null
+                                  ? DateTimeRange(
+                                      start: validFrom!, end: validUntil!)
+                                  : null,
+                          firstDate: DateTime.now()
+                              .subtract(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          setModalState(() {
+                            validFrom = picked.start;
+                            validUntil = picked.end;
+                          });
+                        }
+                      },
+                      child: const Text('Set Dates',
+                          style: TextStyle(color: const Color(0xFF10B981))),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Time Limit and Year
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: timeLimitMins?.toString() ?? '',
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Duration (mins)',
+                          labelStyle:
+                              TextStyle(color: Colors.white.withOpacity(0.5)),
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
+                        ),
+                        onChanged: (val) {
+                          setModalState(
+                              () => timeLimitMins = int.tryParse(val));
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: targetYear,
+                        dropdownColor: const Color(0xFF1E293B),
+                        decoration: InputDecoration(
+                          labelText: 'Target Year',
+                          labelStyle:
+                              TextStyle(color: Colors.white.withOpacity(0.5)),
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
+                        ),
+                        items: ['All', '1', '2', '3', '4']
+                            .map((y) => DropdownMenuItem(
+                                value: y,
+                                child: Text(
+                                    y == 'All' ? 'All Years' : 'Year $y',
+                                    style:
+                                        const TextStyle(color: Colors.white))))
+                            .toList(),
+                        onChanged: (val) {
+                          setModalState(() => targetYear = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Is Active Switch
+                SwitchListTile(
+                  title: Text('Active / Visible to Students',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  value: isActive,
+                  activeColor: const Color(0xFF10B981),
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (val) {
+                    setModalState(() => isActive = val);
+                  },
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<QuizProvider>().updateQuiz(quiz.id, {
+                        'valid_from': validFrom?.toIso8601String(),
+                        'valid_until': validUntil?.toIso8601String(),
+                        'time_limit_mins': timeLimitMins,
+                        'target_year': targetYear,
+                        'is_active': isActive,
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Save Changes'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

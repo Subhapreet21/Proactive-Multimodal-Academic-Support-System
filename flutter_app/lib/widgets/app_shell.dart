@@ -132,8 +132,11 @@ class _AppShellState extends State<AppShell> {
     }
 
     // Update current index based on path
-    _currentIndex =
-        effectiveItems.indexWhere((item) => item.path == currentPath);
+    _currentIndex = effectiveItems.indexWhere((item) {
+      if (item.path == currentPath) return true;
+      if (currentPath.startsWith('${item.path}/')) return true;
+      return false;
+    });
     // If path not found (maybe viewing study plan but role changed? unlikely), default to dashboard
     if (_currentIndex == -1) _currentIndex = 0;
 

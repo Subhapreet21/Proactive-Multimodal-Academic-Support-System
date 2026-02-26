@@ -4,6 +4,7 @@ import '../providers/quiz_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../config/theme.dart';
+import 'package:go_router/go_router.dart';
 
 class FacultyQuizMgmtScreen extends StatefulWidget {
   const FacultyQuizMgmtScreen({super.key});
@@ -17,7 +18,11 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
   late Future<List<dynamic>> _kbArticlesFuture;
   String? _selectedKbArticleId;
   double _numQuestions = 5;
-  bool _isGenerating = false;
+  DateTime? _validFrom;
+  DateTime? _validUntil;
+  int? _timeLimitMins;
+  String? _targetYear;
+  bool _isActive = true;
 
   @override
   void initState() {
@@ -42,16 +47,33 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
       return;
     }
 
-    setState(() => _isGenerating = true);
+    // Show a non-dismissible loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+        );
+      },
+    );
 
     try {
       final quizProvider = context.read<QuizProvider>();
       final newQuiz = await quizProvider.generateQuizFromKB(
         _selectedKbArticleId!,
         numQuestions: _numQuestions.toInt(),
+        validFrom: _validFrom,
+        validUntil: _validUntil,
+        timeLimitMins: _timeLimitMins,
+        targetYear: _targetYear,
+        isActive: _isActive,
       );
 
       if (mounted) {
+        // Close the loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
+
         if (newQuiz != null) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Success! Generated quiz: ${newQuiz.title}'),
@@ -61,7 +83,10 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
             _selectedKbArticleId = null;
             _numQuestions = 5;
           });
-          Navigator.pop(context); // Close the bottom sheet
+          // Close the bottom sheet modal
+          Navigator.of(context).pop();
+          // Redirect to the quizzes home page
+          context.go('/app/quizzes');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Failed to generate quiz: ${quizProvider.error}'),
@@ -69,8 +94,10 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
           ));
         }
       }
-    } finally {
-      if (mounted) setState(() => _isGenerating = false);
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Make sure dialog closes on unexpected errors
+      }
     }
   }
 
@@ -234,32 +261,120 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
                       });
                     },
                   ),
+                  const SizedBox(height: 16),
+
+                  // Valid Dates
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Valid Dates: ${_validFrom != null && _validUntil != null ? "${_validFrom!.day}/${_validFrom!.month}/${_validFrom!.year} - ${_validUntil!.day}/${_validUntil!.month}/${_validUntil!.year}" : "Not Set"}',
+                          style:
+                              TextStyle(color: Colors.white.withOpacity(0.8)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final picked = await showDateRangePicker(
+                            context: context,
+                            firstDate: DateTime.now(),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            setModalState(() {
+                              _validFrom = picked.start;
+                              _validUntil = picked.end;
+                            });
+                            setState(() {
+                              _validFrom = picked.start;
+                              _validUntil = picked.end;
+                            });
+                          }
+                        },
+                        child: const Text('Set Dates',
+                            style: TextStyle(color: Color(0xFF10B981))),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Time Limit and Year
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Duration (mins)',
+                            labelStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
+                            filled: true,
+                            fillColor: Colors.black.withOpacity(0.2),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none),
+                          ),
+                          onChanged: (val) {
+                            final parsed = int.tryParse(val);
+                            setModalState(() => _timeLimitMins = parsed);
+                            setState(() => _timeLimitMins = parsed);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _targetYear,
+                          dropdownColor: const Color(0xFF1E293B),
+                          decoration: InputDecoration(
+                            labelText: 'Target Year',
+                            labelStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
+                            filled: true,
+                            fillColor: Colors.black.withOpacity(0.2),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none),
+                          ),
+                          items: ['All', '1', '2', '3', '4']
+                              .map((y) => DropdownMenuItem(
+                                  value: y,
+                                  child: Text(
+                                      y == 'All' ? 'All Years' : 'Year $y',
+                                      style: const TextStyle(
+                                          color: Colors.white))))
+                              .toList(),
+                          onChanged: (val) {
+                            setModalState(() => _targetYear = val);
+                            setState(() => _targetYear = val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Is Active Switch
+                  SwitchListTile(
+                    title: Text('Active / Visible to Students',
+                        style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                    value: _isActive,
+                    activeColor: const Color(0xFF10B981),
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: (val) {
+                      setModalState(() => _isActive = val);
+                      setState(() => _isActive = val);
+                    },
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _isGenerating
-                          ? null
-                          : () {
-                              setModalState(() => _isGenerating = true);
-                              _generateQuiz();
-                              // Reset modal state once global state finishes
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                if (mounted)
-                                  setModalState(() => _isGenerating = false);
-                              });
-                            },
-                      icon: _isGenerating
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.psychology),
-                      label: Text(_isGenerating
-                          ? 'Generating...'
-                          : 'Generate and Save Quiz'),
+                      onPressed: _generateQuiz,
+                      icon: const Icon(Icons.psychology),
+                      label: const Text('Generate and Save Quiz'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,

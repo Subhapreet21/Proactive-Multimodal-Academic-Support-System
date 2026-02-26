@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../services/supabaseClient';
 import { generateText } from '../services/aiService';
+import { SchemaType, GenerationConfig } from '@google/generative-ai';
 
 // Interfaces for our JSONB structure
 interface QuizQuestion {
@@ -13,7 +14,15 @@ interface QuizQuestion {
 
 export const generateQuizFromKB = async (req: Request, res: Response) => {
     try {
-        const { kb_article_id, num_questions = 5 } = req.body;
+        const {
+            kb_article_id,
+            num_questions = 5,
+            valid_from,
+            valid_until,
+            time_limit_mins,
+            target_year,
+            is_active
+        } = req.body;
         const userId = (req as any).auth.userId; // From authMiddleware
 
         if (!kb_article_id) {
@@ -32,26 +41,13 @@ export const generateQuizFromKB = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Knowledge Base article not found.' });
         }
 
-        // 2. Construct the Prompt for Gemini
+        // 2. Construct the concise Prompt and Schema for Gemini
         const systemPrompt = `
-You are an expert university professor creating an adaptive assessment.
-Your task is to generate a ${num_questions}-question multiple choice quiz based strictly on the provided text.
-
-The quiz must be research-worthy and adaptive:
-1. Do NOT just make simple "What is X?" questions. Test applied understanding.
-2. Dynamic Distractor Generation: The wrong Options MUST be plausible misconceptions that a student might actually believe. Do not use obvious throwaway fake answers.
-3. Every question must have an explanation for WHY the correct answer is right and why the distractors are wrong based on the text.
-
-Output exactly a JSON array of ${num_questions} objects, with NO markdown formatting, NO backticks. Follow this exact schema:
-[
-  {
-    "id": "q1",
-    "text": "The question text here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": "Option A",
-    "explanation": "Option A is correct because..."
-  }
-]
+Generate a ${num_questions}-question multiple choice quiz testing applied understanding from the text.
+Constraints to severely MINIMIZE TOKENS:
+1. Make questions and options extremely short and concise.
+2. The explanation MUST be 1 very short sentence max.
+3. Distractors should be realistic but concise.
 `;
 
         const userPrompt = `
@@ -60,9 +56,30 @@ Article Content:
 ${kbArticle.content}
 `;
 
+        const generationConfig: GenerationConfig = {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: SchemaType.ARRAY,
+                items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        id: { type: SchemaType.STRING, description: "ID e.g. q1" },
+                        text: { type: SchemaType.STRING, description: "Concise question text" },
+                        options: {
+                            type: SchemaType.ARRAY,
+                            items: { type: SchemaType.STRING }
+                        },
+                        correctAnswer: { type: SchemaType.STRING, description: "Exact match to one option" },
+                        explanation: { type: SchemaType.STRING, description: "1 short sentence max" }
+                    },
+                    required: ["id", "text", "options", "correctAnswer", "explanation"]
+                }
+            }
+        };
+
         // 3. Call Gemini
         console.log(`[generateQuizFromKB] Generating quiz for KB: ${kbArticle.title}...`);
-        const geminiResponseText = await generateText(systemPrompt, userPrompt);
+        const geminiResponseText = await generateText(systemPrompt, userPrompt, generationConfig);
 
         let quizJson = [];
         try {
@@ -78,15 +95,23 @@ ${kbArticle.content}
         const title = `Quiz: ${kbArticle.title}`;
         const description = `AI Generated assessment from the knowledge base article.`;
 
+        const uploadData: any = {
+            title,
+            description,
+            kb_article_id,
+            content: quizJson,
+            created_by: userId
+        };
+
+        if (valid_from) uploadData.valid_from = valid_from;
+        if (valid_until) uploadData.valid_until = valid_until;
+        if (time_limit_mins !== undefined) uploadData.time_limit_mins = time_limit_mins;
+        if (target_year) uploadData.target_year = target_year;
+        if (is_active !== undefined) uploadData.is_active = is_active;
+
         const { data: newQuiz, error: insertError } = await supabase
             .from('quizzes')
-            .insert({
-                title,
-                description,
-                kb_article_id,
-                content: quizJson,
-                created_by: userId
-            })
+            .insert(uploadData)
             .select()
             .single();
 
@@ -221,3 +246,60 @@ export const importQuizFromExcel = async (req: Request, res: Response) => {
 export const manualQuizCreation = async (req: Request, res: Response) => {
     res.status(501).json({ message: "Manual creation saving logic goes here." });
 }
+
+export const updateQuiz = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { valid_from, valid_until, time_limit_mins, target_year, is_active } = req.body;
+        const userId = (req as any).auth.userId;
+
+        if (!id) return res.status(400).json({ error: 'Quiz ID is required' });
+
+        const updateData: any = {};
+        if (valid_from !== undefined) updateData.valid_from = valid_from;
+        if (valid_until !== undefined) updateData.valid_until = valid_until;
+        if (time_limit_mins !== undefined) updateData.time_limit_mins = time_limit_mins;
+        if (target_year !== undefined) updateData.target_year = target_year;
+        if (is_active !== undefined) updateData.is_active = is_active;
+
+        const { data, error } = await supabase
+            .from('quizzes')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[updateQuiz] Update Error:', error);
+            return res.status(500).json({ error: 'Failed to update quiz settings.' });
+        }
+
+        return res.status(200).json({ message: 'Quiz updated successfully', quiz: data });
+    } catch (error: any) {
+        console.error('[updateQuiz] General Error:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+export const deleteQuiz = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ error: 'Quiz ID is required' });
+
+        const { error } = await supabase
+            .from('quizzes')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('[deleteQuiz] Delete Error:', error);
+            return res.status(500).json({ error: 'Failed to delete quiz.' });
+        }
+
+        return res.status(200).json({ message: 'Quiz deleted successfully' });
+    } catch (error: any) {
+        console.error('[deleteQuiz] General Error:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+

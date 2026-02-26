@@ -16,20 +16,62 @@ class QuizService {
   }
 
   /// Generate a new quiz from a Knowledge Base article
-  Future<Quiz> generateQuizFromKB(String kbArticleId, int numQuestions) async {
+  Future<Quiz> generateQuizFromKB({
+    required String kbArticleId,
+    required int numQuestions,
+    DateTime? validFrom,
+    DateTime? validUntil,
+    int? timeLimitMins,
+    String? targetYear,
+    bool isActive = true,
+  }) async {
     try {
+      final payload = {
+        'kb_article_id': kbArticleId,
+        'num_questions': numQuestions,
+        if (validFrom != null) 'valid_from': validFrom.toIso8601String(),
+        if (validUntil != null) 'valid_until': validUntil.toIso8601String(),
+        if (timeLimitMins != null) 'time_limit_mins': timeLimitMins,
+        if (targetYear != null) 'target_year': targetYear,
+        'is_active': isActive,
+      };
+
       final response = await _api.post(
         '/api/quizzes/generate',
-        {
-          'kb_article_id': kbArticleId,
-          'num_questions': numQuestions,
-        },
+        payload,
         requireAuth: true,
       );
 
       return Quiz.fromJson(response['quiz']);
     } catch (e) {
       throw Exception('Failed to generate quiz: $e');
+    }
+  }
+
+  /// Update an existing quiz
+  Future<Quiz> updateQuiz(
+      String quizId, Map<String, dynamic> updateData) async {
+    try {
+      final response = await _api.put(
+        '/api/quizzes/$quizId',
+        updateData,
+        requireAuth: true,
+      );
+      return Quiz.fromJson(response['quiz']);
+    } catch (e) {
+      throw Exception('Failed to update quiz: $e');
+    }
+  }
+
+  /// Delete a quiz
+  Future<void> deleteQuiz(String quizId) async {
+    try {
+      await _api.delete(
+        '/api/quizzes/$quizId',
+        requireAuth: true,
+      );
+    } catch (e) {
+      throw Exception('Failed to delete quiz: $e');
     }
   }
 

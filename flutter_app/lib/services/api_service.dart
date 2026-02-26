@@ -74,7 +74,8 @@ class ApiService {
             headers: _getHeaders(includeAuth: requireAuth),
             body: jsonEncode(body),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(
+              const Duration(seconds: 120)); // Increased for slow AI requests
 
       print('✅ [API RESPONSE] ${response.statusCode} - ${response.body}');
       return _handleResponse(response);

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerationConfig } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -13,11 +13,11 @@ const apiKeys = Object.keys(process.env)
     .filter(Boolean) as string[];
 
 if (apiKeys.length === 0) {
-    console.warn(`⚠️  No GEMINI_API_KEYS found. Looked in: ${envPath}`);
+    console.warn(`\u26A0\uFE0F  No GEMINI_API_KEYS found. Looked in: ${envPath}`);
 } else {
     // Determine which keys were found for logging (masking content)
     const foundKeys = apiKeys.map(k => `...${k.substring(k.length - 4)}`);
-    console.log(`✅ Found ${apiKeys.length} Gemini API Key(s): ${foundKeys.join(', ')}`);
+    console.log(`\u2705 Found ${apiKeys.length} Gemini API Key(s): ${foundKeys.join(', ')}`);
 }
 
 // Helper to execute AI calls with key rotation (Load Balancing + Failover)
@@ -31,10 +31,10 @@ const executeWithRetry = async <T>(operation: (genAI: GoogleGenerativeAI) => Pro
         try {
             const genAI = new GoogleGenerativeAI(key);
             // Log fewer details in production, but useful here
-            // console.log(`🔑 Using API Key ending in ...${key.substring(key.length - 4)}`); 
+            // console.log(`\uD83D\uDD11 Using API Key ending in ...${key.substring(key.length - 4)}`); 
             return await operation(genAI);
         } catch (error: any) {
-            console.warn(`⚠️  Error with key ...${key.substring(key.length - 4)}: ${error.message}`);
+            console.warn(`\u26A0\uFE0F  Error with key ...${key.substring(key.length - 4)}: ${error.message}`);
             lastError = error;
 
             // Check for specific errors that warrant a retry (e.g., 429 Too Many Requests)
@@ -48,10 +48,10 @@ const executeWithRetry = async <T>(operation: (genAI: GoogleGenerativeAI) => Pro
 
 // ...
 // ...
-export const generateText = async (prompt: string, context?: string) => {
+export const generateText = async (prompt: string, context?: string, config?: GenerationConfig) => {
     return executeWithRetry(async (genAI) => {
-        console.log("🤖 Generating text with gemini-2.5-flash...");
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        console.log("\uD83E\uDD16 Generating text with gemini-2.5-flash...");
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: config });
         const fullPrompt = context ? `Context: ${context}\n\nQuestion: ${prompt}` : prompt;
         const result = await model.generateContent(fullPrompt);
         return result.response.text();
