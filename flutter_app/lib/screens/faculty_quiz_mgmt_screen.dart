@@ -14,8 +14,7 @@ class FacultyQuizMgmtScreen extends StatefulWidget {
 
 class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
   final ApiService _apiService = ApiService();
-  List<dynamic> _kbArticles = [];
-  bool _isLoadingKb = true;
+  late Future<List<dynamic>> _kbArticlesFuture;
   String? _selectedKbArticleId;
   double _numQuestions = 5;
   bool _isGenerating = false;
@@ -23,28 +22,16 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
   @override
   void initState() {
     super.initState();
-    _loadKbArticles();
+    _kbArticlesFuture = _fetchKbArticles();
   }
 
-  Future<void> _loadKbArticles() async {
-    try {
-      final authProvider = context.read<AuthProvider>();
-      final userId = authProvider.user?.id;
-      final response = await _apiService.get('/api/kb', requireAuth: true);
-      if (mounted) {
-        setState(() {
-          _kbArticles = (response as List<dynamic>)
-              .where((article) => article['author_id'] == userId)
-              .toList();
-          _isLoadingKb = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingKb = false);
-        // Silently fails formatting, but UI handles loading=false empty state if necessary.
-      }
-    }
+  Future<List<dynamic>> _fetchKbArticles() async {
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.user?.id;
+    final response = await _apiService.get('/api/kb', requireAuth: true);
+    return (response as List<dynamic>)
+        .where((article) => article['author_id'] == userId)
+        .toList();
   }
 
   void _generateQuiz() async {
@@ -142,44 +129,83 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  if (_isLoadingKb)
-                    const Center(child: CircularProgressIndicator())
-                  else if (_kbArticles.isEmpty)
-                    const Text('No KB articles found. Please create one first.',
-                        style: TextStyle(color: AppTheme.errorColor))
-                  else
-                    DropdownButtonFormField<String>(
-                      value: _selectedKbArticleId,
-                      dropdownColor: const Color(0xFF1E293B),
-                      decoration: InputDecoration(
-                        labelText: 'Select KB Article',
-                        labelStyle:
-                            TextStyle(color: Colors.white.withOpacity(0.5)),
-                        filled: true,
-                        fillColor: Colors.black.withOpacity(0.2),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      items: _kbArticles.map((article) {
-                        return DropdownMenuItem<String>(
-                          value: article['id'].toString(),
-                          child: Text(
-                            article['title'] ?? 'Untitled',
-                            style: const TextStyle(color: Colors.white),
-                          ),
+                  FutureBuilder<List<dynamic>>(
+                    future: _kbArticlesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Failed to load Knowledge Base articles.',
+                              style: TextStyle(
+                                  color: AppTheme.errorColor.withOpacity(0.8)),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setModalState(() {
+                                  _kbArticlesFuture = _fetchKbArticles();
+                                });
+                              },
+                              icon: const Icon(Icons.refresh, size: 16),
+                              label: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white.withOpacity(0.1),
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
                         );
-                      }).toList(),
-                      onChanged: (val) {
-                        setModalState(() {
-                          _selectedKbArticleId = val;
-                        });
-                        setState(() {
-                          _selectedKbArticleId = val;
-                        });
-                      },
-                    ),
+                      }
+                      final articles = snapshot.data ?? [];
+                      if (articles.isEmpty) {
+                        return const Text(
+                          'No KB articles found. Please create one first.',
+                          style: TextStyle(color: AppTheme.errorColor),
+                        );
+                      }
+
+                      return DropdownButtonFormField<String>(
+                        value: _selectedKbArticleId,
+                        dropdownColor: const Color(0xFF1E293B),
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: 'Select KB Article',
+                          labelStyle:
+                              TextStyle(color: Colors.white.withOpacity(0.5)),
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: articles.map((article) {
+                          return DropdownMenuItem<String>(
+                            value: article['id'].toString(),
+                            child: Text(
+                              article['title'] ?? 'Untitled',
+                              style: const TextStyle(color: Colors.white),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setModalState(() {
+                            _selectedKbArticleId = val;
+                          });
+                          setState(() {
+                            _selectedKbArticleId = val;
+                          });
+                        },
+                      );
+                    },
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

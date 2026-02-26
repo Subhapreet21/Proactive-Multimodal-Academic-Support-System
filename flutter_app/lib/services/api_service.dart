@@ -188,8 +188,14 @@ class ApiService {
     } else if (statusCode == 404) {
       throw ApiException('Resource not found.', statusCode: 404);
     } else if (statusCode >= 500) {
-      throw ApiException('Server error. Please try again later.',
-          statusCode: statusCode);
+      String errorMessage = 'Server error. Please try again later.';
+      try {
+        final errorData = jsonDecode(response.body);
+        if (errorData['error'] != null) {
+          errorMessage = errorData['error'];
+        }
+      } catch (_) {}
+      throw ApiException(errorMessage, statusCode: statusCode);
     } else {
       try {
         final errorData = jsonDecode(response.body);

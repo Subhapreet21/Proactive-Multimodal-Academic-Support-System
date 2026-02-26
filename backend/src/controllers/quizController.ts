@@ -14,7 +14,7 @@ interface QuizQuestion {
 export const generateQuizFromKB = async (req: Request, res: Response) => {
     try {
         const { kb_article_id, num_questions = 5 } = req.body;
-        const user = (req as any).user; // From authMiddleware
+        const userId = (req as any).auth.userId; // From authMiddleware
 
         if (!kb_article_id) {
             return res.status(400).json({ error: 'kb_article_id is required' });
@@ -85,7 +85,7 @@ ${kbArticle.content}
                 description,
                 kb_article_id,
                 content: quizJson,
-                created_by: user.id
+                created_by: userId
             })
             .select()
             .single();
@@ -128,7 +128,7 @@ export const getQuizzes = async (req: Request, res: Response) => {
 export const submitAttempt = async (req: Request, res: Response) => {
     try {
         const { quiz_id, answers } = req.body;
-        const user = (req as any).user;
+        const userId = (req as any).auth.userId;
 
         if (!quiz_id || !answers || !Array.isArray(answers)) {
             return res.status(400).json({ error: 'quiz_id and an array of answers are required' });
@@ -190,7 +190,7 @@ export const submitAttempt = async (req: Request, res: Response) => {
             .from('quiz_attempts')
             .insert({
                 quiz_id,
-                student_id: user.id,
+                student_id: userId,
                 score,
                 total_questions: questions.length,
                 answers,
