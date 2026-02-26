@@ -166,17 +166,10 @@ export const getQuizzes = async (req: Request, res: Response) => {
             return res.status(500).json({ error: 'Failed to fetch quizzes.' });
         }
 
-        // Map over data to count attempts specifically for this student
-        // and for non-faculty users, filter out inactive or expired quizzes (RLS backup)
-        // Also fetch user's profile to enforce year and department matches in-memory
-        const userRole = (req as any).auth?.role;
-        const isStudent = userRole === 'student';
-
-        let studentProfile: any = null;
-        if (isStudent) {
-            const { data } = await supabase.from('profiles').select('year, department').eq('id', userId).single();
-            studentProfile = data;
-        }
+        // 1. Resolve user profile (role, year, dept) to strictly enforce student rules
+        const { data: profile } = await supabase.from('profiles').select('role, year, department').eq('id', userId).single();
+        const isStudent = profile?.role === 'student';
+        const studentProfile = profile;
 
         const now = new Date();
         const formattedData = (data as any[]).flatMap(q => {
