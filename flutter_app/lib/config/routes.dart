@@ -26,6 +26,7 @@ import '../screens/quiz_list_screen.dart';
 import '../screens/quiz_active_screen.dart';
 import '../screens/quiz_result_screen.dart';
 import '../screens/faculty_quiz_mgmt_screen.dart';
+import '../screens/manual_quiz_builder_screen.dart';
 import '../models/quiz_model.dart';
 import '../widgets/app_shell.dart';
 import '../utils/constants.dart';
@@ -179,6 +180,13 @@ class AppRouter {
                 GoRoute(
                   path: 'manage',
                   builder: (context, state) => const FacultyQuizMgmtScreen(),
+                  routes: [
+                    GoRoute(
+                      path: 'create',
+                      builder: (context, state) =>
+                          const ManualQuizBuilderScreen(),
+                    ),
+                  ],
                 ),
               ],
             ),

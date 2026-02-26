@@ -506,16 +506,13 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                   horizontal: 10, vertical: 6),
                               margin: const EdgeInsets.only(left: 8),
                               decoration: BoxDecoration(
-                                color:
-                                    AppTheme.secondaryColor.withOpacity(0.15),
+                                color: Colors.greenAccent.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                    color: AppTheme.secondaryColor
-                                        .withOpacity(0.4)),
+                                    color: Colors.greenAccent.withOpacity(0.4)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.secondaryColor
-                                        .withOpacity(0.1),
+                                    color: Colors.greenAccent.withOpacity(0.1),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -524,16 +521,52 @@ class _QuizListScreenState extends State<QuizListScreen> {
                               child: Row(
                                 children: [
                                   const Icon(Icons.auto_awesome,
-                                      size: 14, color: AppTheme.secondaryColor),
+                                      size: 14, color: Colors.greenAccent),
                                   const SizedBox(width: 4),
                                   const Text('AI Gen',
                                       style: TextStyle(
                                           fontSize: 11,
-                                          color: AppTheme.secondaryColor,
+                                          color: Colors.greenAccent,
                                           fontWeight: FontWeight.bold)),
                                 ],
                               ),
-                            )
+                            ),
+                          if (quiz.description != null &&
+                              quiz.description!
+                                  .contains('Imported via bulk Excel upload'))
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              margin: const EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xFF4FC3F7).withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: const Color(0xFF4FC3F7)
+                                        .withOpacity(0.4)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4FC3F7)
+                                        .withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.table_view_rounded,
+                                      size: 14, color: Color(0xFF4FC3F7)),
+                                  const SizedBox(width: 4),
+                                  const Text('Excel',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF4FC3F7),
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
                       // BOTTOM BUTTONS (for Students)

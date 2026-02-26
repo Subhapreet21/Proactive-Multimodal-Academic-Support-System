@@ -490,8 +490,7 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
                     color: Colors.orangeAccent,
                     isFullWidth: true,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Manual Builder coming soon!')));
+                      context.push('/app/quizzes/manage/create');
                     },
                   ),
                 ),
@@ -619,7 +618,7 @@ class _FacultyQuizMgmtScreenState extends State<FacultyQuizMgmtScreen> {
 
         var request = http.MultipartRequest(
           'POST',
-          Uri.parse('${ApiService().baseUrl}/quizzes/import'),
+          Uri.parse('${ApiService().baseUrl}/api/quizzes/import'),
         );
 
         request.headers.addAll({

@@ -342,7 +342,7 @@ export const importQuizFromExcel = async (req: Request, res: Response) => {
                 // Initialize the Quiz object for this unique title
                 groupedQuizzes[title] = {
                     id: uuidv4(),
-                    title: title,
+                    title: title.startsWith('Quiz: ') ? title : `Quiz: ${title}`,
                     description: 'Imported via bulk Excel upload',
                     kb_article_id: null,
                     created_by: userId,
@@ -411,7 +411,79 @@ export const importQuizFromExcel = async (req: Request, res: Response) => {
 }
 
 export const manualQuizCreation = async (req: Request, res: Response) => {
-    res.status(501).json({ message: "Manual creation saving logic goes here." });
+    try {
+        const userId = (req as any).auth.userId;
+        const {
+            title,
+            description,
+            time_limit_mins,
+            max_attempts,
+            valid_from,
+            valid_until,
+            target_year,
+            target_department,
+            is_active,
+            content,
+        } = req.body;
+
+        // ── Validate required fields ──────────────
+        if (!title || !content || !Array.isArray(content) || content.length === 0) {
+            return res.status(400).json({ error: 'Quiz title and at least one question are required.' });
+        }
+
+        if (!valid_from || !valid_until) {
+            return res.status(400).json({ error: 'valid_from and valid_until dates are required.' });
+        }
+
+        // ── Enrich the content array with IDs ─────
+        const enrichedContent = content.map((q: any) => ({
+            id: uuidv4(),
+            text: q.text,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || '',
+        }));
+
+        const now = new Date().toISOString();
+
+        const quizRecord = {
+            id: uuidv4(),
+            title,
+            description: description || 'Manually created quiz by faculty.',
+            kb_article_id: null,
+            created_by: userId,
+            is_active: is_active ?? false,
+            time_limit_mins: time_limit_mins ?? 15,
+            max_attempts: max_attempts ?? 3,
+            valid_from: new Date(valid_from).toISOString(),
+            valid_until: new Date(valid_until).toISOString(),
+            target_year: target_year ?? 'All',
+            target_department: target_department ?? 'General',
+            content: enrichedContent,
+            created_at: now,
+            updated_at: now,
+        };
+
+        const { data, error } = await supabase
+            .from('quizzes')
+            .insert([quizRecord])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[manualQuizCreation] Supabase error:', error);
+            return res.status(500).json({ error: 'Failed to save quiz to the database.' });
+        }
+
+        return res.status(201).json({
+            message: `Quiz "${title}" ${is_active ? 'published' : 'saved as draft'} successfully.`,
+            quiz: data,
+        });
+
+    } catch (error: any) {
+        console.error('[manualQuizCreation] Error:', error.message);
+        res.status(500).json({ error: 'An unexpected error occurred while creating the quiz.' });
+    }
 }
 
 export const updateQuiz = async (req: Request, res: Response) => {
