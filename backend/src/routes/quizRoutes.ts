@@ -23,13 +23,13 @@ const router = Router();
 router.get('/', requireAuth, getQuizzes);
 
 // --- ATTEMPTS & OVERVIEWS ---
-router.post('/attempts', submitAttempt);
+router.post('/attempts', requireAuth, submitAttempt);
 
 // Get explicitly generated overviews
-router.get('/overviews', getOverviews); // Should be above /:id to not conflict with ID param route
+router.get('/overviews', requireAuth, getOverviews); // Should be above /:id to not conflict with ID param route
 
 // Generate a personalized summary of a student's attempts on a specific quiz
-router.post('/:id/generate-overview', generateAIOverview);
+router.post('/:id/generate-overview', requireAuth, generateAIOverview);
 
 // ============================================
 // Faculty / Admin Management Routes

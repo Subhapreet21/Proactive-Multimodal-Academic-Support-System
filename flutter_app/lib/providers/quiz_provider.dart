@@ -21,18 +21,23 @@ class QuizProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // Load both concurrently for efficiency
-      final results = await Future.wait([
-        _quizService.getQuizzes(),
-        _quizService.getOverviews(),
-      ]);
-      _quizzes = results[0] as List<Quiz>;
-      _overviews = results[1] as List<AIOverview>;
+      // Load quizzes first — this is the critical data
+      _quizzes = await _quizService.getQuizzes();
     } catch (e) {
       _setError(e.toString());
-    } finally {
       _setLoading(false);
+      return; // Can't go further without quizzes
     }
+
+    // Load overviews independently — a failure here should not block the quiz list
+    try {
+      _overviews = await _quizService.getOverviews();
+    } catch (_) {
+      // Silently swallow overview errors (e.g. endpoint not yet deployed)
+      _overviews = [];
+    }
+
+    _setLoading(false);
   }
 
   /// Trigger generation of a new Quiz from the KB
