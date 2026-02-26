@@ -316,7 +316,8 @@ class _QuizListScreenState extends State<QuizListScreen> {
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(0.35),
+                                  color:
+                                      AppTheme.primaryColor.withOpacity(0.35),
                                   blurRadius: 12,
                                   offset: const Offset(0, 5),
                                 ),
@@ -374,8 +375,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                               style: TextStyle(
                                                   fontSize: 11,
                                                   color: color,
-                                                  fontWeight:
-                                                      FontWeight.bold)),
+                                                  fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                                     );
@@ -387,15 +387,15 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                         label: 'AI Gen',
                                         color: const Color(0xFF00BFA5));
                                   } else if (quiz.description != null &&
-                                      quiz.description!
-                                          .contains('Imported via bulk Excel upload')) {
+                                      quiz.description!.contains(
+                                          'Imported via bulk Excel upload')) {
                                     return sourceBadge(
                                         icon: Icons.table_view_rounded,
                                         label: 'Excel',
                                         color: const Color(0xFF4FC3F7));
                                   } else if (quiz.description != null &&
-                                      quiz.description!
-                                          .contains('Manually created quiz by faculty.')) {
+                                      quiz.description!.contains(
+                                          'Manually created quiz by faculty.')) {
                                     return sourceBadge(
                                         icon: Icons.assignment_rounded,
                                         label: 'Form',
@@ -700,15 +700,24 @@ class _QuizListScreenState extends State<QuizListScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        // -- Row 2: New AI Insight (full width) --
+                        // -- Row 2: Generate AI Insight (full width, amber CTA) --
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppTheme.secondaryColor.withOpacity(0.15),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
+                            boxShadow: [
+                              BoxShadow(
                                 color:
-                                    AppTheme.secondaryColor.withOpacity(0.3)),
+                                    const Color(0xFFF59E0B).withOpacity(0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Material(
                             color: Colors.transparent,
@@ -735,19 +744,17 @@ class _QuizListScreenState extends State<QuizListScreen> {
                                   ));
                                 }
                               },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
+                                  children: [
                                     Icon(Icons.auto_awesome,
-                                        size: 16,
-                                        color: AppTheme.secondaryColor),
+                                        size: 16, color: Colors.white),
                                     SizedBox(width: 8),
                                     Text('Generate Latest AI Insight',
                                         style: TextStyle(
-                                            color: AppTheme.secondaryColor,
+                                            color: Colors.white,
                                             fontWeight: FontWeight.bold)),
                                   ],
                                 ),

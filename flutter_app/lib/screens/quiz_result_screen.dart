@@ -19,10 +19,6 @@ class QuizResultScreen extends StatelessWidget {
     final percentage = (attempt.score / attempt.totalQuestions) * 100;
     final isPassed = percentage >= 60;
 
-    // After submission, attemptsCount is already incremented locally by the provider
-    final bool canReattempt = quiz != null &&
-        (quiz.maxAttempts == null || quiz.attemptsCount < quiz.maxAttempts!);
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
@@ -228,35 +224,7 @@ class QuizResultScreen extends StatelessWidget {
               if (quiz != null) ...[
                 Row(
                   children: [
-                    // Reattempt — only if attempts remaining
-                    if (canReattempt)
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              context.go('/app/quizzes/active', extra: quiz),
-                          icon: const Icon(Icons.refresh_rounded,
-                              color: Colors.white),
-                          label: Text(
-                            quiz.maxAttempts != null
-                                ? 'Retry (${quiz.attemptsCount}/${quiz.maxAttempts})'
-                                : 'Retry',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                AppTheme.primaryColor.withOpacity(0.85),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                          ),
-                        ),
-                      ),
-                    if (canReattempt) const SizedBox(width: 12),
-                    // Review last attempt
+                    // Review last attempt — always available
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {

@@ -190,6 +190,9 @@ export const getQuizzes = async (req: Request, res: Response) => {
                     if (qYear && qYear !== 'All' && qYear !== sYear) return [];
                     if (qDept && qDept !== 'All' && qDept !== sDept) return [];
                 }
+            } else {
+                // Faculty strictly only see the quizzes they created themselves
+                if (q.created_by !== userId) return [];
             }
 
             let userAttempts = q.quiz_attempts
@@ -232,9 +235,24 @@ export const submitAttempt = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Quiz not found' });
         }
 
+        // 2. Enforce max attempts — count how many attempts this student has already made
+        if (quiz.max_attempts !== null && quiz.max_attempts !== undefined) {
+            const { count, error: countError } = await supabase
+                .from('quiz_attempts')
+                .select('id', { count: 'exact', head: true })
+                .eq('quiz_id', quiz_id)
+                .eq('student_id', userId);
+
+            if (!countError && count !== null && count >= quiz.max_attempts) {
+                return res.status(429).json({
+                    error: `Maximum attempts (${quiz.max_attempts}) reached. You cannot attempt this quiz again.`
+                });
+            }
+        }
+
         const questions: QuizQuestion[] = quiz.content;
 
-        // 2. Score the Quiz
+        // 3. Score the Quiz
         let score = 0;
         let incorrectQuestions: any[] = [];
 
@@ -254,7 +272,7 @@ export const submitAttempt = async (req: Request, res: Response) => {
             }
         });
 
-        // 3. Generate Personalized Nudge (If they missed anything)
+        // 4. Generate Personalized Nudge (If they missed anything)
         let feedback = "Excellent work! You got everything correct.";
         if (incorrectQuestions.length > 0) {
             const systemPrompt = `You are an academic advisor analyzing a student's quiz performance. 
@@ -272,7 +290,7 @@ export const submitAttempt = async (req: Request, res: Response) => {
             }
         }
 
-        // 4. Save Attempt
+        // 5. Save Attempt
         const { data: attempt, error: attemptError } = await supabase
             .from('quiz_attempts')
             .insert({
@@ -291,6 +309,75 @@ export const submitAttempt = async (req: Request, res: Response) => {
             return res.status(500).json({ error: 'Failed to save quiz attempt' });
         }
 
+        // 6. Auto-generate faculty AI overview in the background (fire-and-forget)
+        // Do NOT await — this must not block the student's result response
+        (async () => {
+            try {
+                // Fetch all attempts by this student for this quiz (including the one just saved)
+                const { data: allAttempts } = await supabase
+                    .from('quiz_attempts')
+                    .select('*')
+                    .eq('quiz_id', quiz_id)
+                    .eq('student_id', userId)
+                    .order('created_at', { ascending: true });
+
+                if (!allAttempts || allAttempts.length === 0) return;
+
+                let performanceCompilation = `Quiz Title: ${quiz.title}\nTotal Questions: ${questions.length}\n\n`;
+                allAttempts.forEach((att: any, index: number) => {
+                    performanceCompilation += `--- Attempt ${index + 1} (Score: ${att.score}/${att.total_questions}) ---\n`;
+                    let incorrectThisAttempt: string[] = [];
+                    att.answers.forEach((ans: any) => {
+                        const q = questions.find((question: QuizQuestion) => question.id === ans.questionId);
+                        if (q && q.correctAnswer !== ans.selectedOption) {
+                            incorrectThisAttempt.push(`Q: "${q.text}". They guessed: "${ans.selectedOption}", but correct is "${q.correctAnswer}". Reason: ${q.explanation}`);
+                        }
+                    });
+                    performanceCompilation += incorrectThisAttempt.length === 0
+                        ? "Perfect Score!\n"
+                        : "Missed Concepts:\n- " + incorrectThisAttempt.join('\n- ') + "\n";
+                });
+
+                const sysPrompt = `You are an expert academic evaluator. Generate TWO summaries based on a student's quiz history:
+1. "student_summary": A 2-line encouraging message to the student about what they learned or still struggle with.
+2. "faculty_summary": A 1-2 sentence clinical report for the professor indicating exact topic gaps.
+Return ONLY a JSON object. DO NOT wrap with markdown.`;
+                const usrPrompt = `Student Performance Log:\n${performanceCompilation}`;
+
+                const config: GenerationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: SchemaType.OBJECT,
+                        properties: {
+                            student_summary: { type: SchemaType.STRING },
+                            faculty_summary: { type: SchemaType.STRING }
+                        },
+                        required: ["student_summary", "faculty_summary"]
+                    }
+                };
+
+                const geminiText = await generateText(sysPrompt, usrPrompt, config);
+                const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const resultJson = JSON.parse(cleaned);
+
+                const latestAttempt = allAttempts[allAttempts.length - 1];
+                await supabase.from('quiz_overviews').upsert({
+                    quiz_id,
+                    student_id: userId,
+                    student_summary: resultJson.student_summary,
+                    faculty_summary: resultJson.faculty_summary,
+                    latest_score: latestAttempt.score,
+                    total_questions: latestAttempt.total_questions,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'quiz_id, student_id' } as any);
+
+                console.log(`[submitAttempt] Auto faculty overview generated for student ${userId} on quiz ${quiz_id}`);
+            } catch (bgError: any) {
+                // Silently log — never surface to student
+                console.warn('[submitAttempt] Background overview generation failed (non-fatal):', bgError.message);
+            }
+        })();
+
         // Return score and AI feedback immediately
         res.status(201).json({ attempt, incorrectQuestions });
 
@@ -299,6 +386,7 @@ export const submitAttempt = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 // Excel Bulk Import & Manual Creation are stubbed for now.
 export const importQuizFromExcel = async (req: Request, res: Response) => {
