@@ -187,8 +187,13 @@ export const getQuizzes = async (req: Request, res: Response) => {
 
                 // Fallback targeted filtering 
                 if (studentProfile) {
-                    if (q.target_year && q.target_year !== 'All' && q.target_year !== studentProfile.year) return [];
-                    if (q.target_department && q.target_department !== 'All' && q.target_department !== studentProfile.department) return [];
+                    const qYear = String(q.target_year || '').trim();
+                    const sYear = String(studentProfile.year || '').trim();
+                    const qDept = String(q.target_department || '').trim();
+                    const sDept = String(studentProfile.department || '').trim();
+
+                    if (qYear && qYear !== 'All' && qYear !== sYear) return [];
+                    if (qDept && qDept !== 'All' && qDept !== sDept) return [];
                 }
             }
 
