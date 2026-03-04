@@ -389,13 +389,21 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        // Just fetching high level overview for the dashboard
-        // We'll calculate the total present / relative to total records over the last 30 days
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const daysParam = parseInt(req.query.days as string) || 30;
+
+        const endDateObj = new Date();
+        const endDateStr = endDateObj.toISOString().split('T')[0];
+
+        const startDateObj = new Date();
+        startDateObj.setDate(startDateObj.getDate() - daysParam);
+        const startDateStr = startDateObj.toISOString().split('T')[0];
 
         // Fetch Department Stats via RPC
-        const { data: deptData, error: deptError } = await supabase.rpc('get_admin_department_stats', { start_date: thirtyDaysAgo.toISOString().split('T')[0] });
+        const { data: deptData, error: deptError } = await supabase.rpc('get_admin_department_stats', {
+            start_date: startDateStr,
+            end_date: endDateStr
+        });
+
         if (deptError) throw deptError;
 
         let totalRecords = 0;
@@ -415,17 +423,49 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         const overallPercentage = totalRecords === 0 ? 0 : Math.round((totalPresent / totalRecords) * 100);
 
         // Fetch Daily Stats via RPC
-        const { data: dailyData, error: dailyError } = await supabase.rpc('get_admin_daily_stats', { start_date: thirtyDaysAgo.toISOString().split('T')[0] });
+        const { data: dailyData, error: dailyError } = await supabase.rpc('get_admin_daily_stats', {
+            start_date: startDateStr,
+            end_date: endDateStr
+        });
         if (dailyError) throw dailyError;
 
-        const dailyPercentages = (dailyData || []).map((row: any) => {
-            const total = parseInt(row.total_count);
-            const present = parseInt(row.present_count);
-            return {
-                date: row.session_date,
-                percentage: total === 0 ? 0 : Math.round((present / total) * 100)
-            };
-        });
+        let processedDailyStats;
+
+        if (daysParam > 60) {
+            // Downsampling into Weekly averages to prevent UI congestion
+            const weeklyStatsMap: Record<string, { present: number, total: number }> = {};
+
+            (dailyData || []).forEach((row: any) => {
+                const d = new Date(row.session_date);
+                const diff = d.getDate() - d.getDay();
+                const weekStart = new Date(d.setDate(diff)).toISOString().split('T')[0];
+
+                if (!weeklyStatsMap[weekStart]) {
+                    weeklyStatsMap[weekStart] = { present: 0, total: 0 };
+                }
+                weeklyStatsMap[weekStart].present += parseInt(row.present_count);
+                weeklyStatsMap[weekStart].total += parseInt(row.total_count);
+            });
+
+            processedDailyStats = Object.keys(weeklyStatsMap).sort().map(weekStart => {
+                const total = weeklyStatsMap[weekStart].total;
+                const present = weeklyStatsMap[weekStart].present;
+                return {
+                    date: weekStart, // Representing the start of the week
+                    percentage: total === 0 ? 0 : Math.round((present / total) * 100)
+                };
+            });
+        } else {
+            // Under 60 days, just return the raw daily percentages
+            processedDailyStats = (dailyData || []).map((row: any) => {
+                const total = parseInt(row.total_count);
+                const present = parseInt(row.present_count);
+                return {
+                    date: row.session_date,
+                    percentage: total === 0 ? 0 : Math.round((present / total) * 100)
+                };
+            });
+        }
 
         // Proactive AI audit (using internal cache)
         const aiAudit = await generateDepartmentAuditInternal();
@@ -433,7 +473,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         res.json({
             overallPercentage,
             departmentBreakdown,
-            dailyHistory: dailyPercentages,
+            dailyHistory: processedDailyStats,
             aiAudit
         });
 

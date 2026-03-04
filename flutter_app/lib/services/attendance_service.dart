@@ -55,9 +55,12 @@ class AttendanceService {
   }
 
   /// Fetch global attendance statistics for the Admin dashboard.
-  Future<Map<String, dynamic>> getAdminStats() async {
+  Future<Map<String, dynamic>> getAdminStats({int days = 30}) async {
     try {
-      final response = await _api.get('/api/attendance/admin/stats');
+      final response = await _api.get(
+        '/api/attendance/admin/stats',
+        params: {'days': days.toString()},
+      );
       return response as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Failed to load admin attendance stats: $e');

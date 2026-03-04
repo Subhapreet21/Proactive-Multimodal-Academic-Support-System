@@ -10,7 +10,8 @@ DECLARE
     random_status text;
     day_name text;
     faculty_id uuid;
-    is_holiday boolean;
+    base_prob numeric;
+    jitter numeric;
 BEGIN
     -- First, clear out existing attendance data to prevent constraint violations and start fresh
     -- Because this is inside the BEGIN...END block, if the script fails later, 
@@ -43,6 +44,16 @@ BEGIN
             -- Ensure no missing department/year/section before proceeding
             IF tt.department IS NOT NULL AND tt.year IS NOT NULL AND tt.section IS NOT NULL THEN
                 
+                -- Determine a base probability based on the department to add realistic variance
+                IF tt.department = 'CSE' THEN base_prob := 0.85;
+                ELSIF tt.department = 'ECE' THEN base_prob := 0.78;
+                ELSIF tt.department = 'EEE' THEN base_prob := 0.81;
+                ELSIF tt.department = 'ME' THEN base_prob := 0.72;
+                ELSIF tt.department = 'CE' THEN base_prob := 0.75;
+                ELSIF tt.department = 'IT' THEN base_prob := 0.83;
+                ELSE base_prob := 0.80;
+                END IF;
+
                 -- Select a RANDOM faculty member from the SAME department as the class
                 SELECT id INTO faculty_id 
                 FROM profiles 
@@ -70,10 +81,13 @@ BEGIN
                                          AND year = tt.year 
                                          AND section = tt.section 
                         LOOP
-                            -- Procedurally generate random status (approx 80% present, 10% absent, 10% late)
-                            IF random() < 0.8 THEN
+                            -- Add a tiny bit of random jitter (-0.05 to +0.05) to the base department probability
+                            jitter := (random() * 0.1) - 0.05;
+                            
+                            IF random() < (base_prob + jitter) THEN
                                 random_status := 'present';
-                            ELSIF random() < 0.9 THEN
+                            ELSIF random() < (base_prob + jitter + 0.10) THEN
+                                -- Usually 10% chance of being explicitly absent if not present
                                 random_status := 'absent';
                             ELSE
                                 random_status := 'late';
@@ -96,3 +110,7 @@ BEGIN
     END LOOP;
 END;
 $$;
+
+-- Finally, since we completely altered historical data, force the AI to rethink the audit
+DELETE FROM ai_insights WHERE type = 'dept_audit';
+

@@ -17,6 +17,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
   final AttendanceService _attendanceService = AttendanceService();
   bool _isLoading = true;
   Map<String, dynamic>? _adminStats;
+  int _selectedTimelineDays = 30;
 
   @override
   void initState() {
@@ -26,7 +27,8 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
 
   Future<void> _fetchStats() async {
     try {
-      final data = await _attendanceService.getAdminStats();
+      final data =
+          await _attendanceService.getAdminStats(days: _selectedTimelineDays);
       if (mounted) {
         setState(() {
           _adminStats = data;
@@ -54,19 +56,19 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withOpacity(0.2),
-            AppTheme.secondaryColor.withOpacity(0.1),
+            AppTheme.primaryColor.withValues(alpha: 0.2),
+            AppTheme.secondaryColor.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child:
@@ -114,9 +116,9 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,10 +126,10 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Institutional Average',
                     style: TextStyle(
                         color: Colors.white,
@@ -135,8 +137,8 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                         fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Last 30 days & Projection',
-                    style: TextStyle(color: Colors.white54, fontSize: 13),
+                    'Graph up to present day: $_selectedTimelineDays Days',
+                    style: const TextStyle(color: Colors.white54, fontSize: 13),
                   ),
                 ],
               ),
@@ -144,9 +146,9 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withOpacity(0.5)),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.5)),
                 ),
                 child: Text(
                   hasData ? '$overallPercentage%' : 'N/A',
@@ -181,7 +183,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                           dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: statusColor.withOpacity(0.1),
+                            color: statusColor.withValues(alpha: 0.1),
                           ),
                         ),
                         // Prediction Line (dashed/dotted)
@@ -199,7 +201,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                                       2), // Simple upward projection
                             ],
                             isCurved: false,
-                            color: statusColor.withOpacity(0.5),
+                            color: statusColor.withValues(alpha: 0.5),
                             barWidth: 4,
                             dashArray: [5, 5],
                             dotData: const FlDotData(show: false),
@@ -224,8 +226,54 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                 ),
               ],
             ),
+          const SizedBox(height: 16),
+          _buildTimelineFilters(),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimelineFilters() {
+    final filters = [
+      {'label': '7D', 'days': 7},
+      {'label': '30D', 'days': 30},
+      {'label': '3M', 'days': 90},
+      {'label': '6M', 'days': 180},
+      {'label': '1Y', 'days': 365},
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: filters.map((filter) {
+        final isSelected = _selectedTimelineDays == filter['days'];
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedTimelineDays = filter['days'] as int;
+              _isLoading = true;
+            });
+            _fetchStats();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? AppTheme.primaryColor : Colors.white24,
+              ),
+            ),
+            child: Text(
+              filter['label'] as String,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white54,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -283,16 +331,16 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: sColor.withOpacity(0.2),
+                    color: sColor.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.business_rounded, color: sColor, size: 20),
@@ -312,7 +360,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                       const SizedBox(height: 4),
                       LinearProgressIndicator(
                         value: isNA ? 0 : pct / 100,
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
                         color: sColor,
                       ),
                     ],
@@ -347,9 +395,9 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: TabBar(
                   indicatorSize: TabBarIndicatorSize.tab,
@@ -358,7 +406,7 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.4),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.4),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
