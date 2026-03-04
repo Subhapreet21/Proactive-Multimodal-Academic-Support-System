@@ -394,53 +394,38 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const { data: records, error } = await supabase
-            .from('attendance_records')
-            .select('status, attendance_sessions!inner(date, timetables(department))')
-            .gte('attendance_sessions.date', thirtyDaysAgo.toISOString().split('T')[0]);
-
-        if (error) throw error;
+        // Fetch Department Stats via RPC
+        const { data: deptData, error: deptError } = await supabase.rpc('get_admin_department_stats', { start_date: thirtyDaysAgo.toISOString().split('T')[0] });
+        if (deptError) throw deptError;
 
         let totalRecords = 0;
         let totalPresent = 0;
-        const deptStats: Record<string, { present: number, total: number }> = {};
 
-        records.forEach((r: any) => {
-            const dept = r.attendance_sessions?.timetables?.department || 'Unknown';
-            if (!deptStats[dept]) {
-                deptStats[dept] = { present: 0, total: 0 };
-            }
-
-            deptStats[dept].total++;
-            totalRecords++;
-
-            if (r.status === 'present') {
-                deptStats[dept].present++;
-                totalPresent++;
-            }
+        const departmentBreakdown = (deptData || []).map((row: any) => {
+            const total = parseInt(row.total_count);
+            const present = parseInt(row.present_count);
+            totalRecords += total;
+            totalPresent += present;
+            return {
+                department: row.department,
+                percentage: total === 0 ? 0 : Math.round((present / total) * 100)
+            };
         });
 
         const overallPercentage = totalRecords === 0 ? 0 : Math.round((totalPresent / totalRecords) * 100);
 
-        const departmentBreakdown = Object.keys(deptStats).map(dept => ({
-            department: dept,
-            percentage: Math.round((deptStats[dept].present / deptStats[dept].total) * 100)
-        }));
+        // Fetch Daily Stats via RPC
+        const { data: dailyData, error: dailyError } = await supabase.rpc('get_admin_daily_stats', { start_date: thirtyDaysAgo.toISOString().split('T')[0] });
+        if (dailyError) throw dailyError;
 
-        // CALCULATE DAILY STATS for the line chart
-        const dailyStats: Record<string, { present: number, total: number }> = {};
-        records.forEach((r: any) => {
-            const date = r.attendance_sessions?.date;
-            if (!date) return;
-            if (!dailyStats[date]) dailyStats[date] = { present: 0, total: 0 };
-            dailyStats[date].total++;
-            if (r.status === 'present') dailyStats[date].present++;
+        const dailyPercentages = (dailyData || []).map((row: any) => {
+            const total = parseInt(row.total_count);
+            const present = parseInt(row.present_count);
+            return {
+                date: row.session_date,
+                percentage: total === 0 ? 0 : Math.round((present / total) * 100)
+            };
         });
-
-        const dailyPercentages = Object.keys(dailyStats).map(date => ({
-            date,
-            percentage: Math.round((dailyStats[date].present / dailyStats[date].total) * 100)
-        })).sort((a, b) => a.date.localeCompare(b.date));
 
         // Proactive AI audit (using internal cache)
         const aiAudit = await generateDepartmentAuditInternal();
