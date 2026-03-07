@@ -526,34 +526,23 @@ export const getFilteredStudentAttendance = async (req: Request, res: Response):
 
         const studentIds = students.map((s: any) => s.id);
 
-        // 2. Fetch attendance records for these students
-        const { data: records, error: recordsError } = await supabase
-            .from('attendance_records')
-            .select(`
-                student_id,
-                status,
-                attendance_sessions!inner(date)
-            `)
-            .in('student_id', studentIds);
-
-        if (recordsError) throw recordsError;
-
-        // 3. Filter valid dates and calculate stats
+        // 2. Fetch scalable attendance stats via RPC
         const todayStr = new Date().toISOString().split('T')[0];
-        const validRecords = (records || []).filter((r: any) => {
-            const sessionDate = r.attendance_sessions?.date;
-            return sessionDate && sessionDate <= todayStr;
+        const { data: statsData, error: statsError } = await supabase.rpc('get_student_attendance_stats', {
+            p_student_ids: studentIds,
+            p_end_date: todayStr
         });
+
+        if (statsError) throw statsError;
 
         const statsMap: Record<string, { total: number, present: number }> = {};
         studentIds.forEach((id: string) => statsMap[id] = { total: 0, present: 0 });
 
-        validRecords.forEach((r: any) => {
-            if (statsMap[r.student_id]) {
-                statsMap[r.student_id].total++;
-                if (r.status === 'present') {
-                    statsMap[r.student_id].present++;
-                }
+        (statsData || []).forEach((row: any) => {
+            const id = row.student_id;
+            if (statsMap[id]) {
+                statsMap[id].total = parseInt(row.total_count) || 0;
+                statsMap[id].present = parseInt(row.present_count) || 0;
             }
         });
 

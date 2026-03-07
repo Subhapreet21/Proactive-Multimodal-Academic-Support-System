@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../config/theme.dart';
 import 'pulse_icon.dart';
@@ -19,8 +21,95 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  final List<String> _navigationHistory = [];
+  bool _isNavigatingBack = false;
+
+  late final AnimationController _animationController;
+  late final ScrollController _scrollController;
+  bool _showSwipeHint = false;
+  bool _hasSeenSwipeHint = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _navigationHistory.add(widget.currentPath);
+
+    _scrollController = ScrollController();
+    _checkSwipeHintStatus();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+  }
+
+  Future<void> _checkSwipeHintStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _hasSeenSwipeHint = prefs.getBool('has_seen_swipe_hint') ?? false;
+      _showSwipeHint = !_hasSeenSwipeHint;
+    });
+
+    _scrollController.addListener(() {
+      if (_hasSeenSwipeHint) return;
+
+      if (_scrollController.offset > 20) {
+        setState(() {
+          _showSwipeHint = false;
+          _hasSeenSwipeHint = true;
+        });
+        prefs.setBool('has_seen_swipe_hint', true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentPath != oldWidget.currentPath) {
+      if (_isNavigatingBack) {
+        _isNavigatingBack = false;
+      } else {
+        _updateHistory(widget.currentPath);
+      }
+    }
+  }
+
+  void _updateHistory(String newPath) {
+    // Only track base tab paths, so we don't pollute history with sub-routes
+    // Sub-routes will be handled natively by checking context.canPop()
+    final isRootTab = newPath == '/app/dashboard' ||
+        newPath == '/app/chat' ||
+        newPath == '/app/timetable' ||
+        newPath == '/app/events-notices' ||
+        newPath == '/app/knowledge-base' ||
+        newPath == '/app/reminders' ||
+        newPath == '/app/virtual-tour' ||
+        newPath == '/app/study-planner' ||
+        newPath == '/app/faculty/daily-prep' ||
+        newPath == '/app/quizzes' ||
+        newPath == '/app/faculty/attendance' ||
+        newPath == '/app/admin/attendance' ||
+        newPath == '/app/student/attendance' ||
+        newPath == '/app/profile';
+
+    if (isRootTab) {
+      // Prevent consecutive duplicates
+      if (_navigationHistory.isEmpty || _navigationHistory.last != newPath) {
+        _navigationHistory.add(newPath);
+      }
+    }
+  }
 
   final List<NavigationItem> _navItems = [
     NavigationItem(
@@ -143,108 +232,276 @@ class _AppShellState extends State<AppShell> {
     // Full-screen mode for quiz taking (student & review & faculty preview)
     final isQuizActive = currentPath.contains('/app/quizzes/active');
 
-    return Scaffold(
-      appBar: isQuizActive
-          ? null
-          : AppBar(
-              title: Text(_getTitle(currentPath)),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.person_rounded),
-                  onPressed: () => context.go('/app/profile'),
-                ),
-              ],
-            ),
-      drawer: isQuizActive ? null : _buildDrawer(context, authProvider),
-      body: widget.child,
-      bottomNavigationBar: isQuizActive
-          ? null
-          : RepaintBoundary(
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        // 1. If GoRouter has an internal sub-route (like active quiz), pop it natively
+        if (context.canPop()) {
+          context.pop();
+          return true; // We handled it
+        }
+
+        // 2. If we are at the root of a tab, navigate to the previously visited tab
+        if (_navigationHistory.length > 1) {
+          _navigationHistory.removeLast();
+          final previousPath = _navigationHistory.last;
+          _isNavigatingBack = true;
+          context.go(previousPath);
+          return true; // We handled it
+        } else {
+          // 3. We are at the very first tab with no history left. Confirm Exit.
+          final shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (context) => Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.backgroundGradient,
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: SafeArea(
-                  // Ensuring safe area for gesture pill
-                  top: false,
-                  bottom: true, // Respect system navigation bar
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minWidth: MediaQuery.of(context).size.width - 16,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.errorColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      child: Row(
-                        mainAxisAlignment: effectiveItems.length > 5
-                            ? MainAxisAlignment.start
-                            : MainAxisAlignment.spaceBetween,
-                        children: effectiveItems.map((item) {
-                          final isSelected =
-                              effectiveItems.indexOf(item) == _currentIndex;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: GestureDetector(
-                              onTap: () => context.go(item.path),
-                              behavior: HitTestBehavior.opaque,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8), // Touch target padding
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 400),
-                                      curve: Curves.easeInOutCubic,
+                      child: const Icon(Icons.logout_rounded,
+                          size: 32, color: AppTheme.errorColor),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Exit Campus OS?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Are you sure you want to exit the app?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.errorColor,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text(
+                              'Exit',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          if (shouldExit == true) {
+            SystemNavigator.pop();
+          }
+          return true; // We handled it (either showed dialog or chose to stay)
+        }
+      },
+      child: Scaffold(
+        appBar: isQuizActive
+            ? null
+            : AppBar(
+                title: Text(_getTitle(currentPath)),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.person_rounded),
+                    onPressed: () => context.go('/app/profile'),
+                  ),
+                ],
+              ),
+        drawer: isQuizActive ? null : _buildDrawer(context, authProvider),
+        body: widget.child,
+        bottomNavigationBar: isQuizActive
+            ? null
+            : RepaintBoundary(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: AppTheme.backgroundGradient,
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: SafeArea(
+                    // Ensuring safe area for gesture pill
+                    top: false,
+                    bottom: true, // Respect system navigation bar
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.centerRight,
+                      children: [
+                        SingleChildScrollView(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width - 16,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: effectiveItems.length > 5
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.spaceBetween,
+                              children: effectiveItems.map((item) {
+                                final isSelected =
+                                    effectiveItems.indexOf(item) ==
+                                        _currentIndex;
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  child: GestureDetector(
+                                    onTap: () => context.go(item.path),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? AppTheme.primaryColor
-                                                .withOpacity(0.2)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: PulseIcon(
-                                        isSelected: isSelected,
-                                        child: Icon(
-                                          isSelected
-                                              ? item.selectedIcon
-                                              : item.unselectedIcon,
-                                          color: isSelected
-                                              ? AppTheme.primaryLight
-                                              : Colors.white.withOpacity(0.5),
-                                          size: 24,
-                                        ),
+                                          horizontal:
+                                              8), // Touch target padding
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 400),
+                                            curve: Curves.easeInOutCubic,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? AppTheme.primaryColor
+                                                      .withOpacity(0.2)
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: PulseIcon(
+                                              isSelected: isSelected,
+                                              child: Icon(
+                                                isSelected
+                                                    ? item.selectedIcon
+                                                    : item.unselectedIcon,
+                                                color: isSelected
+                                                    ? AppTheme.primaryLight
+                                                    : Colors.white
+                                                        .withOpacity(0.5),
+                                                size: 24,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            item.label,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : Colors.white
+                                                      .withOpacity(0.5),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item.label,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : Colors.white.withOpacity(0.5),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                        if (_showSwipeHint && effectiveItems.length > 4)
+                          Positioned(
+                            right: 8,
+                            child: IgnorePointer(
+                              child: AnimatedBuilder(
+                                animation: _animationController,
+                                builder: (context, child) {
+                                  return Transform.translate(
+                                    offset: Offset(
+                                        -12 * _animationController.value, 0),
+                                    child: child,
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.6),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primaryColor
+                                            .withOpacity(0.3),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      )
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.chevron_left_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -455,7 +712,7 @@ class _AppShellState extends State<AppShell> {
                   color: AppTheme.errorColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.logout_rounded,
+                child: const Icon(Icons.power_settings_new_rounded,
                     size: 32, color: AppTheme.errorColor),
               ),
               const SizedBox(height: 16),
