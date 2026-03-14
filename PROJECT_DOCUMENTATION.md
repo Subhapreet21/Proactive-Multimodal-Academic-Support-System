@@ -175,8 +175,9 @@ The project is constructed using a carefully selected stack of modern technologi
 *   **FR-A-01**: Manage Users (Create/Delete Accounts).
 *   **FR-A-02**: Global Timetable Management (Edit Slots).
 *   **FR-A-03**: Post Global Notices (Holiday, Emergencies).
-*   **FR-A-04**: Manage Knowledge Base for AI.
-*   **FR-A-05**: Perform complete departmental attendance audits with AI anomaly highlighting.
+*   **FR-A-04**: Manage Knowledge Base for AI, including article CRUD with guaranteed embedding synchronization (embeddings are auto-deleted with `ON DELETE CASCADE` when an article is removed, ensuring the RAG vector store stays clean).
+*   **FR-A-05**: Perform complete departmental attendance audits with AI anomaly highlighting. Audit percentages are guaranteed to match the department leaderboard by using the same date-filtered RPC. Admin can manually force-refresh the AI Systemic Risk Audit on demand, bypassing the 12-hour Stale-While-Revalidate cache.
+*   **FR-A-06**: View a dynamic AI-computed attendance trend indicator (improving / declining / stable) that reflects the actual data slope for the selected time window.
 
 ## 3.4 Non-Functional Requirements
 1.  **NFR-01 Scalability**: The database schema must support 10,000+ users and 500,000+ timetable rows without performance degradation.
@@ -841,6 +842,35 @@ export const submitAttempt = async (req, res) => {
 };
 ```
 The core of the AI assistant uses **Retrieval-Augmented Generation (RAG)**.
+
+### 5.3.4 AI Forecast Controller (Dept Audit + Force Refresh)
+**Analysis**: The department audit controller uses a **Stale-While-Revalidate** caching pattern. `computeDeptAudit` was updated to call the same date-filtered Postgres RPC as the department leaderboard, guaranteeing consistent percentages. A new admin-only `forceRefreshAudit` endpoint bypasses the 12-hour cache on demand.
+```typescript
+// backend/src/controllers/aiForecastController.ts
+
+// Uses the SAME RPC as the dept leaderboard — ensures consistent percentages
+const computeDeptAudit = async (startDate: string, endDate: string): Promise<string> => {
+    const { data: deptData } = await supabase.rpc('get_admin_department_stats', {
+        start_date: startDate, end_date: endDate,
+    });
+    const deptSummary = (deptData as any[]).map(row => {
+        const pct = Math.round((parseInt(row.present_count) / parseInt(row.total_count)) * 100);
+        return `${row.department}: ${pct}%`;
+    }).join('\n');
+    // ...calls Gemini with period context and returns audit message
+};
+
+// Admin-only: bypasses 12-hour cache, recomputes synchronously
+export const forceRefreshAudit = async (req, res) => {
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const msg = await computeDeptAudit(startDate, endDate);
+    await writeInsight('__dept__', 'dept_audit', { auditMessage: msg, startDate, endDate });
+    res.json({ auditMessage: msg });
+};
+```
+
+## 5.4 Algorithm Analysis (RAG)
 1.  **Vectorization**: User query $Q$ is converted to a vector $V_q$ using `gemini-embedding-001`.
 2.  **Similarity Search**: We calculate the **Cosine Similarity** between $V_q$ and all stored Knowledge Base vectors $V_{kb}$.
     $$ \text{similarity} = \frac{V_q \cdot V_{kb}}{\|V_q\| \|V_{kb}\|} $$
@@ -875,6 +905,13 @@ The core of the AI assistant uses **Retrieval-Augmented Generation (RAG)**.
 | **TC-14** | **Quiz (AI Overview)** | Student submits quiz | Faculty AI overview auto-generated in background within 5s | **PASS** |
 | **TC-15** | **Quiz (RBAC)** | Faculty views quiz list | Only quizzes created by that faculty are shown | **PASS** |
 | **TC-16** | **Quiz (Review)** | Student clicks "Review Attempt" | Opens read-only view with correct/incorrect highlighting | **PASS** |
+| **TC-17** | **KB UI** | Open KB Info dialog | Layout matches Timetable Bulk Import dialog (centered icon, green outlined download button, primary elevated confirm) | **PASS** |
+| **TC-18** | **KB Embedding** | Delete a KB article | Associated rows in `kb_embeddings` are also deleted; AI chat no longer retrieves context from deleted article | **PASS** |
+| **TC-19** | **Attendance UI** | Open Attendance Stats as Admin | AI Audit icon is inline with the title row; body text has no icon overlap | **PASS** |
+| **TC-20** | **Attendance AI** | Admin taps ↺ refresh on AI Audit card | Button shows spinner → `POST /ai/refresh-audit` called → card text updates → green SnackBar shown | **PASS** |
+| **TC-21** | **Attendance Trend** | View stats tab with improving data | Green `trending_up` icon and "AI predicts a X% recovery trend" label shown | **PASS** |
+| **TC-22** | **Attendance Trend** | View stats tab with declining data | Red `trending_down` icon and "AI detects a X% declining trend" label shown | **PASS** |
+| **TC-23** | **Attendance AI** | Compare AI audit % vs leaderboard % for same filter | Both display identical percentages for all time ranges (7D/30D/3M/6M/1Y) | **PASS** |
 
 ## 6.3 Conclusion
 The **Proactive Multimodal Academic Support System** successfully demonstrates the transformative potential of combining AI, Mobile Cloud, and 3D technologies in an educational setting. By replacing disjointed legacy systems with a unified, intelligent platform, we have significantly:

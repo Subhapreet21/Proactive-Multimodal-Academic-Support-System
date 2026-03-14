@@ -36,7 +36,8 @@
 *   **Smart Stale-While-Revalidate Caching**: Highly optimized AI insight engine. Instantly loads cached forecasts from the database and silently revalidates via background workers *only* when a student's attendance drops, saving massive amounts of API tokens.
 *   **Student Insight Dashboard**: Beautiful circular progress indicators paired with proactive, persistent AI trend nudges (e.g., "You're doing great" vs "Warning: Drop in attendance detected").
 *   **Faculty Quick-Mark**: Frictionless UI for batch-submitting class attendance with dynamic sorting (e.g., sort by absent first).
-*   **Admin Global Audit**: Department-wide AI anomaly detection to instantly identify at-risk students who need intervention.
+*   **Admin Global Audit**: Department-wide AI-generated Systemic Risk Audit with manual force-refresh capability. The audit always reflects the same date-filtered percentages shown in the department leaderboard (7D/30D/3M/6M/1Y). Admins can tap a refresh button (↺) to bypass the 12-hour cache and trigger an on-demand Gemini computation.
+*   **Dynamic Trend Indicator**: The attendance trend icon and text (e.g., *"AI predicts a 3.2% recovery trend"* or *"AI detects a 4.1% declining trend"*) are dynamically computed from the slope of the actual attendance graph — fully reactive to the selected time window.
 *   **Offline Reliability**: Attendance records and the latest AI forecasts are strictly cached via Hive for instant access on bad networks.
 
 ### 6. 📱 Mobile-First Experience (Flutter)
@@ -394,7 +395,8 @@ GEMINI_API_KEY_3=AIzaSy...
 *   **Strict Portrait Mode**: The app is globally locked to Portrait mode to prevent UI congestion.
 *   **Smart Landscape Support**: The **Timetable Screen** automatically unlocks Landscape mode for optimal grid viewing.
 *   **Rainbow Carousel**: The Landing Page features a vibrant implementation of the full ROYGCBIV+Pink spectrum. The **Quizzes** feature (`note_alt_outlined`, Pink `#EC4899`) is the final icon in the carousel, completing the color cycle.
-*   **Glassmorphic Dialogs**: All confirmation dialogs (e.g., Leave Quiz, Submit Quiz, Delete Quiz) use a consistent dark gradient dialog system for a unified premium feel.
+*   **Glassmorphic Dialogs**: All confirmation dialogs (e.g., Leave Quiz, Submit Quiz, Delete Quiz, KB Import Guidelines) use a consistent dark gradient dialog system for a unified premium feel. The KB "Import Guidelines" dialog was updated to precisely match the Timetable "Bulk Import" dialog (centered icon header, full-width green outlined download button, primary elevated confirm button).
+*   **Consistent Card Layouts**: The AI Systemic Risk Audit card icon was moved inline with the title row, eliminating the previous overlap with body text.
 
 ---
 
@@ -402,4 +404,3 @@ GEMINI_API_KEY_3=AIzaSy...
 *   **Key Rotation**: API keys are rotated randomly to prevent exhaustion.
 *   **RLS Policies**: Database access is strictly controlled by user role at the row level.
 *   **Env Variables**: Critical secrets are never committed to version control.
-

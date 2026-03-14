@@ -16,6 +16,7 @@ class AdminAttendanceScreen extends StatefulWidget {
 class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
   final AttendanceService _attendanceService = AttendanceService();
   bool _isLoading = true;
+  bool _isAuditRefreshing = false;
   Map<String, dynamic>? _adminStats;
   int _selectedTimelineDays = 30;
 
@@ -45,9 +46,36 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
     }
   }
 
+  Future<void> _refreshAudit() async {
+    if (_isAuditRefreshing) return;
+    setState(() => _isAuditRefreshing = true);
+    try {
+      final result = await _attendanceService.refreshAudit();
+      if (mounted) {
+        setState(() {
+          _adminStats = {...?_adminStats, 'aiAudit': result['auditMessage']};
+          _isAuditRefreshing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI Audit refreshed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isAuditRefreshing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Refresh failed: $e')),
+        );
+      }
+    }
+  }
+
   Widget _buildSystemicRiskAudit() {
     final auditMessage = _adminStats?['aiAudit'];
-    if (auditMessage == null || auditMessage == "")
+    if (auditMessage == null || auditMessage == '')
       return const SizedBox.shrink();
 
     return Container(
@@ -63,23 +91,16 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child:
-                const Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
+          // Header row: icon + title + refresh button
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome, color: Colors.amber, size: 18),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
                   'AI SYSTEMIC RISK AUDIT',
                   style: TextStyle(
                       color: Colors.amber,
@@ -87,14 +108,35 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  auditMessage,
-                  style: const TextStyle(
-                      color: Colors.white, fontSize: 14, height: 1.4),
-                ),
-              ],
-            ),
+              ),
+              // Manual refresh button
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: _isAuditRefreshing
+                    ? const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.amber,
+                        ),
+                      )
+                    : IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.refresh_rounded,
+                            color: Colors.amber, size: 18),
+                        tooltip: 'Refresh AI Audit',
+                        onPressed: _refreshAudit,
+                      ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Body text
+          Text(
+            auditMessage,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 14, height: 1.4),
           ),
         ],
       ),
@@ -215,17 +257,46 @@ class _AdminAttendanceScreenState extends State<AdminAttendanceScreen> {
           ),
           const SizedBox(height: 16),
           if (hasData)
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.trending_up, color: AppTheme.successColor, size: 16),
-                SizedBox(width: 8),
-                Text(
-                  'AI predicts a 2% recovery trend',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ],
-            ),
+            Builder(builder: (_) {
+              // Dynamic trend: compare first vs last data point percentage
+              final firstPct =
+                  (dailyHistory.first['percentage'] as num).toDouble();
+              final lastPct =
+                  (dailyHistory.last['percentage'] as num).toDouble();
+              final delta = lastPct - firstPct;
+              final double absDelta = delta.abs();
+              final String deltaStr = absDelta.toStringAsFixed(1);
+
+              IconData trendIcon;
+              Color trendColor;
+              String trendLabel;
+
+              if (delta > 1) {
+                trendIcon = Icons.trending_up;
+                trendColor = AppTheme.successColor;
+                trendLabel = 'AI predicts a ${deltaStr}% recovery trend';
+              } else if (delta < -1) {
+                trendIcon = Icons.trending_down;
+                trendColor = AppTheme.errorColor;
+                trendLabel = 'AI detects a ${deltaStr}% declining trend';
+              } else {
+                trendIcon = Icons.trending_flat;
+                trendColor = Colors.amber;
+                trendLabel = 'AI reports a stable attendance trend';
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(trendIcon, color: trendColor, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    trendLabel,
+                    style: TextStyle(color: trendColor, fontSize: 12),
+                  ),
+                ],
+              );
+            }),
           const SizedBox(height: 16),
           _buildTimelineFilters(),
         ],

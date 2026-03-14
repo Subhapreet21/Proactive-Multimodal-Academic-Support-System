@@ -167,29 +167,29 @@ const computeStudentForecast = async (studentId: string): Promise<any> => {
     };
 };
 
-const computeDeptAudit = async (): Promise<string> => {
-    const { data: records, error } = await supabase
-        .from('attendance_records')
-        .select('status, profiles!inner(department)');
+const computeDeptAudit = async (startDate: string, endDate: string): Promise<string> => {
+    // Use the same RPC as the department leaderboard so audit percentages always match the UI
+    const { data: deptData, error } = await supabase.rpc('get_admin_department_stats', {
+        start_date: startDate,
+        end_date: endDate,
+    });
 
     if (error) throw error;
 
-    const deptStats: Record<string, { total: number; present: number }> = {};
-    (records || []).forEach((r: any) => {
-        const dept = r.profiles?.department;
-        if (!dept) return;
-        if (!deptStats[dept]) deptStats[dept] = { total: 0, present: 0 };
-        deptStats[dept].total++;
-        if (r.status === 'present') deptStats[dept].present++;
-    });
+    if (!deptData || deptData.length === 0) {
+        return 'No department attendance data available for the selected period.';
+    }
 
-    const deptSummary = Object.keys(deptStats).map(dept => {
-        const pct = deptStats[dept].total === 0 ? 0 : Math.round((deptStats[dept].present / deptStats[dept].total) * 100);
-        return `${dept}: ${pct}% (${deptStats[dept].total} records)`;
+    const deptSummary = (deptData as any[]).map(row => {
+        const total = parseInt(row.total_count);
+        const present = parseInt(row.present_count);
+        const pct = total === 0 ? 0 : Math.round((present / total) * 100);
+        return `${row.department}: ${pct}% (${total} records)`;
     }).join('\n');
 
     const prompt = `
     Institutional academic auditor risk analysis.
+    Period: ${startDate} to ${endDate}
     Departments:
     ${deptSummary}
 
@@ -222,9 +222,9 @@ const triggerStudentRefresh = (studentId: string) => {
         .catch(err => console.error(`[backgroundRefresh] student ${studentId}:`, err.message));
 };
 
-const triggerDeptRefresh = () => {
-    computeDeptAudit()
-        .then(msg => writeInsight('__dept__', 'dept_audit', { auditMessage: msg }))
+const triggerDeptRefresh = (startDate: string, endDate: string) => {
+    computeDeptAudit(startDate, endDate)
+        .then(msg => writeInsight('__dept__', 'dept_audit', { auditMessage: msg, startDate, endDate }))
         .catch(err => console.error('[backgroundRefresh] dept audit:', err.message));
 };
 
@@ -272,7 +272,14 @@ export const getStudentForecast = async (req: Request, res: Response): Promise<v
 };
 
 // Internal helper for the admin stats endpoint
-export const generateDepartmentAuditInternal = async (): Promise<string> => {
+export const generateDepartmentAuditInternal = async (startDate?: string, endDate?: string): Promise<string> => {
+    // Compute default 30-day range if no dates provided (e.g., called from forceRefresh or background tasks)
+    const resolvedEnd = endDate || new Date().toISOString().split('T')[0];
+    const resolvedStartObj = startDate
+        ? new Date(startDate)
+        : (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d; })();
+    const resolvedStart = startDate || resolvedStartObj.toISOString().split('T')[0];
+
     try {
         const now = Date.now();
         const cached = await readInsight('__dept__', 'dept_audit');
@@ -280,13 +287,13 @@ export const generateDepartmentAuditInternal = async (): Promise<string> => {
         if (cached) {
             const ageMs = now - new Date(cached.last_updated).getTime();
             const expired = ageMs > TTL_DEPT;
-            if (cached.is_stale || expired) triggerDeptRefresh();
+            if (cached.is_stale || expired) triggerDeptRefresh(resolvedStart, resolvedEnd);
             return cached.content.auditMessage || 'Audit unavailable.';
         }
 
         // First-time: compute synchronously
-        const msg = await computeDeptAudit();
-        await writeInsight('__dept__', 'dept_audit', { auditMessage: msg });
+        const msg = await computeDeptAudit(resolvedStart, resolvedEnd);
+        await writeInsight('__dept__', 'dept_audit', { auditMessage: msg, startDate: resolvedStart, endDate: resolvedEnd });
         return msg;
 
     } catch (error: any) {
@@ -301,6 +308,33 @@ export const getDepartmentForecast = async (req: Request, res: Response): Promis
         const auditMessage = await generateDepartmentAuditInternal();
         res.json({ auditMessage });
     } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// POST /api/attendance/ai/refresh-audit
+// Admin-only: force-recomputes the department audit, bypassing the cache
+export const forceRefreshAudit = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = (req as WithAuthProp<Request>).auth.userId;
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+        if (profile?.role !== 'admin') {
+            res.status(403).json({ error: 'Admin access required.' });
+            return;
+        }
+
+        // Use same 30-day range as the default admin stats view
+        const endDate = new Date().toISOString().split('T')[0];
+        const startDateObj = new Date();
+        startDateObj.setDate(startDateObj.getDate() - 30);
+        const startDate = startDateObj.toISOString().split('T')[0];
+
+        console.log(`[forceRefreshAudit] Manual refresh triggered by admin ${userId} for ${startDate} to ${endDate}`);
+        const msg = await computeDeptAudit(startDate, endDate);
+        await writeInsight('__dept__', 'dept_audit', { auditMessage: msg, startDate, endDate });
+        res.json({ auditMessage: msg });
+    } catch (error: any) {
+        console.error('[forceRefreshAudit] Error:', error.message);
         res.status(500).json({ error: error.message });
     }
 };

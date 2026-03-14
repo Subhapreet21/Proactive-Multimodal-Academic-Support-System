@@ -139,4 +139,14 @@ class AttendanceService {
       throw Exception('Failed to load department AI forecast: $e');
     }
   }
+
+  /// Admin-only: Force a fresh recompute of the AI Systemic Risk Audit, bypassing any cache.
+  Future<Map<String, dynamic>> refreshAudit() async {
+    try {
+      final response = await _api.post('/api/attendance/ai/refresh-audit', {});
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to refresh audit: $e');
+    }
+  }
 }

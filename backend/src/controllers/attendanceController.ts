@@ -467,8 +467,8 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             });
         }
 
-        // Proactive AI audit (using internal cache)
-        const aiAudit = await generateDepartmentAuditInternal();
+        // Proactive AI audit (using internal cache), scoped to the same date range as the leaderboard
+        const aiAudit = await generateDepartmentAuditInternal(startDateStr, endDateStr);
 
         res.json({
             overallPercentage,

@@ -1,7 +1,7 @@
 import express from 'express';
 import { requireAuth } from '../middleware/authMiddleware';
 import { getClassAttendance, markAttendance, getStudentAttendance, getAdminStats, getFilteredStudentAttendance, getStudentHistory } from '../controllers/attendanceController';
-import { getStudentForecast, getDepartmentForecast } from '../controllers/aiForecastController';
+import { getStudentForecast, getDepartmentForecast, forceRefreshAudit } from '../controllers/aiForecastController';
 
 const router = express.Router();
 
@@ -17,5 +17,6 @@ router.get('/filtered-students', getFilteredStudentAttendance);
 // AI Forecast Routes
 router.get('/ai/forecast-student/:id', getStudentForecast);
 router.get('/ai/forecast-department', getDepartmentForecast);
+router.post('/ai/refresh-audit', forceRefreshAudit);
 
 export default router;

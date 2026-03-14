@@ -1,13 +1,16 @@
 import { Router } from 'express';
-import { searchKB, addArticle, getAllArticles, updateArticle, deleteArticle } from '../controllers/kbController';
+import multer from 'multer';
+import { searchKB, addArticle, getAllArticles, updateArticle, deleteArticle, importArticles } from '../controllers/kbController';
 
 import { requireAuth } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/search', requireAuth, searchKB); // Search is public or auth?
 router.get('/', requireAuth, getAllArticles);
+router.post('/import', requireAuth, requireRole(['admin', 'faculty']), upload.single('file'), importArticles);
 router.post('/', requireAuth, requireRole(['admin', 'faculty']), addArticle);
 router.put('/:id', requireAuth, requireRole(['admin', 'faculty']), updateArticle);
 router.delete('/:id', requireAuth, requireRole(['admin', 'faculty']), deleteArticle);

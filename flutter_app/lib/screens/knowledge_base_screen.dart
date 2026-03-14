@@ -1,5 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:excel/excel.dart' as excel_pkg;
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../config/theme.dart';
@@ -74,6 +80,122 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
           SnackBar(content: Text('Search failed: $e')),
         );
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _downloadSampleExcel() async {
+    try {
+      var excel = excel_pkg.Excel.createExcel();
+      excel_pkg.Sheet sheetObject = excel['Sheet1'];
+
+      // Add Headers
+      List<String> headers = ['title', 'category', 'content'];
+      sheetObject
+          .appendRow(headers.map((e) => excel_pkg.TextCellValue(e)).toList());
+
+      // Add Sample Rows
+      final sampleData = [
+        [
+          'Campus Map Navigation',
+          'Facilities',
+          'To navigate the campus, open the map feature on the bottom right corner of the dashboard. This uses Google Maps to provide directions.'
+        ],
+        [
+          'Exam Attendance Requirements',
+          'Academic',
+          'Students must maintain a minimum of 75% attendance in total to be eligible for the semester-end examinations.'
+        ],
+        [
+          'Library Borrowing Rules',
+          'Policy',
+          'You may borrow up to 3 books at a time. The standard borrowing duration is 14 days, with an option to renew online once.'
+        ],
+      ];
+
+      for (var row in sampleData) {
+        sheetObject
+            .appendRow(row.map((e) => excel_pkg.TextCellValue(e)).toList());
+      }
+
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/sample_knowledge_base.xlsx');
+      await file.writeAsBytes(excel.encode()!);
+
+      if (mounted) {
+        final params = SaveFileDialogParams(sourceFilePath: file.path);
+        final finalPath = await FlutterFileDialog.saveFile(params: params);
+
+        if (finalPath != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Template saved successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export Failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _importCSV() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'xlsx'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() => _isLoading = true);
+        final file = File(result.files.single.path!);
+
+        final response = await _apiService.postMultipart(
+          '${AppConstants.kbEndpoint}/import',
+          {},
+          file,
+          fileFieldName: 'file',
+        );
+
+        setState(() => _isLoading = false);
+
+        if (mounted) {
+          final count = response['count'] ?? 0;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully imported $count articles!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadArticles();
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1E293B),
+            title: const Text('Import Failed',
+                style: TextStyle(color: Colors.white)),
+            content: Text(e.toString().replaceAll('Exception: ', ''),
+                style: const TextStyle(color: Colors.white70)),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'))
+            ],
+          ),
+        );
       }
     }
   }
@@ -449,6 +571,175 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
     );
   }
 
+  void _showInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              const Icon(
+                Icons.article_rounded,
+                size: 48,
+                color: AppTheme.primaryLight,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Import Guidelines',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'To import articles, please use an Excel (.xlsx) or CSV (.csv) file with the following headers:',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('• title: The title of the article', style: TextStyle(color: Colors.white, fontSize: 13, height: 1.5)),
+                    Text('• category: General, Policy, Academic, Facilities, or Handbook', style: TextStyle(color: Colors.white, fontSize: 13, height: 1.5)),
+                    Text('• content: The body text of the article', style: TextStyle(color: Colors.white, fontSize: 13, height: 1.5)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _downloadSampleExcel();
+                  },
+                  icon: const Icon(Icons.table_view_rounded, size: 18),
+                  label: const Text('Download Sample Excel'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    foregroundColor: Colors.greenAccent,
+                    side: const BorderSide(color: Colors.greenAccent),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 150,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text(
+                    'Got it',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E293B),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: AppTheme.primaryColor.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.edit_document, color: AppTheme.primaryLight),
+                ),
+                title: const Text('Create Manually', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Write a new article from scratch', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showAddEditArticleDialog();
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.upload_file_rounded, color: Colors.greenAccent),
+                ),
+                title: const Text('Import via Excel/CSV', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Upload multiple articles at once', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _importCSV();
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDialogTextField(TextEditingController controller, String label,
       {int maxLines = 1, IconData? icon}) {
     return Container(
@@ -507,7 +798,7 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
       backgroundColor: Colors.transparent, // Allow gradient from Container
       floatingActionButton: canAdd
           ? FloatingActionButton(
-              onPressed: () => _showAddEditArticleDialog(),
+              onPressed: _showAddOptions,
               backgroundColor: AppTheme.primaryColor,
               child: const Icon(Icons.add, color: Colors.white),
             )
@@ -528,35 +819,51 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
               children: [
                 // Removed redundant "University Handbook" text
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _searchController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Search knowledge base...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                    prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                    suffixIcon: IconButton(
-                      icon:
-                          const Icon(Icons.send, color: AppTheme.primaryLight),
-                      onPressed: _handleSearch,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Search knowledge base...',
+                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                          prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.send, color: AppTheme.primaryLight),
+                            onPressed: _handleSearch,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.05), // Glassmorphism Search
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        ),
+                        onSubmitted: (_) => _handleSearch(),
+                      ),
                     ),
-                    filled: true,
-                    fillColor:
-                        Colors.white.withOpacity(0.05), // Glassmorphism Search
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide:
-                          BorderSide(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                          color: AppTheme.primaryColor, width: 1.5),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
-                  ),
-                  onSubmitted: (_) => _handleSearch(),
+                    if (canAdd) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.info_outline_rounded, color: AppTheme.primaryLight),
+                          onPressed: _showInfoDialog,
+                          tooltip: 'Import Guidelines',
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Expanded(
