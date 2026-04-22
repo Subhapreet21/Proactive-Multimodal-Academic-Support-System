@@ -1,0 +1,108 @@
+graph TD
+    %% --- Style Definitions ---
+    classDef role fill:#e0f2fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    classDef flutter fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef tech fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef cloud fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef db fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+
+    subgraph UserGroup [Access Roles]
+        direction TB
+        S[Student]:::role
+        F[Faculty]:::role
+        A[Admin]:::role
+    end
+
+    subgraph Frontend [Mobile Application - Flutter]
+        direction TB
+        
+        subgraph PublicArea [Public Zone]
+            Landing[Landing Page]:::flutter
+            Auth[Authentication]:::flutter
+        end
+
+        subgraph Authenticated [Secure App Shell]
+            Dash[Dashboard]:::flutter
+            
+            subgraph Features [Core Features]
+                Chat[AI Assistant]:::flutter
+                Tour[Virtual Tour]:::flutter
+                KB[Knowledge Base]:::flutter
+                Events[Notices]:::flutter
+                Attendance[Attendance]:::flutter
+            end
+
+            subgraph RoleSpecific [Role-Based Modules]
+                Study[AI Study Planner]:::flutter
+                CoPilot[AI Lecture Co-Pilot]:::flutter
+                Time[Smart Timetable]:::flutter
+                AdminPanel[Admin Console]:::flutter
+                Quiz[Quizzes & Assessments]:::flutter
+            end
+        end
+    end
+
+    subgraph BackendServices [Cloud Infrastructure]
+        direction TB
+        
+        subgraph API_Layer [Node.js API]
+            Server[Express Server]:::tech
+            LB[Key Balancer]:::tech
+            Keeper[Keep-Alive System]:::tech
+        end
+
+        subgraph Intelligence [AI Core]
+            Gemini[Google Gemini]:::cloud
+            Gemini_x7[14x API Keys]:::cloud
+        end
+
+        subgraph DataLayer [Persistence]
+            Supabase[(Supabase DB)]:::db
+            Vector[(pgvector Store)]:::db
+            Insights[(AI Insights Cache)]:::db
+        end
+    end
+
+    %% --- Connections ---
+
+    %% User Access
+    S --> Auth
+    F --> Auth
+    A --> Auth
+    Auth --> Dash
+
+    %% Key Features Access
+    Dash --> Chat
+    Dash --> Tour
+    Dash --> KB
+    Dash --> Events
+    Dash --> Attendance
+
+    %% Role Specific Logic
+    Dash -. Student .-> Study
+    Dash -. Faculty .-> CoPilot
+    Dash -. Admin .-> AdminPanel
+    Dash -. Student .-> Quiz
+    Dash -. Faculty .-> Quiz
+    
+    %% Backend Interactions
+    Chat <==> Server
+    CoPilot <==> Server
+    Study <==> Server
+    Tour <==> Server
+    Attendance <==> Server
+    Quiz <==> Server
+    Quiz -...-> Insights
+
+    %% Internal Backend Flow
+    Server --> LB
+    Server --> Keeper
+    LB --> Gemini
+    Gemini -.-> Gemini_x7
+    
+    Server <--> Supabase
+    Server <--> Vector
+    Server -.-> Insights
+
+    %% Keep Alive Logic
+    Keeper -. Ping .-> Supabase

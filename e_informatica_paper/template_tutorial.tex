@@ -1,0 +1,292 @@
+% !TEX TS-program = lualatex
+% !TEX encoding = UTF-8 Unicode
+
+\documentclass[]{einformatica}
+\usepackage{graphicx} 
+\usepackage{soul}
+\usepackage{lmodern}
+\usepackage{microtype,booktabs}
+\usepackage{hyphenat}
+\usepackage[all]{nowidow}
+\usepackage{tabularx}
+\usepackage{floatrow}
+\floatsetup[table]{style=plain,capposition=top}
+\renewcommand\topfraction{.95}
+\renewcommand{\textfraction}{0.05}
+\usepackage{xr-hyper}
+\usepackage{refcount}
+\usepackage[noadjust]{cite}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    urlbordercolor = black,
+    pdfborderstyle={/S/U/W 1},
+}
+
+\usepackage{caption}
+\usepackage{lipsum}
+\usepackage{cleveref}
+\usepackage{tabu}
+\usepackage[newfloat]{minted}
+\setminted[R]{breaklines=true,fontsize=\footnotesize,obeytabs=true,tabsize=0}
+\setmintedinline[R]{breaklines=true,fontsize=\footnotesize}
+
+\usepackage{listings}
+\newenvironment{code}{\captionsetup{type=listing}}{}
+\SetupFloatingEnvironment{listing}{name=Listing}
+
+\usepackage[resetlabels,labeled]{multibib}
+
+% Uncomment to include a bibliography of primary studies
+% \newcites{S}{List of Primary Studies}
+
+\begin{document}
+
+% Uncomment to include a bibliography of primary studies
+% \nociteS{*}
+
+\title{Sample Paper: How to Use This Template}
+
+\shortauthorshead{Surname1 et al.}
+
+\eIsubmitted{1 Dec. 2025} 
+\eIrevised{10 Dec. 2025} 
+\eIaccepted{10 Dec. 2025}
+\eIpublished{11 Dec. 2024} 
+
+\EIauthorI
+   {Firstname1}
+   {Surname1}
+   {Faculty of Computer Science, XXX University, Poland}
+   {firstname.surname@xxx.pl}
+   {0000-1111-2222-3333}
+   {*} %  if star present means corresponding author
+
+\EIauthorII
+   {Firstname2}
+   {Surname2}
+   {Faculty of Computer Science, XXX University, Sweden}
+   {firstname.surname@xxx.se}
+   {0000-1111-2222-333X}
+   {} %  if star present means corresponding author
+   
+\EIauthorIII
+   {Firstname3}
+   {Surname3}
+   {Faculty of Computer Science, XXX University, Germany}
+   {firstname.surname@xxx.de}
+   {0000-1111-2222-333Y}
+   {} % if star present means corresponding author
+ 
+\keywordset{test-driven development, software quality, ...} 
+
+\begin{abstract}[en]
+\textbf{Context}: 
+%\lipsum[66]\\
+Why is this research important?\\
+Give a brief explanation of the motivation for conducting the study.\\
+\textbf{Objective}: 
+What is the question addressed in this research?\\
+Describe the aim of the study, including, e.g., the object under examination, the focus, and the perspective\\
+\textbf{Method}: 
+What are the research methods applied?\\
+Briefly characterize the research method and procedure, and also provide quantitative information, e.g., the sample size, dataset characteristics, etc.  
+E.g., We conducted a controlled experiment with 80 practitioners...\\
+\textbf{Results}: 
+What are the main results in the context of the study objective? \\
+E.g., Method 2 was significantly more effective than Method 1 with a large non-parametric effect size measure $\hat{p}$, the mean number of defects found by participants using Method 2 was 33 while...\\
+\textbf{Conclusions}: 
+What are the main findings of the study and their implications (both for practitioners and researchers)?\\
+The result reinforced existing evidence regarding the superiority of Method 2 over Method 1...
+\end{abstract}
+
+\maketitle 
+
+\section{Introduction}\label{sec:Introduction}
+This sample paper template is inspired by guidelines used in the software engineering discipline on how to structure research papers, e.g.,~\cite{Jedlitschka08,Wohlin12}, how to report secondary studies, e.g.,~\cite{KitchenhamMadeyskiBudgen23SEGRESS,KitchenhamMadeyskiBudgen23TSE}, and the experience of the editors of the journal.
+
+\vspace{6pt}
+\textbf{Providing a clear explanation, motivating the goal of your study, and describing the main contributions of the paper is critical for convincing reviewers and editors that your study is worth publishing.}
+\vspace{6pt}
+
+Below, we present the most important components that should be included in a good introduction section. Of course, it is up to the author's convenience how to structure this section. 
+
+\subsection*{Problem statement} %\subsection* commands like this one should to be removed
+What is the broader context of the problem you study (if you address a very specific sub-problem start from explaining the broader context)?
+What is the problem being addressed by the study? 
+Where does it occur? 
+Who has observed it?
+Why is it important to be solved?\\
+
+\subsection*{Research objective}
+What is the main research question to be
+answered by this study? It is often convenient to use the GQM goal template~\cite{Solingen99}:\\
+\textbf{Analyze} (Object(s) of study)\\
+\textbf{For the purpose of} (Purpose)\\
+\textbf{With respect to their} (Quality Focus)\\
+\textbf{From the point of view of the} (Perspective)\\
+\textbf{In the context of} (Context).\\
+Specific examples can be found, e.g., in~\cite{Jedlitschka08,Madeyski10}.
+
+\subsection*{Study context}
+Include information that is necessary to understand whether the research relates to a specific situation (environment).
+The description of the context is essential for practitioners as well as for researchers. Practitioners need context information to see if the technique, process, or tool under study would apply to their organization. Researchers need context information to understand the limits of the study (e.g., whether the results are generalizable), to replicate results, and to aggregate results or perform meta-analyses. 
+
+\subsection*{Contribution statement}
+State what are the main contributions of the paper. It could be an enumerated list:
+The main contributions of the paper are 1) the analysis of the impact of ... 2) ...
+
+Although naming the contributions of the paper might seem a natural part of the conclusions sections, it is very helpful for the readers to know in advance what they will learn from the paper and guide their focus while they are reading it.
+
+\subsection*{How the paper is structured}
+The rest of this paper is structured as follows: in~\Cref{sec:Background}, we present a description of the tool, in~\Cref{sec:RelatedWork}, we briefly discuss work done in similar areas by other researchers; in~\Cref{sec:Method}, we describe details of the research setup; in~\Cref {sec:Results}, we report the results of the study. Then, in~\Cref{sec:Discussion}, we discuss the collected results, as well as describe potential threats to the validity of the research, and we conclude the paper in~\Cref{sec:Conclusions}.
+
+\section{Background}\label{sec:Background}
+
+The background section is optional and used to introduce the readers to the constructs and terms that they might not be familiar with. Consider including it when: you focus on a narrow subfield (e.g., you study a very specialized method); you use methods that are novel in the field and your peers might not have much experience with them; you use a specific notation that might be confusing for your peers.
+
+The background section should be concise, i.e., cover as little as possible and offer references to broaden the readers' knowledge of the topic. 
+
+\section{Related Work}\label{sec:RelatedWork}
+
+A good related work section should discuss previous research that is relevant to the presented study. If there are multiple aspects of your study, you can consider dividing it into subsections.
+
+A common mistake is to present previous research without discussing how they relate to the study presented in the paper. A desirable structure could look like this: 
+\vspace{12pt}
+
+\textit{Smith et al. $[$10$]$ studied the problem of ... In our study, we investigate a similar problem of ..., however, we apply different methods and study it in the industrial context.}
+
+\vspace{12pt}
+Finally, the section shall be concluded by clearly showing the room for the study presented in the paper.
+
+\section{Method}\label{sec:Method}
+\subsection*{Research goal and questions/hypotheses}
+
+Assuming that the goal / central research questions have been presented in the introduction section, they should be elaborated and potentially decomposed into a set of more specific research questions. 
+
+A common mistake is to define research questions/hypotheses without discussing/justifying their role in obtaining the main goal of the study (answer the central research question). 
+
+\subsection*{Research method / procedure}
+
+The description of the research method strongly depends on the method itself. However, we recommend framing your research using one of the Empirical Software Engineering (ESE) research methods. For artifact-design-related studies, you can consider framing your study as a Design Science Research study or as an Action Research study if it involves solving a practical problem in its natural context. Other common research methods employed in ESE are Survey Research, Case Studies, Controlled Experiments, Systematic Literature Reviews, etc.  Each type of study and research method used requires different aspects to be presented and discussed. However, we strongly recommend following the ACM SIGSOFT Empirical Standards for Software Engineering guidelines\footnote{Empirical Standards ---\url{https://github.com/acmsigsoft/EmpiricalStandards}, \url{https://www2.sigsoft.org/EmpiricalStandards/docs/}} \cite{ralph2021empirical} while designing and reporting empirical studies.
+
+\section{Results}\label{sec:Results}
+
+Results can be presented in a single or multiple sections depending on the authors' convenience.  
+
+When including figures, please use the LaTeX commands as for Figure \ref{fig:example}. Similarly, please format tables similarly to Table \ref{tab:example}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.2\textwidth]{ISEJ_logo.png}
+  \caption{An exemplary figure}\label{fig:example}
+\end{figure}
+
+Also, while referring to particular figures and tables, please treat them as proper nouns. All included figures and tables shall be referenced in the manuscript's text. 
+
+\begin{table}[ht]%[htb]
+    \caption{Guidelines for effect size magnitude interpretation (see~\cite{KitchenhamMadeyski17ESE})}
+    \label{tab:example}
+    \centering
+    \footnotesize
+    $\begin{tabu}{llll}%ccccc}
+        \toprule
+        \text{Effect}           & \text{small} & \text{medium} & \text{large}   \\
+        \midrule
+        \text{Cliffs}\ \delta\   &   0.112   &   0.276   &   0.428   \\
+        \text{Probability of superiority ($\hat{p}$)}    &   0.556   &   0.638   &   0.714   \\
+	\bottomrule
+    \end{tabu}$
+\end{table}
+
+Please use the \texttt{code} LaTeX environment to include source code listings as presented in Listing \ref{listing:example}.
+
+\begin{code}
+\caption{R source code snippet for classif.ranger model creation and tuning with mlr3}
+\label{listing:example}
+\begin{minted}{R}
+train_task = as_task_classif(
+    train_set,
+    target = "BuildResult",
+    positive = "1"
+)
+test_task = as_task_classif(
+    test_set,
+    target = "BuildResult",
+    positive = "1")
+inner_resampling = rsmp("cv")
+outer_resampling = rsmp("cv")
+...
+\end{minted}
+\end{code}
+
+When reporting results of mapping studies or Systematic Literature Reviews, please separate a list of references of primary studies from the list of regular references (e.g., in the related work section). In such a case, you should provide two BibTeX files: \\
+
+{\footnotesize
+\begin{verbatim}
+% your regular references list
+\setbiblabelwidth{1000}
+\bibliographystyle{IEEEtran_for_EI} 
+\bibliography{sample_paper}
+
+% primary studies
+\setbiblabelwidth{1000}
+\bibliographystyleS{IEEEtran_for_EI}
+\bibliographyS{primary_studies}
+\end{verbatim}
+}
+
+\section{Discussion}\label{sec:Discussion}
+
+Discussion should go back to research questions and explain how they can be answered based on the results. It should also discuss the implications of the study for both practitioners and researchers in the area. Finally, we pay attention to the discussion of Threats to validity. There are some well-known recommendations regarding how to discuss threats to validity, e.g.,  by Wohlin et al. \cite{wohlin2012experimentation}. Also, there are guidelines targeted to address common threats specific to particular research methods, e.g., for Design Science Research \cite{Wieringa2014}, simulation-based studies \cite{bernard2015simulation}. 
+
+\section{Conclusions}\label{sec:Conclusions}
+
+What was the goal of the study (reminder)?
+What was the scope of the study, and how it was performed (a brief reminder)?
+What were the most important results?
+What are the main findings, contributions, and implications?
+What are potential future work directions?
+
+\subsection*{Acknowledgment}
+Please remember that there is a separate section for naming the funding sources.
+
+%This research was performed within the Non-Technical Debt in Large-Scale Agile Software Development (NODLA) Project, funded by the Knowledge Foundation, Sweden.
+
+%%%% 
+
+\Funding{This research was performed within the Non-Technical Debt in Large-Scale Agile Software Development (NODLA) Project, funded by the Knowledge Foundation, Sweden.}
+
+\Data{\NA}
+
+\CompetingInterests{The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.}
+
+\Credits{
+[{Specify the First- and the Last-Name of the first Author, eg, John Doe}]: Data curation, Methodology, Investigation, Writing – original draft, Writing – review and editing, Visualization.
+[{Specify the First- and the Last-Name of the second Author, eg., Jane Doe}]: Conceptualization, Funding acquisition, Methodology, Investigation, Writing – review and editing, Supervision… See: https://credit.niso.org/
+}
+
+\AIDeclaration{During the preparation of this work, the author(s) utilised [Specify Tool/Service Name] in order to [State the Reason for Use, e.g., improve grammar and clarity]. Subsequent to the application of this tool/service, the author(s) reviewed and edited the content as necessary and accept full responsibility for the final content of the publication.} 
+% or use  \AIDeclaration{\NA} to switch off this text
+
+%%%
+\setbiblabelwidth{1000}
+\bibliographystyle{IEEEtran_for_EI} 
+\bibliography{template_tutorial}
+
+% Uncomment to include a bibliography of primary studies
+% \setbiblabelwidth{1000}
+% \bibliographystyleS{IEEEtran_for_EI}
+% \bibliographyS{S}
+
+\appendix
+\makeatletter
+\def\mw@seccntformat#1{Appendix\ #1.\enspace}
+\makeatother
+
+\section{Examplary appendix}\label{sec:A}
+
+This is an example of an appendix.
+
+\end{document}

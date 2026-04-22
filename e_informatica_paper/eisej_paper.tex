@@ -1,0 +1,193 @@
+% !TEX TS-program = lualatex
+% !TEX encoding = UTF-8 Unicode
+
+\documentclass[]{einformatica}
+\usepackage{graphicx}
+\usepackage{soul}
+%\usepackage{lmodern} % <-- te dwa zbędne, bo przeniesione do klasy
+%\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyphenat}
+\usepackage[all]{nowidow}
+\usepackage{tabularx} % <-- nieużywane w przykładzie
+\usepackage{floatrow} % <-- nieużywane w przykładzie
+\floatsetup[table]{style=plain,capposition=top}
+\renewcommand\topfraction{.95}
+\renewcommand{\textfraction}{0.05}
+% \usepackage{xr-hyper} % ZBĘDNE
+\usepackage{refcount} 
+\usepackage[noadjust]{cite} %<-- parametr space czasam stwarza problemy
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    urlbordercolor = black,
+    pdfborderstyle={/S/U/W 1},
+}
+
+\usepackage{lipsum} % <-- nieużywane
+\usepackage{cleveref} % <-- ???
+\usepackage{tabu} % <-- chyba niepotrzebne
+%\usepackage{caption}  % <-- TEN PAKIET JEST NIEKOMPATYBILNY (i chyba niepotrzebny). ZGŁĄSZA OSTRZERZENIE!
+\usepackage[newfloat]{minted}
+\setminted[R]{breaklines=true,fontsize=\footnotesize,obeytabs=true,tabsize=0}
+\setmintedinline[R]{breaklines=true,fontsize=\footnotesize}
+
+\usepackage{listings}
+\newenvironment{code}{\captionsetup{type=listing}}{}
+\SetupFloatingEnvironment{listing}{name=Listing}
+
+\usepackage[resetlabels,labeled]{multibib}
+
+%% Uncomment if you use two separate bibliography files.
+%\newcites{S}{List of Primary Studies}
+
+%% Please, add only really required packages here
+
+ \begin{document}
+%% Uncomment if you use two separate bibliography files.
+%\nociteS{*}
+
+\title{Paper Title}
+
+
+\shortauthorshead{Surname1 et al.}
+
+\eIsubmitted{1 Jan. 1970} 
+\eIrevised{1 Jan 1970} 
+\eIaccepted{1 Jan 1970}
+\eIpublished{1 Jan 1970} 
+
+\EIauthorI
+   {Firstname1}
+   {Surname1}
+   {Faculty1, University1, Country1}
+   {firstname1.surname1@uni.edu.c1}
+   {0000-0000-0000-1111} % ORCiD ID
+   {*} %  if star present means corresponding author
+
+\EIauthorII
+   {Firstname2}
+   {Surname2}
+   {Faculty2, University2, Country2}
+   {firstname2.surname2@uni.edu.c2}
+   {0000-0000-0000-2222}
+   {} %  if star present means corresponding author
+   
+\EIauthorIII
+   {Firstname3}
+   {Surname3}
+   {Faculty3, University3, Country3}
+   {firstname3.surname3@uni.edu.c3}
+   {0000-0000-0000-3333}
+   {} % if star present means corresponding author
+ 
+ \keywordset{keyword1, keyword2, ...} 
+
+\begin{abstract}[en] 
+% DO NOT remove sections Context, Objective etc.
+% Structured abstract is obligatory !!!
+\textbf{Context}:
+Context \dots \\ 
+\textbf{Objective}: 
+Objective \dots \\
+\textbf{Method}: 
+Method \dots \\
+\textbf{Results}: 
+Results \dots \\
+\textbf{Conclusions}: 
+Conclusions \dots
+\end{abstract}
+
+\maketitle 
+ 
+
+\section{Introduction}\label{sec:Introduction}
+
+Introduction
+\cite{KitchenhamMadeyski17ESE} % Citation required to compile template, remove in your paper
+
+
+\subsection*{Problem statement} %\subsection* commands 
+
+Problem statement
+
+\subsection*{Research objective}
+
+Research objective
+
+\subsection*{Study context}
+
+Study content \dots
+
+\subsection*{Contribution statement}
+
+Contribution statement \dots
+
+
+\section{Background}\label{sec:Background}
+
+Background \dots
+
+\section{Related Work}\label{sec:RelatedWork}
+
+Related work \dots
+
+\section{Method}\label{sec:Method}
+\subsection*{Research goal and questions/hypotheses}
+
+Research goal \dots
+
+\subsection*{Research method / procedure}
+
+Research method \dots
+
+\section{Results}\label{sec:Results}
+
+Results \dots 
+
+\section{Discussion}\label{sec:Discussion}
+
+Discussion \dots
+
+
+\section{Conclusions}\label{sec:Conclusions}
+
+Conclusions \dots
+
+
+\subsection*{Acknowledgment}
+
+\Funding{Founding sources }
+
+\Data{\NA}
+
+\CompetingInterests{Completing interests}
+
+\Credits{
+Author 1: Data curation, \dots .
+Author 2: Conceptualization, \dots
+% See https://credit.niso.org/
+}
+
+%% Uncomment if you use two separate bibliography files.
+%\setbiblabelwidth{1000}
+\bibliographystyle{IEEEtran_for_EI} 
+\bibliography{eisej_paper}
+
+%% Uncomment if you use two separate bibliography files.
+%\setbiblabelwidth{1000}
+%\bibliographystyleS{IEEEtran_for_EI}
+%\bibliographyS{S}
+
+
+\appendix
+\makeatletter
+\def\mw@seccntformat#1{Appendix\ #1.\enspace}
+\makeatother
+
+\section{Exemplary appendix}\label{sec:A}
+
+Appendix content. 
+
+\end{document}
