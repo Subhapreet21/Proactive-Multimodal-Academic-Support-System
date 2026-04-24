@@ -24,10 +24,18 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
         }
 
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const now = new Date();
-        const today = days[now.getDay()];
+        
+        // Get current date/time in IST timezone
+        const nowStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        const nowIst = new Date(nowStr);
+        
+        const today = days[nowIst.getDay()];
+        
         // Format time as HH:MM:00 for comparison
-        const currentTime = now.toTimeString().split(' ')[0];
+        const hours = String(nowIst.getHours()).padStart(2, '0');
+        const minutes = String(nowIst.getMinutes()).padStart(2, '0');
+        const seconds = String(nowIst.getSeconds()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}:${seconds}`;
 
         // Helper to build base query based on Role
         const getBaseTimetableQuery = () => {
@@ -69,7 +77,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
         // If no class later today, look for the next available class in the coming days
         if (!nextClass) {
             const dayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const currentDayIndex = now.getDay();
+            const currentDayIndex = nowIst.getDay();
 
             for (let i = 1; i <= 7; i++) {
                 const nextDayIndex = (currentDayIndex + i) % 7;
